@@ -1,0 +1,29 @@
+# TPS V1.4 - Project Dependencies
+
+# Core Django
+Django==5.0.*
+djangorestframework==3.16.*
+
+# Database
+psycopg2-binary==2.9.*
+
+# Frontend & Styling
+django-tailwind==4.2.*
+
+# Real-time & Background Tasks
+channels==4.3.*
+redis==6.2.*
+celery==5.5.*
+
+# Development Tools
+django-debug-toolbar==4.2.*
+django-extensions==3.2.*
+
+# Testing
+pytest==8.0.*
+pytest-django==4.8.*
+factory-boy==3.3.*
+
+# Utilities
+python-dotenv==1.0.*
+pillow==10.0.*

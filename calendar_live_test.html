@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Debug - Live Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Live Calendar Test</h1>
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Team ID:</label>
+                <select id="teamSelect" class="border rounded px-3 py-2">
+                    <option value="4">Team 7 (ID: 4)</option>
+                    <option value="5">Team 1 (ID: 5)</option>
+                </select>
+                <button onclick="testCalendar()" class="ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Load Calendar</button>
+            </div>
+            
+            <div id="debug-output" class="text-sm font-mono bg-gray-100 p-4 rounded mb-4 h-64 overflow-y-auto"></div>
+            
+            <div id="calendar-preview" class="border rounded p-4">
+                <!-- Calendar will render here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const output = document.getElementById('debug-output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function testCalendar() {
+            const teamId = document.getElementById('teamSelect').value;
+            const previewDiv = document.getElementById('calendar-preview');
+            
+            log(`🚀 Testing calendar for team ${teamId}...`);
+            
+            try {
+                const year = 2025;
+                const month = 7;
+                const today = '2025-07-30';
+                
+                const url = `http://localhost:8000/api/v1/calendar/${teamId}/month/?year=${year}&month=${month}&start_date=${today}&extend_to_next_month=true`;
+                log(`🔗 URL: ${url}`);
+                
+                const response = await fetch(url);
+                log(`📡 Status: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                log(`✅ Success! Users: ${data.users?.length}, Days: ${data.days?.length}`);
+                
+                // Render simple calendar preview
+                renderCalendarPreview(data);
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+                previewDiv.innerHTML = `<div class="text-red-500">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function renderCalendarPreview(data) {
+            const previewDiv = document.getElementById('calendar-preview');
+            
+            let html = `
+                <h3 class="font-bold mb-2">${data.month_name} ${data.year} - ${data.team.name}</h3>
+                <div class="text-sm mb-4">
+                    Users: ${data.users.length} | Days: ${data.days.length}
+                </div>
+                
+                <!-- Days Header -->
+                <div class="grid grid-cols-10 gap-1 mb-2">
+                    <div class="font-semibold text-xs p-2 bg-gray-200">User</div>
+            `;
+            
+            // First 9 days for demo
+            data.days.slice(0, 9).forEach(day => {
+                html += `<div class="font-semibold text-xs p-2 bg-gray-200 text-center">${day.day_name}<br>${day.day_number}</div>`;
+            });
+            
+            html += `</div>`;
+            
+            // Users and their assignments
+            data.users.slice(0, 5).forEach(user => {  // Show first 5 users
+                html += `<div class="grid grid-cols-10 gap-1 mb-1">`;
+                html += `<div class="text-xs p-2 bg-blue-100 truncate">${user.name}</div>`;
+                
+                data.days.slice(0, 9).forEach(day => {
+                    const assignments = user.assignments[day.date] || [];
+                    const bgColor = assignments.length > 0 ? 'bg-green-200' : 'bg-gray-50';
+                    const content = assignments.length > 0 ? assignments.length : '';
+                    html += `<div class="text-xs p-2 ${bgColor} text-center">${content}</div>`;
+                });
+                
+                html += `</div>`;
+            });
+            
+            if (data.users.length > 5) {
+                html += `<div class="text-xs text-gray-500 mt-2">... and ${data.users.length - 5} more users</div>`;
+            }
+            
+            previewDiv.innerHTML = html;
+        }
+
+        // Auto-test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🎯 Page loaded, ready to test');
+            testCalendar(); // Auto-run test
+        });
+    </script>
+</body>
+</html>

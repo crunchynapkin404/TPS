@@ -1,0 +1,706 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Analytics Dashboard</h1>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Fairness metrics, workload analysis, and planning insights</p>
+        </div>
+        
+        <div class="mt-4 sm:mt-0 flex space-x-3">
+            <!-- Date Range Selector -->
+            <select class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md py-2 pl-3 pr-10 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="week">This Week</option>
+                <option value="month" selected>This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+            </select>
+            
+            <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-download mr-2"></i>
+                Export Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Overall Fairness Score -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-md flex items-center justify-center">
+                        <i class="fas fa-balance-scale text-green-600 dark:text-green-400"></i>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Overall Fairness</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-gray-100" id="fairness-score">Loading...</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Workload -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-md flex items-center justify-center">
+                        <i class="fas fa-chart-bar text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Average Workload</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-gray-100" id="average-workload">Loading...</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coverage Rate -->
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-md flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-purple-600 dark:text-purple-400"></i>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Coverage Rate</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-gray-100" id="coverage-rate">Loading...</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Planning Efficiency -->
+        <div class="bg-surface shadow rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
+                        <i class="fas fa-cogs text-yellow-600"></i>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-content-secondary truncate">Planning Efficiency</dt>
+                        <dd class="text-lg font-medium text-content-primary" id="planning-efficiency">Loading...</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Fairness Distribution Chart -->
+        <div class="bg-surface shadow rounded-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-content-primary">Fairness Distribution</h3>
+                <select class="form-input py-1 pl-3 pr-8 text-sm" id="fairness-period">
+                    <option value="month">This Month</option>
+                    <option value="quarter">This Quarter</option>
+                    <option value="year">This Year</option>
+                </select>
+            </div>
+            
+            <!-- Chart Area -->
+            <div class="h-64 bg-surface-secondary rounded-lg flex items-center justify-center border-2 border-dashed border-border-secondary" id="fairness-chart">
+                <div class="text-center">
+                    <i class="fas fa-chart-pie text-2xl text-content-tertiary mb-2"></i>
+                    <div class="text-content-secondary">Loading fairness data...</div>
+                </div>
+            </div>
+            
+            <!-- Chart Legend -->
+            <div class="mt-4 flex justify-center space-x-6">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                    <span class="text-sm text-gray-600">Balanced</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                    <span class="text-sm text-gray-600">Above Average</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                    <span class="text-sm text-gray-600">Overloaded</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workload Trends -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Workload Trends</h3>
+                <div class="flex space-x-2">
+                    <button class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full" onclick="updateWorkloadChart(7)">7D</button>
+                    <button class="px-3 py-1 text-xs bg-gray-100 text-gray-800 rounded-full" onclick="updateWorkloadChart(30)">30D</button>
+                    <button class="px-3 py-1 text-xs bg-gray-100 text-gray-800 rounded-full" onclick="updateWorkloadChart(90)">90D</button>
+                </div>
+            </div>
+            
+            <!-- Chart Area -->
+            <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300" id="workload-chart">
+                <div class="text-center">
+                    <i class="fas fa-chart-line text-2xl text-gray-400 mb-2"></i>
+                    <div class="text-gray-500">Loading workload trends...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analytics -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <!-- Team Performance -->
+                <!-- Team Performance -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Team Performance</h3>
+            
+            <div class="space-y-4" id="team-performance-list">
+                <!-- Data will be loaded dynamically -->
+                <div class="text-center text-gray-500 py-4">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <div>Loading team performance...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Performers -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Top Performers</h3>
+            
+            <div class="space-y-4" id="top-performers-list">
+                <!-- Data will be loaded dynamically -->
+                <div class="text-center text-gray-500 py-4">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <div>Loading top performers...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts & Insights -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Alerts & Insights</h3>
+            
+            <div class="space-y-3" id="alerts-insights-list">
+                <!-- Data will be loaded dynamically -->
+                <div class="text-center text-gray-500 py-4">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <div>Loading insights...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Performers -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Top Performers</h3>
+            
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=Sarah+Miller&background=10b981&color=fff" alt="">
+                    <div class="ml-3 flex-1">
+                        <div class="text-sm font-medium text-gray-900">Sarah Miller</div>
+                        <div class="text-sm text-gray-500">Engineering Team B</div>
+                    </div>
+                    <div class="text-sm font-medium text-green-600">9.8</div>
+                </div>
+                
+                <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=Mike+Rodriguez&background=f59e0b&color=fff" alt="">
+                    <div class="ml-3 flex-1">
+                        <div class="text-sm font-medium text-gray-900">Mike Rodriguez</div>
+                        <div class="text-sm text-gray-500">Night Shift Team</div>
+                    </div>
+                    <div class="text-sm font-medium text-green-600">9.5</div>
+                </div>
+                
+                <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=John+Doe&background=3b82f6&color=fff" alt="">
+                    <div class="ml-3 flex-1">
+                        <div class="text-sm font-medium text-gray-900">John Doe</div>
+                        <div class="text-sm text-gray-500">Engineering Team A</div>
+                    </div>
+                    <div class="text-sm font-medium text-green-600">9.2</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts & Insights -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Alerts & Insights</h3>
+            
+            <div class="space-y-3">
+                <!-- Alert 1 -->
+                <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-800">
+                                Alex Johnson has worked 15% more hours than average this month
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alert 2 -->
+                <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-green-800">
+                                Night Shift Team achieved 100% coverage this week
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alert 3 -->
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-800">
+                                Planning efficiency improved by 5% since last month
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Analytics Page JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    loadAnalyticsData();
+    
+    // Set up period change listeners
+    const periodSelectors = document.querySelectorAll('select[class*="form-input"]');
+    periodSelectors.forEach(selector => {
+        selector.addEventListener('change', loadAnalyticsData);
+    });
+});
+
+async function loadAnalyticsData() {
+    const period = document.querySelector('select[class*="form-input"]')?.value || 'month';
+    
+    try {
+        // Load overview metrics
+        await loadOverviewMetrics(period);
+        
+        // Load fairness distribution
+        await loadFairnessDistribution(period);
+        
+        // Load workload trends
+        await loadWorkloadTrends(30); // Default 30 days
+        
+        // Load team performance
+        await loadTeamPerformance();
+        
+        // Load top performers
+        await loadTopPerformers();
+        
+        // Load alerts and insights
+        await loadAlertsInsights();
+        
+    } catch (error) {
+        console.error('Error loading analytics data:', error);
+        showError('Failed to load analytics data');
+    }
+}
+
+async function loadOverviewMetrics(period = 'month') {
+    try {
+        const response = await fetch(`/api/v1/analytics/overview/?period=${period}`);
+        const data = await response.json();
+        
+        if (response.ok && data.key_metrics) {
+            document.getElementById('fairness-score').textContent = (data.key_metrics.fairness_score || '--') + '%';
+            document.getElementById('average-workload').textContent = data.key_metrics.average_workload || '--';
+            document.getElementById('coverage-rate').textContent = (data.key_metrics.coverage_rate || '--') + '%';
+            document.getElementById('planning-efficiency').textContent = (data.key_metrics.planning_efficiency || '--') + '%';
+        } else {
+            // Show fallback data
+            document.getElementById('fairness-score').textContent = '--';
+            document.getElementById('average-workload').textContent = '--';
+            document.getElementById('coverage-rate').textContent = '--';
+            document.getElementById('planning-efficiency').textContent = '--';
+        }
+    } catch (error) {
+        console.error('Error loading overview metrics:', error);
+        // Show fallback data on error
+        document.getElementById('fairness-score').textContent = '--';
+        document.getElementById('average-workload').textContent = '--';
+        document.getElementById('coverage-rate').textContent = '--';
+        document.getElementById('planning-efficiency').textContent = '--';
+    }
+}
+
+async function loadFairnessDistribution(period = 'month') {
+    try {
+        const response = await fetch(`/api/v1/analytics/fairness/?period=${period}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (parseError) {
+            console.error('Failed to parse fairness data as JSON:', text);
+            throw new Error('Invalid JSON response');
+        }
+        
+        if (data.success && data.fairness_distribution) {
+            const container = document.getElementById('fairness-chart');
+            
+            if (data.fairness_distribution.length > 0) {
+                // Create a simple bar chart representation
+                container.innerHTML = `
+                    <div class="w-full">
+                        <div class="text-sm text-gray-600 mb-2">Assignment Distribution</div>
+                        ${data.fairness_distribution.slice(0, 10).map((item, index) => `
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-gray-700 truncate w-24">${item.user_name}</span>
+                                <div class="flex-1 mx-2 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: ${Math.min(item.assignment_count * 10, 100)}%"></div>
+                                </div>
+                                <span class="text-xs text-gray-600 w-8">${item.assignment_count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-chart-pie text-2xl text-gray-400 mb-2"></i>
+                        <div class="text-gray-500">No fairness data available</div>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading fairness distribution:', error);
+        // Show fallback content on error
+        const container = document.getElementById('fairness-chart');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-chart-pie text-2xl text-gray-400 mb-2"></i>
+                    <div class="text-gray-500">Unable to load fairness data</div>
+                </div>
+            `;
+        }
+    }
+}
+
+async function loadWorkloadTrends(days = 30) {
+    try {
+        const response = await fetch(`/api/v1/analytics/workload/?days=${days}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (parseError) {
+            console.error('Failed to parse workload data as JSON:', text);
+            throw new Error('Invalid JSON response');
+        }
+        
+        if (data.success && data.workload_trends) {
+            const container = document.getElementById('workload-chart');
+            
+            if (data.workload_trends.length > 0) {
+                // Create a simple line chart representation
+                const maxAssignments = Math.max(...data.workload_trends.map(d => d.assignments));
+                
+                container.innerHTML = `
+                    <div class="w-full">
+                        <div class="text-sm text-gray-600 mb-2">Daily Assignments (Last ${days} days)</div>
+                        <div class="flex items-end justify-between h-32 border-b border-gray-300">
+                            ${data.workload_trends.slice(-14).map(day => {
+                                const height = maxAssignments > 0 ? (day.assignments / maxAssignments) * 100 : 0;
+                                return `
+                                    <div class="flex flex-col items-center">
+                                        <div class="bg-blue-500 rounded-t" style="height: ${height}%; width: 8px; min-height: 2px;"></div>
+                                        <span class="text-xs text-gray-500 mt-1 transform rotate-45">${new Date(day.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="text-center">
+                        <i class="fas fa-chart-line text-2xl text-gray-400 mb-2"></i>
+                        <div class="text-gray-500">No workload data available</div>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading workload trends:', error);
+        // Show fallback content on error
+        const container = document.getElementById('workload-chart');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-chart-line text-2xl text-gray-400 mb-2"></i>
+                    <div class="text-gray-500">Unable to load workload data</div>
+                </div>
+            `;
+        }
+    }
+}
+
+async function loadTeamPerformance() {
+    try {
+        const response = await fetch('/api/v1/analytics/teams/');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (parseError) {
+            console.error('Failed to parse team performance data as JSON:', text);
+            throw new Error('Invalid JSON response');
+        }
+        
+        if (response.ok && data.team_performance) {
+            const container = document.getElementById('team-performance-list');
+            
+            if (data.team_performance.length > 0) {
+                container.innerHTML = data.team_performance.map(team => {
+                    const colors = ['blue', 'green', 'purple', 'yellow', 'red'];
+                    const color = colors[team.team_id % colors.length];
+                    
+                    return `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 bg-${color}-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-900">${team.team_name}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-16 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-${color}-500 h-2 rounded-full" style="width: ${Math.min(team.completion_rate, 100)}%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600">${team.completion_rate}%</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-4">
+                        <i class="fas fa-users text-2xl mb-2"></i>
+                        <div>No team performance data</div>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading team performance:', error);
+        // Show fallback content on error
+        const container = document.getElementById('team-performance-list');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-users text-2xl text-gray-400 mb-2"></i>
+                    <div class="text-gray-500">Unable to load team data</div>
+                </div>
+            `;
+        }
+    }
+}
+
+async function loadTopPerformers() {
+    try {
+        const response = await fetch('/api/v1/analytics/performers/?limit=5');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (parseError) {
+            console.error('Failed to parse top performers data as JSON:', text);
+            throw new Error('Invalid JSON response');
+        }
+        
+        if (response.ok && data.top_performers) {
+            const container = document.getElementById('top-performers-list');
+            
+            if (data.top_performers.length > 0) {
+                container.innerHTML = data.top_performers.map(performer => `
+                    <div class="flex items-center">
+                        <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=${encodeURIComponent(performer.user_name)}&background=3b82f6&color=fff" alt="${performer.user_name}">
+                        <div class="ml-4 flex-1">
+                            <p class="text-sm font-medium text-gray-900">${performer.user_name}</p>
+                            <p class="text-sm text-gray-500">${performer.assignment_count} assignments this month</p>
+                        </div>
+                        <div class="text-sm text-green-600 font-medium">${performer.completion_rate}% completion</div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-4">
+                        <i class="fas fa-trophy text-2xl mb-2"></i>
+                        <div>No performance data available</div>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading top performers:', error);
+        // Show fallback content on error
+        const container = document.getElementById('top-performers-list');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-4">
+                    <i class="fas fa-trophy text-2xl mb-2"></i>
+                    <div>Unable to load performance data</div>
+                </div>
+            `;
+        }
+    }
+}
+
+async function loadAlertsInsights() {
+    try {
+        const response = await fetch('/api/v1/analytics/alerts/');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (parseError) {
+            console.error('Failed to parse alerts data as JSON:', text);
+            throw new Error('Invalid JSON response');
+        }
+        
+        if (response.ok && data.alerts) {
+            const container = document.getElementById('alerts-insights-list');
+            
+            if (data.alerts.length > 0) {
+                container.innerHTML = data.alerts.map(alert => {
+                    const bgColors = {
+                        warning: 'bg-yellow-50 border-yellow-200',
+                        success: 'bg-green-50 border-green-200',
+                        error: 'bg-red-50 border-red-200',
+                        info: 'bg-blue-50 border-blue-200'
+                    };
+                    
+                    const textColors = {
+                        warning: 'text-yellow-800',
+                        success: 'text-green-800', 
+                        error: 'text-red-800',
+                        info: 'text-blue-800'
+                    };
+                    
+                    const iconColors = {
+                        warning: 'text-yellow-400',
+                        success: 'text-green-400',
+                        error: 'text-red-400', 
+                        info: 'text-blue-400'
+                    };
+                    
+                    const icons = {
+                        warning: 'fas fa-exclamation-triangle',
+                        success: 'fas fa-check-circle',
+                        error: 'fas fa-times-circle',
+                        info: 'fas fa-info-circle'
+                    };
+                    
+                    return `
+                        <div class="p-3 ${bgColors[alert.type] || bgColors.info} border rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="${icons[alert.type] || icons.info} ${iconColors[alert.type] || iconColors.info}"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium ${textColors[alert.type] || textColors.info}">${alert.title}</h4>
+                                    <p class="text-sm ${textColors[alert.type] || textColors.info}">${alert.message}</p>
+                                    ${alert.action ? `<p class="text-xs ${textColors[alert.type] || textColors.info} mt-1"><strong>Action:</strong> ${alert.action}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-4">
+                        <i class="fas fa-lightbulb text-2xl mb-2"></i>
+                        <div>No insights available</div>
+                    </div>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading alerts and insights:', error);
+        // Show fallback content on error
+        const container = document.getElementById('alerts-insights-list');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-4">
+                    <i class="fas fa-lightbulb text-2xl mb-2"></i>
+                    <div>Unable to load insights</div>
+                </div>
+            `;
+        }
+    }
+}
+
+function updateWorkloadChart(days) {
+    // Update button states
+    document.querySelectorAll('[onclick*="updateWorkloadChart"]').forEach(btn => {
+        btn.className = 'px-3 py-1 text-xs bg-gray-100 text-gray-800 rounded-full';
+    });
+    event.target.className = 'px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full';
+    
+    // Load new data
+    loadWorkloadTrends(days);
+}
+
+function showError(message) {
+    // Create a simple error notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

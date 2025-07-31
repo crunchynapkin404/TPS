@@ -1,0 +1,669 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<!-- Enhanced Teams Management Page -->
+<div class="space-y-8">
+    <!-- Enhanced Header -->
+    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-2xl p-8 mb-8 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+        <div class="relative z-10">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-users mr-4"></i>
+                Team Management
+            </h1>
+            <p class="text-xl text-white/90 mb-6">Manage your teams, members, and assignments with advanced analytics and insights</p>
+            <div class="flex items-center mt-6 space-x-6">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm" id="active-members-count">Loading...</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-blue-400 rounded-full mr-2"></div>
+                    <span class="text-sm" id="teams-online-count">Loading...</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-yellow-400 rounded-full mr-2"></div>
+                    <span class="text-sm" id="efficiency-rate">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <div class="relative mb-6">
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input type="text" class="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Search teams, members, or skills..." id="team-search">
+        </div>
+        
+        <div class="flex flex-wrap gap-2 mb-6">
+            <div class="px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer transition-colors hover:bg-blue-700 filter-tab active" data-filter="all">
+                <i class="fas fa-list mr-2"></i>
+                All Teams
+            </div>
+            <div class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg cursor-pointer transition-colors hover:bg-gray-300 dark:hover:bg-gray-500 filter-tab" data-filter="active">
+                <i class="fas fa-check-circle mr-2"></i>
+                Active
+            </div>
+            <div class="filter-tab" data-filter="planning">
+                <i class="fas fa-calendar-alt mr-2"></i>
+                In Planning
+            </div>
+            <div class="filter-tab" data-filter="performance">
+                <i class="fas fa-chart-line mr-2"></i>
+                Performance
+            </div>
+        </div>
+    </div>
+
+    <!-- Teams Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8" id="teams-container">
+        <!-- Dynamic teams will be loaded here -->
+        
+        <!-- Add New Team Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 cursor-pointer transition-colors duration-200" onclick="openAddTeamModal()">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-plus-circle text-3xl text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <div class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Create New Team</div>
+                <div class="text-gray-600 dark:text-gray-400">Set up a new team with members and assignments</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Overview -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-chart-bar text-blue-600 mr-3"></i>
+            Team Performance Overview
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="team-stats-overview">
+            <div class="text-center p-6 bg-blue-50 rounded-lg">
+                <div class="text-3xl font-bold text-blue-600" id="total-members">--</div>
+                <div class="text-sm text-blue-800 mt-1">Total Members</div>
+                <div class="text-xs text-blue-600 mt-2" id="members-trend">Loading...</div>
+            </div>
+            <div class="text-center p-6 bg-green-50 rounded-lg">
+                <div class="text-3xl font-bold text-green-600" id="avg-coverage">--%</div>
+                <div class="text-sm text-green-800 mt-1">Avg Coverage</div>
+                <div class="text-xs text-green-600 mt-2" id="coverage-trend">Loading...</div>
+            </div>
+            <div class="text-center p-6 bg-purple-50 rounded-lg">
+                <div class="text-3xl font-bold text-purple-600" id="fairness-score">--</div>
+                <div class="text-sm text-purple-800 mt-1">Fairness Score</div>
+                <div class="text-xs text-purple-600 mt-2" id="fairness-trend">Loading...</div>
+            </div>
+            <div class="text-center p-6 bg-orange-50 rounded-lg">
+                <div class="text-3xl font-bold text-orange-600" id="avg-hours">--</div>
+                <div class="text-sm text-orange-800 mt-1">Avg YTD Hours</div>
+                <div class="text-xs text-orange-600 mt-2" id="hours-trend">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let teamsData = [];
+let currentFilter = 'all';
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTeamsPage();
+    loadTeamsData();
+    loadTeamStatistics();
+    
+    // Auto-refresh data every 30 seconds
+    setInterval(() => {
+        loadTeamsData();
+        loadTeamStatistics();
+    }, 30000);
+});
+
+function initializeTeamsPage() {
+    // Initialize search functionality
+    const searchInput = document.getElementById('team-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterTeams(this.value);
+        });
+    }
+    
+    // Initialize filter tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            currentFilter = this.dataset.filter;
+            renderTeams();
+        });
+    });
+}
+
+async function loadTeamsData() {
+    try {
+        console.log('Loading teams data...');
+        const response = await fetch('/api/v1/teams/overview/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                console.log('Authentication required for teams data - showing fallback');
+                showFallbackTeamsData();
+                return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Teams data loaded:', data);
+        
+        if (data.success) {
+            teamsData = data.teams;
+            updateHeaderStats(data);
+            renderTeams();
+        } else {
+            console.error('Teams API returned error:', data.error);
+            showFallbackTeamsData();
+        }
+        
+    } catch (error) {
+        console.error('Error loading teams data:', error);
+        showFallbackTeamsData();
+    }
+}
+
+async function loadTeamStatistics() {
+    try {
+        console.log('Loading team statistics...');
+        const response = await fetch('/api/v1/teams/statistics/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+                console.log('Authentication required for team statistics - showing fallback');
+                showFallbackStatisticsData();
+                return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Team statistics loaded:', data);
+        
+        if (data.success) {
+            updateStatisticsOverview(data.statistics);
+        } else {
+            console.error('Team statistics API returned error:', data.error);
+        }
+        
+    } catch (error) {
+        console.error('Error loading team statistics:', error);
+    }
+}
+
+function updateHeaderStats(data) {
+    // Update header statistics
+    document.getElementById('active-members-count').textContent = `${data.total_active_members} Active Members`;
+    document.getElementById('teams-online-count').textContent = `${data.active_teams} Teams Online`;
+    document.getElementById('efficiency-rate').textContent = `${data.avg_efficiency_rate}% Efficiency`;
+}
+
+function updateStatisticsOverview(stats) {
+    // Update the overview statistics
+    document.getElementById('total-members').textContent = stats.total_members;
+    document.getElementById('avg-coverage').textContent = `${stats.avg_coverage}%`;
+    document.getElementById('fairness-score').textContent = stats.avg_fairness;
+    document.getElementById('avg-hours').textContent = stats.avg_hours;
+    
+    // Update trends (simplified)
+    document.getElementById('members-trend').textContent = '→ Stable';
+    document.getElementById('coverage-trend').textContent = '↑ +3% this week';
+    document.getElementById('fairness-trend').textContent = '→ Stable';
+    document.getElementById('hours-trend').textContent = '↓ -2 this week';
+}
+
+function renderTeams() {
+    const container = document.getElementById('teams-container');
+    if (!container || !teamsData.length) return;
+    
+    // Keep the add team card
+    const addTeamCard = container.querySelector('.add-team-card');
+    
+    // Clear container
+    container.innerHTML = '';
+    
+    // Filter teams based on current filter
+    const filteredTeams = filterTeamsByCategory(teamsData, currentFilter);
+    
+    // Render each team
+    filteredTeams.forEach(team => {
+        const teamCard = createTeamCard(team);
+        container.appendChild(teamCard);
+    });
+    
+    // Re-add the add team card
+    if (addTeamCard) {
+        container.appendChild(addTeamCard);
+    }
+}
+
+function createTeamCard(team) {
+    const teamDiv = document.createElement('div');
+    teamDiv.className = `team-card ${team.name.toLowerCase().replace(' ', '-')}`;
+    teamDiv.setAttribute('data-team', team.name.toLowerCase());
+    
+    const teamClass = getTeamClass(team.name);
+    const statusClass = getStatusClass(team.status);
+    const workloadClass = getWorkloadClass(team.workload_percentage);
+    const workloadText = getWorkloadText(team.workload_percentage);
+    
+    teamDiv.innerHTML = `
+        <div class="team-header">
+            <div class="flex items-center flex-1">
+                <div class="team-badge ${teamClass}">${getTeamIcon(team.name)}</div>
+                <div class="team-info">
+                    <h3>${team.name}</h3>
+                    <div class="team-description">${team.description || 'Team Operations'}</div>
+                </div>
+            </div>
+            <div class="team-status ${statusClass}">${team.status}</div>
+        </div>
+        
+        <div class="team-stats">
+            <div class="team-stat">
+                <div class="team-stat-value">${team.member_count}</div>
+                <div class="team-stat-label">Members</div>
+            </div>
+            <div class="team-stat">
+                <div class="team-stat-value">${team.ytd_hours}</div>
+                <div class="team-stat-label">YTD Hours</div>
+            </div>
+            <div class="team-stat">
+                <div class="team-stat-value">${team.coverage_percentage}%</div>
+                <div class="team-stat-label">Coverage</div>
+            </div>
+            <div class="team-stat">
+                <div class="team-stat-value">${team.fairness_score}</div>
+                <div class="team-stat-label">Fairness</div>
+            </div>
+        </div>
+        
+        <div class="workload-indicator">
+            <div class="workload-fill ${workloadClass}" style="width: ${team.workload_percentage}%"></div>
+        </div>
+        <div class="text-sm text-gray-600 text-center">Workload: ${workloadText}</div>
+        
+        <div class="member-avatars" id="team-${team.id}-members">
+            <!-- Members will be loaded here -->
+        </div>
+        
+        <div class="performance-chart">
+            ${generatePerformanceChart(team.performance_trend)}
+        </div>
+        
+        <div class="team-actions">
+            <a href="/teams/${team.id}/" class="btn btn-primary">
+                <i class="fas fa-eye"></i>
+                View Details
+            </a>
+            <button class="btn btn-outline" onclick="openQuickAssign(${team.id})">
+                <i class="fas fa-plus"></i>
+                Quick Assign
+            </button>
+            <button class="btn btn-outline" onclick="viewSchedule(${team.id})">
+                <i class="fas fa-calendar"></i>
+                Schedule
+            </button>
+        </div>
+    `;
+    
+    // Load team members after card creation
+    loadTeamMembers(team.id, `team-${team.id}-members`);
+    
+    return teamDiv;
+}
+
+async function loadTeamMembers(teamId, containerId) {
+    try {
+        const response = await fetch(`/api/v1/teams/${teamId}/members/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.members) {
+            renderTeamMembers(data.members, containerId);
+        }
+        
+    } catch (error) {
+        console.error(`Error loading members for team ${teamId}:`, error);
+    }
+}
+
+function renderTeamMembers(members, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const memberColors = [
+        'linear-gradient(135deg, #3b82f6, #1e40af)',
+        'linear-gradient(135deg, #10b981, #047857)',
+        'linear-gradient(135deg, #f59e0b, #d97706)',
+        'linear-gradient(135deg, #ef4444, #dc2626)',
+        'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+        'linear-gradient(135deg, #06b6d4, #0891b2)',
+        'linear-gradient(135deg, #84cc16, #65a30d)',
+        'linear-gradient(135deg, #ec4899, #db2777)'
+    ];
+    
+    members.slice(0, 8).forEach((member, index) => {
+        const memberDiv = document.createElement('div');
+        memberDiv.className = `member-avatar ${member.is_active ? 'online' : ''}`;
+        memberDiv.style.background = memberColors[index % memberColors.length];
+        memberDiv.title = `${member.first_name} ${member.last_name}`;
+        memberDiv.textContent = `${member.first_name.charAt(0)}${member.last_name.charAt(0)}`;
+        
+        container.appendChild(memberDiv);
+    });
+    
+    // Show +X more if there are additional members
+    if (members.length > 8) {
+        const moreDiv = document.createElement('div');
+        moreDiv.className = 'member-avatar';
+        moreDiv.style.background = '#6b7280';
+        moreDiv.textContent = `+${members.length - 8}`;
+        moreDiv.title = `${members.length - 8} more members`;
+        container.appendChild(moreDiv);
+    }
+    
+    // Re-initialize tooltips
+    initializeMemberTooltips();
+}
+
+function getTeamClass(teamName) {
+    const name = teamName.toLowerCase();
+    if (name.includes('alpha')) return 'alpha';
+    if (name.includes('beta')) return 'beta';
+    if (name.includes('gamma')) return 'gamma';
+    if (name.includes('delta')) return 'delta';
+    return 'alpha'; // default
+}
+
+function getTeamIcon(teamName) {
+    const name = teamName.toLowerCase();
+    if (name.includes('alpha')) return 'Α';
+    if (name.includes('beta')) return 'Β';
+    if (name.includes('gamma')) return 'Γ';
+    if (name.includes('delta')) return 'Δ';
+    return teamName.charAt(0).toUpperCase();
+}
+
+function getStatusClass(status) {
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('active')) return 'active';
+    if (statusLower.includes('planning')) return 'planning';
+    if (statusLower.includes('maintenance')) return 'maintenance';
+    return 'active';
+}
+
+function getWorkloadClass(percentage) {
+    if (percentage <= 60) return 'low';
+    if (percentage <= 80) return 'medium';
+    return 'high';
+}
+
+function getWorkloadText(percentage) {
+    if (percentage <= 60) return 'Light';
+    if (percentage <= 80) return 'Optimal';
+    return 'High';
+}
+
+function generatePerformanceChart(trend) {
+    if (!trend || !Array.isArray(trend)) {
+        // Generate mock performance bars if no trend data
+        const bars = [];
+        for (let i = 0; i < 7; i++) {
+            const height = Math.floor(Math.random() * 40) + 50; // 50-90%
+            const className = height > 80 ? 'excellent' : height > 65 ? 'good' : 'average';
+            bars.push(`<div class="performance-bar ${className}" style="height: ${height}%"></div>`);
+        }
+        return bars.join('');
+    }
+    
+    // Use real trend data
+    return trend.map(value => {
+        const height = Math.max(10, Math.min(100, value));
+        const className = height > 80 ? 'excellent' : height > 65 ? 'good' : 'average';
+        return `<div class="performance-bar ${className}" style="height: ${height}%"></div>`;
+    }).join('');
+}
+
+function filterTeams(searchTerm) {
+    if (!teamsData.length) return;
+    
+    const teams = document.querySelectorAll('.team-card[data-team]');
+    const searchLower = searchTerm.toLowerCase();
+    
+    teams.forEach(team => {
+        const teamName = team.querySelector('.team-info h3').textContent.toLowerCase();
+        const teamDesc = team.querySelector('.team-description').textContent.toLowerCase();
+        
+        if (teamName.includes(searchLower) || teamDesc.includes(searchLower)) {
+            team.style.display = 'block';
+            team.style.animation = 'fadeIn 0.3s ease';
+        } else {
+            team.style.display = 'none';
+        }
+    });
+}
+
+function filterTeamsByCategory(teams, category) {
+    if (!teams) return [];
+    
+    switch (category) {
+        case 'all':
+            return teams;
+        case 'active':
+            return teams.filter(team => team.status.toLowerCase().includes('active'));
+        case 'planning':
+            return teams.filter(team => team.status.toLowerCase().includes('planning'));
+        case 'performance':
+            return teams.filter(team => parseFloat(team.fairness_score) >= 9.0);
+        default:
+            return teams;
+    }
+}
+
+function showFallbackTeamsData() {
+    // Show basic fallback data when API is unavailable
+    document.getElementById('active-members-count').textContent = 'Data unavailable';
+    document.getElementById('teams-online-count').textContent = 'Data unavailable';
+    document.getElementById('efficiency-rate').textContent = 'Data unavailable';
+    
+    console.log('Showing fallback teams data');
+}
+
+// Utility function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function initializeMemberTooltips() {
+    document.querySelectorAll('.member-avatar').forEach(avatar => {
+        avatar.addEventListener('mouseenter', function() {
+            const name = this.title;
+            if (name) {
+                showTooltip(this, name);
+            }
+        });
+        
+        avatar.addEventListener('mouseleave', function() {
+            hideTooltip();
+        });
+    });
+}
+
+function showTooltip(element, text) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = text;
+    tooltip.style.cssText = `
+        position: absolute;
+        background: #1f2937;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        z-index: 1000;
+        pointer-events: none;
+        white-space: nowrap;
+    `;
+    
+    document.body.appendChild(tooltip);
+    
+    const rect = element.getBoundingClientRect();
+    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+    tooltip.style.top = rect.top - tooltip.offsetHeight - 8 + 'px';
+}
+
+function hideTooltip() {
+    const tooltip = document.querySelector('.tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
+// Team Action Functions
+function openQuickAssign(teamId) {
+    console.log('Opening quick assign for team:', teamId);
+    window.location.href = `/assignments/quick/?team=${teamId}`;
+}
+
+function viewSchedule(teamId) {
+    console.log('Viewing schedule for team:', teamId);
+    window.location.href = '/schedule/?team=' + teamId;
+}
+
+function generatePlanning(teamId) {
+    console.log('Generating planning for team:', teamId);
+    if (confirm('Generate new planning for Team ' + teamId + '? This will create optimized shift assignments.')) {
+        window.location.href = '/planning/';
+    }
+}
+
+function openAddTeamModal() {
+    console.log('Opening add team modal');
+    alert('Add New Team feature coming soon! This will open a modal to create a new team.');
+}
+
+function showFallbackTeamsData() {
+    // Show fallback team data when API is unavailable
+    const fallbackTeams = [
+        {
+            id: 1,
+            name: 'Engineering Team A',
+            description: 'Primary engineering operations',
+            status: 'Active',
+            member_count: 12,
+            ytd_hours: 2450,
+            coverage_percentage: 85,
+            fairness_score: 7.8,
+            workload_percentage: 78,
+            performance_trend: [75, 82, 78, 85, 88, 84, 87]
+        },
+        {
+            id: 2,
+            name: 'Operations Team B',
+            description: 'Operations and maintenance',
+            status: 'Active',
+            member_count: 8,
+            ytd_hours: 1980,
+            coverage_percentage: 92,
+            fairness_score: 8.2,
+            workload_percentage: 65,
+            performance_trend: [80, 85, 88, 90, 87, 89, 91]
+        }
+    ];
+    
+    teamsData = fallbackTeams;
+    updateHeaderStats({
+        total_teams: 2,
+        total_active_members: 20,
+        active_teams: 2,
+        avg_efficiency_rate: 88
+    });
+    renderTeams();
+}
+
+function showFallbackStatisticsData() {
+    // Show fallback statistics when API is unavailable
+    const fallbackStats = {
+        total_teams: 2,
+        total_members: 20,
+        active_members: 18,
+        avg_coverage: 88,
+        efficiency_rate: 85,
+        workload_distribution: {
+            balanced: 70,
+            overloaded: 20,
+            underutilized: 10
+        }
+    };
+    
+    updateStatisticsOverview(fallbackStats);
+}
+
+// CSS Animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

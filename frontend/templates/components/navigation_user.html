@@ -1,0 +1,159 @@
+<!-- User Navigation - Simple menu for regular team members -->
+<div class="h-full flex flex-col gap-y-5 overflow-y-auto theme-user px-6 pb-4 shadow-2xl flex-1">
+    <!-- Logo/Brand -->
+    <div class="flex h-20 shrink-0 items-center justify-between border-b border-role pb-4 pt-4">
+        <div class="sidebar-brand">
+            <h1 class="text-white text-xl font-bold flex items-center">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 lg:mr-3">
+                    <i class="fas fa-calendar-alt text-white"></i>
+                </div>
+                <span class="sidebar-text">TPS v1.4</span>
+            </h1>
+            <p class="text-role-accent text-xs mt-1 sidebar-text">Team Planning System</p>
+        </div>
+        <!-- Theme Toggle & Notifications -->
+        <div class="flex items-center gap-2 sidebar-text">
+            <!-- Dark/Light Mode Toggle -->
+            <button id="themeToggle" class="text-role-accent hover:text-white transition-colors p-2 rounded-lg hover:bg-role-hover" title="Toggle Theme">
+                <i class="fas fa-moon text-lg" id="themeIcon"></i>
+            </button>
+            <!-- Notifications Bell -->
+            <button class="text-role-accent hover:text-white transition-colors p-2 rounded-lg hover:bg-role-hover">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Team Switcher -->
+    {% if user_teams %}
+    <div class="border-b border-gray-700 pb-4 mb-4">
+        <div class="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider mb-3 sidebar-text">
+            Active Team
+        </div>
+        <div class="relative sidebar-text">
+            <button type="button" 
+                    class="team-switcher-trigger w-full bg-gray-800 hover:bg-gray-700 text-white rounded-lg px-3 py-2 text-sm flex items-center justify-between transition-all duration-200 border border-gray-600 hover:border-gray-500"
+                    aria-expanded="false">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+                    <span class="font-medium">{{ current_team.name|default:"No Team" }}</span>
+                </div>
+                <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+            </button>
+            
+            <!-- Team Dropdown Menu -->
+            <div class="team-switcher-menu absolute top-full left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-xl border border-gray-600 z-50 hidden">
+                <div class="py-1">
+                    {% for team in user_teams %}
+                    <button type="button" 
+                            class="team-option w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-all duration-150 {% if team == current_team %}bg-gray-700 text-white{% endif %}"
+                            data-team-id="{{ team.id }}"
+                            data-team-name="{{ team.name }}">
+                        <div class="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full {% if team == current_team %}ring-2 ring-white ring-opacity-50{% endif %}"></div>
+                        <div class="flex-1">
+                            <div class="font-medium">{{ team.name }}</div>
+                            <div class="text-xs text-gray-400">{{ team.department }}</div>
+                        </div>
+                        {% if team == current_team %}
+                        <i class="fas fa-check text-xs text-blue-400"></i>
+                        {% endif %}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Navigation -->
+    <nav class="flex flex-1 flex-col">
+        <ul role="list" class="flex flex-1 flex-col gap-y-2">
+            <!-- Main Navigation Section -->
+            <li>
+                <div class="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider mb-3 sidebar-text">
+                    My Dashboard
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <!-- Today's View -->
+                    <li>
+                        <a href="{% url 'frontend:dashboard' %}" 
+                           class="{% if active_nav == 'dashboard' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Today's View">
+                            <i class="fas fa-home {% if active_nav == 'dashboard' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <span class="sidebar-text">Today's View</span>
+                        </a>
+                    </li>
+                    
+                    <!-- My Schedule -->
+                    <li>
+                        <a href="{% url 'frontend:schedule' %}" 
+                           class="{% if active_nav == 'schedule' %}bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="My Schedule">
+                            <i class="fas fa-calendar {% if active_nav == 'schedule' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <span class="sidebar-text">My Schedule</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
+            <!-- Requests Section -->
+            <li>
+                <div class="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider mb-3 sidebar-text">
+                    Requests
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <!-- Leave Request -->
+                    <li>
+                        <a href="#" onclick="alert('Leave Requests feature coming soon!')" 
+                           class="text-gray-300 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200 cursor-pointer"
+                           title="Leave Requests (Coming Soon)">
+                            <i class="fas fa-plane text-gray-400 group-hover:text-white w-5 text-center"></i>
+                            <span class="sidebar-text">Leave Requests <small>(Soon)</small></span>
+                        </a>
+                    </li>
+                    
+                    <!-- Shift Swaps -->
+                    <li>
+                        <a href="#" onclick="alert('Shift Swaps feature coming soon!')" 
+                           class="text-gray-300 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200 cursor-pointer"
+                           title="Shift Swaps (Coming Soon)">
+                            <i class="fas fa-exchange-alt text-gray-400 group-hover:text-white w-5 text-center"></i>
+                            <span class="sidebar-text">Shift Swaps <small>(Soon)</small></span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
+            <!-- User Section -->
+            <li class="mt-auto">
+                <div class="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider mb-3 sidebar-text">
+                    Account
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <!-- Profile -->
+                    <li>
+                        <a href="{% url 'frontend:profile' %}" 
+                           class="{% if active_nav == 'profile' %}bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Profile">
+                            <i class="fas fa-user-circle {% if active_nav == 'profile' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <span class="sidebar-text">Profile</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Logout -->
+                    <li>
+                        <form method="post" action="{% url 'frontend:logout' %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full text-left text-gray-300 hover:text-white hover:bg-red-600 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                    title="Logout">
+                                <i class="fas fa-sign-out-alt text-gray-400 group-hover:text-white w-5 text-center"></i>
+                                <span class="sidebar-text">Logout</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</div>

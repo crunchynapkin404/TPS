@@ -1,0 +1,485 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<!-- CLEAN DESKTOP DASHBOARD -->
+<div class="grid grid-rows-4 gap-5 w-full">
+    <!-- Welcome Header -->
+    <div class="mb-6">
+        <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome back, {{ user.first_name|default:user.username }}! 👋</div>
+        <div class="text-lg text-gray-600 dark:text-gray-300">Here's what's happening with your team today</div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-6 gap-4 xl:grid-cols-6 lg:grid-cols-3 lg:grid-rows-2 md:grid-cols-2 md:grid-rows-3 sm:grid-cols-1">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/40" onclick="window.location.href='/schedule/'">
+            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-clock"></i></div>
+            <div class="text-3xl font-bold mb-1" id="my-shifts-count">{{ my_upcoming_shifts.count }}</div>
+            <div class="text-sm opacity-90 font-medium">My Shifts</div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-amber-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/40" onclick="viewPendingApprovals()">
+            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="text-3xl font-bold mb-1" id="pending-approvals-count">{{ pending_approvals }}</div>
+            <div class="text-sm opacity-90 font-medium">Pending</div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/40" onclick="window.location.href='/teams/'">
+            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-users"></i></div>
+            <div class="text-3xl font-bold mb-1" id="active-members-count">{{ active_members }}</div>
+            <div class="text-sm opacity-90 font-medium">Team Members</div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-purple-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-purple-500/40" onclick="window.location.href='/assignments/'">
+            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-clipboard-list"></i></div>
+            <div class="text-3xl font-bold mb-1" id="monthly-assignments-count">{{ monthly_assignments }}</div>
+            <div class="text-sm opacity-90 font-medium">This Month</div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-teal-500 to-teal-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-teal-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-500/40">
+            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-heartbeat"></i></div>
+            <div class="text-3xl font-bold mb-1" id="system-health-value">{{ system_health }}%</div>
+            <div class="text-sm opacity-90 font-medium">System Health</div>
+        </div>
+        
+        <div class="{% if fairness_score >= 90 %}bg-gradient-to-br from-emerald-500 to-emerald-600{% elif fairness_score >= 75 %}bg-gradient-to-br from-amber-500 to-amber-600{% else %}bg-gradient-to-br from-red-500 to-red-600{% endif %} text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg {% if fairness_score >= 90 %}shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40{% elif fairness_score >= 75 %}shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40{% else %}shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40{% endif %} hover:-translate-y-0.5" id="fairness-card">
+            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-balance-scale"></i></div>
+            <div class="text-3xl font-bold mb-1" id="fairness-score-value">{{ fairness_score }}%</div>
+            <div class="text-sm opacity-90 font-medium">Fairness</div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-3 gap-4 lg:grid-cols-2 md:grid-cols-1">
+        <!-- Recent Activity -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
+            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
+                <i class="fas fa-stream text-blue-600 mr-2"></i>
+                Recent Activity
+            </div>
+            <div class="flex-1 p-5 overflow-y-auto">
+                <div id="recent-activity-list">
+                    {% for assignment in recent_assignments %}
+                    <div class="py-3 border-b border-gray-100 dark:border-gray-600 last:border-b-0 flex items-center gap-3">
+                        <div class="flex justify-between items-center w-full">
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-white text-sm">{{ assignment.user.get_full_name }} - {{ assignment.shift.template.name }}</div>
+                                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ assignment.shift.start_datetime|date:"M d" }} • {{ assignment.shift.start_datetime|time:"H:i" }}-{{ assignment.shift.end_datetime|time:"H:i" }}</div>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-{% if assignment.status == 'confirmed' %}blue{% elif assignment.status == 'completed' %}green{% else %}yellow{% endif %}-100 text-{% if assignment.status == 'confirmed' %}blue{% elif assignment.status == 'completed' %}green{% else %}yellow{% endif %}-800">{{ assignment.get_status_display }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-4">
+                        <i class="fas fa-inbox text-2xl mb-2"></i>
+                        <div>No recent activity</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-center flex-shrink-0">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">View All Activity</button>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
+            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                Quick Actions
+            </div>
+            <div class="flex-1 p-5 overflow-y-auto">
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onclick="openPlanningWizard()">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400"><i class="fas fa-magic"></i></div>
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white">Generate Planning</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Auto-assign shifts</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onclick="openQuickAssign()">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400"><i class="fas fa-plus-circle"></i></div>
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white">Quick Assign</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Manual assignment</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onclick="viewPendingApprovals()">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white">Approve Requests</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Review pending</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onclick="exportSchedule()">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center text-orange-600 dark:text-orange-400"><i class="fas fa-download"></i></div>
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white">Export Schedule</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Download files</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Team Overview -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
+            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
+                <i class="fas fa-users text-green-600 mr-2"></i>
+                Team Overview
+            </div>
+            <div class="flex-1 p-5 overflow-y-auto">
+                <div id="team-overview-list">
+                    {% for team_data in teams_data %}
+                    <div class="py-3 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-white text-sm">{{ team_data.team.name }}</div>
+                                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ team_data.team.memberships.count }} members • {{ team_data.workload_percentage|floatformat:1 }}% workload</div>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-{% if team_data.workload_status == 'success' %}green{% elif team_data.workload_status == 'warning' %}yellow{% else %}red{% endif %}-100 text-{% if team_data.workload_status == 'success' %}green{% elif team_data.workload_status == 'warning' %}yellow{% else %}red{% endif %}-800">
+                                {% if team_data.workload_status == 'success' %}Active{% elif team_data.workload_status == 'warning' %}Attention{% else %}High Load{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-4">
+                        <i class="fas fa-users text-2xl mb-2"></i>
+                        <div>No teams found</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-center flex-shrink-0">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">View All Teams</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Content Grid -->
+    <div class="grid grid-cols-3 gap-4 lg:grid-cols-2 md:grid-cols-1">
+        <!-- Workload Chart -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
+            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
+                <i class="fas fa-chart-pie text-purple-600 mr-2"></i>
+                Workload Distribution
+            </div>
+            <div class="flex-1 p-5 overflow-y-auto">
+                <div class="h-full flex items-center justify-center">
+                    <div class="text-center text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-chart-pie text-lg mb-2"></i>
+                        <div>Chart Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fairness Chart -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
+            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
+                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                Fairness Trends
+            </div>
+            <div class="flex-1 p-5 overflow-y-auto">
+                <div class="h-full flex items-center justify-center">
+                    <div class="text-center text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-chart-line text-lg mb-2"></i>
+                        <div>Chart Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Status -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
+            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
+                <i class="fas fa-server text-teal-600 mr-2"></i>
+                System Status
+            </div>
+            <div class="flex-1 p-5 overflow-y-auto">
+                <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-600">
+                    <span class="text-gray-700 dark:text-gray-300">API Response</span>
+                    <div class="flex items-center">
+                        <span class="text-green-600 font-medium mr-2">99.9%</span>
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-600">
+                    <span class="text-gray-700 dark:text-gray-300">Database</span>
+                    <div class="flex items-center">
+                        <span class="text-green-600 font-medium mr-2">Healthy</span>
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-600">
+                    <span class="text-gray-700 dark:text-gray-300">WebSocket</span>
+                    <div class="flex items-center">
+                        <span class="text-green-600 font-medium mr-2">Connected</span>
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center py-3">
+                    <span class="text-gray-700 dark:text-gray-300">Last Backup</span>
+                    <span class="text-gray-500 dark:text-gray-400">2 hours ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Content Grid -->
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-1">
+        <!-- My Upcoming Shifts - PERFECT SIZE REFERENCE -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
+            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
+                <i class="fas fa-calendar-check text-green-600 mr-2"></i>
+                My Upcoming Shifts
+            </div>
+            <div class="flex-1 p-5 overflow-y-auto">
+                <div id="my-shifts-list">
+                    {% for assignment in my_upcoming_shifts %}
+                    <div class="py-3 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-white text-sm">{{ assignment.shift.template.name }}</div>
+                                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ assignment.shift.start_datetime|date:"M d" }} • {{ assignment.shift.start_datetime|time:"H:i" }}-{{ assignment.shift.end_datetime|time:"H:i" }}</div>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-{% if assignment.status == 'confirmed' %}blue{% elif assignment.status == 'pending_confirmation' %}yellow{% else %}purple{% endif %}-100 text-{% if assignment.status == 'confirmed' %}blue{% elif assignment.status == 'pending_confirmation' %}yellow{% else %}purple{% endif %}-800">{{ assignment.get_status_display }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-4">
+                        <i class="fas fa-calendar-check text-2xl mb-2"></i>
+                        <div>No upcoming shifts</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-center flex-shrink-0">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">View Full Schedule</button>
+            </div>
+        </div>
+        
+        <!-- Pending Approvals - PERFECT SIZE REFERENCE -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
+            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
+                <i class="fas fa-clock text-yellow-600 mr-2"></i>
+                Pending Approvals
+            </div>
+            <div class="flex-1 p-5 overflow-y-auto">
+                <div id="pending-approvals-list">
+                    {% for assignment in pending_approvals_list %}
+                    <div class="py-3 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-white text-sm">{{ assignment.user.get_full_name }}</div>
+                                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ assignment.shift.template.name }} • {{ assignment.shift.start_datetime|date:"M d" }}</div>
+                            </div>
+                            <div class="flex space-x-1">
+                                <button class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors" onclick="approveAssignment('{{ assignment.assignment_id }}')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors" onclick="declineAssignment('{{ assignment.assignment_id }}')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-4">
+                        <i class="fas fa-check-circle text-2xl mb-2"></i>
+                        <div>No pending approvals</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-center flex-shrink-0">
+                <button class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors duration-200 text-sm font-medium">View All Approvals</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Quick Action Functions
+function openPlanningWizard() {
+    window.location.href = '/planning/';
+}
+
+function openQuickAssign() {
+    console.log('Opening quick assign...');
+}
+
+function viewPendingApprovals() {
+    console.log('Viewing pending approvals...');
+}
+
+function exportSchedule() {
+    console.log('Exporting schedule...');
+}
+
+// Assignment approval functions
+function approveAssignment(assignmentId) {
+    if (confirm('Are you sure you want to approve this assignment?')) {
+        fetch(`/api/v1/assignments/${assignmentId}/approve_assignment/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (response.ok) {
+                location.reload(); // Refresh to show updated data
+            } else {
+                alert('Error approving assignment: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error approving assignment');
+        });
+    }
+}
+
+function declineAssignment(assignmentId) {
+    const reason = prompt('Please provide a reason for declining (optional):');
+    if (reason !== null) { // User didn't cancel
+        fetch(`/api/v1/assignments/${assignmentId}/reject_assignment/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                reason: reason || 'No reason provided'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (response.ok) {
+                location.reload(); // Refresh to show updated data
+            } else {
+                alert('Error declining assignment: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error declining assignment');
+        });
+    }
+}
+
+// Real-time dashboard updates
+function updateDashboardStats() {
+    fetch('/api/v1/dashboard/stats/')
+        .then(response => response.json())
+        .then(data => {
+            // Update stat cards
+            document.getElementById('my-shifts-count').textContent = data.my_upcoming_shifts;
+            document.getElementById('pending-approvals-count').textContent = data.pending_approvals;
+            document.getElementById('active-members-count').textContent = data.active_members;
+            document.getElementById('monthly-assignments-count').textContent = data.monthly_assignments;
+            document.getElementById('system-health-value').textContent = data.system_health + '%';
+            document.getElementById('fairness-score-value').textContent = data.fairness_score + '%';
+            
+            // Update fairness card color based on score
+            const fairnessCard = document.getElementById('fairness-card');
+            fairnessCard.className = fairnessCard.className.replace(/stat-card\s+(success|warning|danger)/, 
+                `stat-card ${data.fairness_score >= 90 ? 'success' : data.fairness_score >= 75 ? 'warning' : 'danger'}`);
+        })
+        .catch(error => console.error('Error updating dashboard stats:', error));
+}
+
+function updateRecentActivity() {
+    fetch('/api/v1/dashboard/activity/')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('recent-activity-list');
+            if (data.recent_activity && data.recent_activity.length > 0) {
+                container.innerHTML = data.recent_activity.map((activity, index) => {
+                    const colors = ['blue', 'green', 'yellow', 'purple'];
+                    const color = colors[index % colors.length];
+                    const statusColor = activity.status === 'confirmed' ? 'blue' : 
+                                      activity.status === 'completed' ? 'green' : 'yellow';
+                    
+                    const startDate = new Date(activity.start_time);
+                    const endDate = new Date(activity.end_time);
+                    
+                    return `
+                        <div class="list-item ${color}">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="item-title">${activity.user_name} - ${activity.shift_name}</div>
+                                    <div class="item-subtitle">${startDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} • ${startDate.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}-${endDate.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}</div>
+                                </div>
+                                <span class="item-status bg-${statusColor}-100 text-${statusColor}-800">${activity.status}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-4">
+                        <i class="fas fa-inbox text-2xl mb-2"></i>
+                        <div>No recent activity</div>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => console.error('Error updating recent activity:', error));
+}
+
+// Real-time clock
+function updateClock() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    const clockElement = document.getElementById('current-time');
+    if (clockElement) {
+        clockElement.textContent = timeString;
+    }
+}
+
+// CSRF token helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Update dashboard stats every 30 seconds
+    updateDashboardStats();
+    setInterval(updateDashboardStats, 30000);
+    
+    // Update recent activity every 60 seconds
+    updateRecentActivity();
+    setInterval(updateRecentActivity, 60000);
+    
+    // Update clock every second
+    setInterval(updateClock, 1000);
+    updateClock();
+});
+</script>
+{% endblock %}

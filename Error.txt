@@ -1,0 +1,83 @@
+17:55:29.740 Navigated to http://localhost:8001/
+17:55:30.137 GET
+http://localhost:8001/favicon.ico
+[HTTP/1.1 404 Not Found 0ms]
+
+17:55:33.812 Navigated to http://localhost:8001/schedule/
+17:55:33.831 Firefox can’t establish a connection to the server at ws://localhost:8001/ws/notifications/. notification-handler.js:70:33
+17:55:33.832 The connection to ws://localhost:8001/ws/notifications/ was interrupted while the page was loading. notification-handler.js:70:33
+17:55:33.832 WebSocket error: 
+error { target: WebSocket, isTrusted: true, srcElement: WebSocket, currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, … }
+notification-handler.js:93:25
+17:55:34.164 GET
+http://localhost:8001/favicon.ico
+[HTTP/1.1 404 Not Found 0ms]
+
+17:55:36.053 Navigated to http://localhost:8001/planning/
+17:55:36.073 Firefox can’t establish a connection to the server at ws://localhost:8001/ws/notifications/. notification-handler.js:70:33
+17:55:36.074 The connection to ws://localhost:8001/ws/notifications/ was interrupted while the page was loading. notification-handler.js:70:33
+17:55:36.074 WebSocket error: 
+error { target: WebSocket, isTrusted: true, srcElement: WebSocket, currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, … }
+notification-handler.js:93:25
+17:55:36.208 GET
+http://localhost:8001/favicon.ico
+[HTTP/1.1 404 Not Found 0ms]
+
+17:55:37.059 Navigated to http://localhost:8001/analytics/
+17:55:37.078 Firefox can’t establish a connection to the server at ws://localhost:8001/ws/notifications/. notification-handler.js:70:33
+17:55:37.079 The connection to ws://localhost:8001/ws/notifications/ was interrupted while the page was loading. notification-handler.js:70:33
+17:55:37.079 WebSocket error: 
+error { target: WebSocket, isTrusted: true, srcElement: WebSocket, currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, … }
+notification-handler.js:93:25
+17:55:37.234 GET
+http://localhost:8001/favicon.ico
+[HTTP/1.1 404 Not Found 0ms]
+
+17:55:38.907 Navigated to http://localhost:8001/teams/
+17:55:38.927 Firefox can’t establish a connection to the server at ws://localhost:8001/ws/notifications/. notification-handler.js:70:33
+17:55:38.927 The connection to ws://localhost:8001/ws/notifications/ was interrupted while the page was loading. notification-handler.js:70:33
+17:55:38.927 WebSocket error: 
+error { target: WebSocket, isTrusted: true, srcElement: WebSocket, currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, … }
+notification-handler.js:93:25
+17:55:38.978 Uncaught SyntaxError: invalid escape sequence teams:994:29
+17:55:39.013 GET
+http://localhost:8001/favicon.ico
+[HTTP/1.1 404 Not Found 0ms]
+
+17:55:40.547 Uncaught ReferenceError: openAddTeamModal is not defined
+    onclick http://localhost:8001/teams/:1
+teams:1:1
+17:55:41.998 Navigated to http://localhost:8001/assignments/
+17:55:42.018 Firefox can’t establish a connection to the server at ws://localhost:8001/ws/notifications/. notification-handler.js:70:33
+17:55:42.019 The connection to ws://localhost:8001/ws/notifications/ was interrupted while the page was loading. notification-handler.js:70:33
+17:55:42.019 WebSocket error: 
+error { target: WebSocket, isTrusted: true, srcElement: WebSocket, currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, … }
+notification-handler.js:93:25
+17:55:42.122 XHRGET
+http://localhost:8001/api/v1/assignments/overview/
+[HTTP/1.1 404 Not Found 15ms]
+
+17:55:42.139 Error loading assignments overview: Error: HTTP error! status: 404
+    loadAssignmentOverview http://localhost:8001/assignments/:904
+    async* http://localhost:8001/assignments/:882
+    EventListener.handleEvent* http://localhost:8001/assignments/:880
+assignments:918:17
+17:55:42.140 GET
+http://localhost:8001/favicon.ico
+[HTTP/1.1 404 Not Found 0ms]
+
+17:55:53.702 Navigated to http://localhost:8001/profile/
+17:55:53.722 Firefox can’t establish a connection to the server at ws://localhost:8001/ws/notifications/. notification-handler.js:70:33
+17:55:53.723 The connection to ws://localhost:8001/ws/notifications/ was interrupted while the page was loading. notification-handler.js:70:33
+17:55:53.723 WebSocket error: 
+error { target: WebSocket, isTrusted: true, srcElement: WebSocket, currentTarget: WebSocket, eventPhase: 2, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, … }
+notification-handler.js:93:25
+17:55:53.850 GET
+http://localhost:8001/favicon.ico
+[HTTP/1.1 404 Not Found 0ms]
+
+/home/bart/Planner/V1.4/tps_v14/test_env/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1596: RuntimeWarning: DateTimeField ShiftInstance.start_datetime received a naive datetime (2025-07-01 00:00:00) while time zone support is active.
+  warnings.warn(
+/home/bart/Planner/V1.4/tps_v14/test_env/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1596: RuntimeWarning: DateTimeField ShiftInstance.start_datetime received a naive datetime (2025-08-02 00:00:00) while time zone support is active.
+  warnings.warn(
+/home/bart/Planner/V1.4/tps_v14/test_env/lib/python3.13/site-packages/django/db/models/fields/__init__.py:1596: RuntimeWarning: DateTimeField Assignment.assigned_at received a naive datetime (2025-07-23 00:00:00) while time zone support is active.

@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto my-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-10">
+    <div class="text-center mb-10">
+        <h1 class="text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Generate Planning</h1>
+        <p class="text-gray-600 dark:text-gray-400 text-base">Create shift assignments for your team</p>
+    </div>
+
+    <form id="planning-form">
+        {% csrf_token %}
+        <!-- Shift Type Selection -->
+        <div class="mb-8">
+            <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-3 text-base">Shift Type</label>
+            <select class="w-full px-5 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" id="shift-type" required>
+                <option value="">Select shift type...</option>
+                <option value="waakdienst">Waakdienst</option>
+                <option value="incident">Incident</option>
+                <option value="incident-standby">Incident Standby</option>
+            </select>
+        </div>
+
+        <!-- Team and Period in one row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="mb-8">
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-3 text-base">Team</label>
+                <select class="w-full px-5 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" id="team" required>
+                    <option value="">Loading teams...</option>
+                </select>
+            </div>
+
+            <div class="mb-8">
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-3 text-base">Period</label>
+                <select class="w-full px-5 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" id="period" required>
+                    <option value="">Select period...</option>
+                    <option value="1">1 Week</option>
+                    <option value="2">2 Weeks</option>
+                    <option value="4">1 Month (4 Weeks)</option>
+                    <option value="12">3 Months (12 Weeks)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Start Date -->
+        <div class="mb-8">
+            <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-3 text-base">Start Date</label>
+            <input type="date" class="w-full px-5 py-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" id="start-date" required>
+        </div>
+
+        <!-- Generate Button -->
+        <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 px-8 py-5 rounded-lg text-lg font-semibold cursor-pointer transition-all duration-300 mb-8 flex items-center justify-center gap-3 hover:-translate-y-0.5 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none" id="generate-btn">
+            <i class="fas fa-magic"></i>
+            Generate Planning
+        </button>
+
+        <!-- Success Message -->
+        <div class="px-5 py-4 rounded-lg mb-6 font-medium hidden bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" id="success-message">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-check-circle"></i>
+                <div>Planning generated successfully! Check your calendar.</div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default start date to next Monday
+    const today = new Date();
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
+    document.getElementById('start-date').value = nextMonday.toISOString().split('T')[0];
+
+    // Load teams from API
+    loadTeams();
+
+    // Form submission
+    document.getElementById('planning-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        generatePlanning();
+    });
+});
+
+async function loadTeams() {
+    try {
+        const response = await fetch('/api/v1/teams/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Teams API response:', data); // Debug log
+            const teamSelect = document.getElementById('team');
+            
+            // Clear loading option
+            teamSelect.innerHTML = '<option value="">Select team...</option>';
+            
+            // Handle both paginated and direct list responses
+            const teams = data.results || data; // Check if paginated response
+            console.log('Teams array:', teams); // Debug log
+            
+            // Add teams
+            teams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.id;
+                option.textContent = `${team.name} (${team.member_count} members)`;
+                teamSelect.appendChild(option);
+            });
+        } else {
+            console.error('Failed to load teams');
+            const teamSelect = document.getElementById('team');
+            teamSelect.innerHTML = '<option value="">Error loading teams</option>';
+        }
+    } catch (error) {
+        console.error('Error loading teams:', error);
+        const teamSelect = document.getElementById('team');
+        teamSelect.innerHTML = '<option value="">Error loading teams</option>';
+    }
+}
+
+async function generatePlanning() {
+    const generateBtn = document.getElementById('generate-btn');
+    const successMessage = document.getElementById('success-message');
+    
+    // Get form values
+    const shiftType = document.getElementById('shift-type').value;
+    const teamId = document.getElementById('team').value;
+    const duration = parseInt(document.getElementById('period').value);
+    const startDate = document.getElementById('start-date').value;
+    
+    // Validate form
+    if (!shiftType || !teamId || !duration || !startDate) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    // Show loading state
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<div class="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full inline-block mr-2"></div>Generating...';
+    successMessage.classList.remove('show');
+    
+    try {
+        // Prepare API data
+        const planningData = {
+            period: startDate,
+            duration: duration,
+            teams: [parseInt(teamId)],
+            algorithm: 'balanced',
+            shift_type: shiftType
+        };
+
+        const response = await fetch('/api/v1/planning/generate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(planningData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // Show success message with details
+            document.querySelector('.success-text').textContent = 
+                `Planning generated successfully! Created ${result.total_assignments} assignments for ${result.teams_processed} team(s). Check your calendar.`;
+            successMessage.classList.add('show');
+            
+            // Reset form
+            document.getElementById('planning-form').reset();
+            document.getElementById('start-date').value = getNextMonday();
+            
+            // Auto hide success message after 7 seconds
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 7000);
+            
+        } else {
+            // Show error
+            alert(`Failed to generate planning: ${result.message || result.error || 'Unknown error'}`);
+        }
+        
+    } catch (error) {
+        console.error('Error generating planning:', error);
+        alert('Failed to generate planning. Please check your connection and try again.');
+    } finally {
+        // Reset button
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Planning';
+    }
+}
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
+function getNextMonday() {
+    const today = new Date();
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
+    return nextMonday.toISOString().split('T')[0];
+}
+</script>
+{% endblock %}

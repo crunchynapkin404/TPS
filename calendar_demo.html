@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPS Calendar - Fixed Version</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+        
+        .controls select, .controls button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .controls button {
+            background: #007bff;
+            color: white;
+            border: none;
+        }
+        
+        .controls button:hover {
+            background: #0056b3;
+        }
+        
+        .calendar-container {
+            padding: 20px;
+        }
+        
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .calendar th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #e9ecef;
+        }
+        
+        .calendar td {
+            border: 1px solid #e9ecef;
+            padding: 8px;
+            vertical-align: top;
+            height: 120px;
+            width: 14.285%;
+            position: relative;
+        }
+        
+        .calendar td.other-month {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .calendar td.sunday {
+            background: #fff3cd;
+        }
+        
+        .calendar td.today {
+            background: #e3f2fd;
+        }
+        
+        .date-number {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .event {
+            background: #e8f5e8;
+            border-left: 3px solid #28a745;
+            padding: 2px 5px;
+            margin: 2px 0;
+            font-size: 11px;
+            border-radius: 3px;
+            word-wrap: break-word;
+        }
+        
+        .event.waakdienst {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        
+        .event.incident {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        
+        .event-title {
+            font-weight: bold;
+            display: block;
+        }
+        
+        .event-time {
+            color: #6c757d;
+            font-size: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .stats h3 {
+            margin-top: 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #007bff;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>TPS Team Planning System</h1>
+            <p>Fixed Calendar View - Proper Timezone Handling</p>
+        </div>
+        
+        <div class="controls">
+            <select id="teamSelect">
+                <option value="">Loading teams...</option>
+            </select>
+            <select id="monthSelect">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8" selected>August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+            <select id="yearSelect">
+                <option value="2024">2024</option>
+                <option value="2025" selected>2025</option>
+                <option value="2026">2026</option>
+            </select>
+            <button onclick="loadCalendar()">Load Calendar</button>
+            <button onclick="loadTestData()">Load Test Data</button>
+        </div>
+        
+        <div class="calendar-container">
+            <div id="loading" class="loading">
+                <p>Loading calendar data...</p>
+            </div>
+            
+            <div id="error" class="error" style="display: none;">
+                <p>Error loading calendar data. Please try again.</p>
+            </div>
+            
+            <div id="calendar-content" style="display: none;">
+                <div class="stats">
+                    <h3>Calendar Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalEvents">0</div>
+                            <div class="stat-label">Total Shifts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="waakdienstEvents">0</div>
+                            <div class="stat-label">Waakdienst Shifts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="incidentEvents">0</div>
+                            <div class="stat-label">Incident Shifts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="sundayEvents">0</div>
+                            <div class="stat-label">Sunday Shifts</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="calendar">
+                    <thead>
+                        <tr>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                            <th>Saturday</th>
+                            <th>Sunday</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendar-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTeamId = null;
+        let currentYear = 2025;
+        let currentMonth = 8;
+        
+        // Load teams on page load
+        window.onload = function() {
+            loadTeams();
+        };
+        
+        function loadTeams() {
+            // For now, we'll use a mock team since we don't have the team API working
+            const teamSelect = document.getElementById('teamSelect');
+            teamSelect.innerHTML = '<option value="4">TPS Team</option>';
+            currentTeamId = 4;
+            loadTestData();
+        }
+        
+        function loadCalendar() {
+            if (!currentTeamId) {
+                alert('Please select a team first');
+                return;
+            }
+            
+            currentMonth = parseInt(document.getElementById('monthSelect').value);
+            currentYear = parseInt(document.getElementById('yearSelect').value);
+            
+            showLoading();
+            
+            // Use the fixed calendar API
+            const url = `/api/v1/teams/${currentTeamId}/calendar/month-fixed/?year=${currentYear}&month=${currentMonth}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    displayCalendar(data);
+                    hideLoading();
+                })
+                .catch(error => {
+                    console.error('Error loading calendar:', error);
+                    showError();
+                    hideLoading();
+                });
+        }
+        
+        function loadTestData() {
+            // Generate test data for demonstration
+            const testData = {
+                month: 8,
+                year: 2025,
+                month_name: "August",
+                team: { id: 4, name: "TPS Team" },
+                calendar_grid: [
+                    [0, 0, 0, 0, 1, 2, 3],
+                    [4, 5, 6, 7, 8, 9, 10],
+                    [11, 12, 13, 14, 15, 16, 17],
+                    [18, 19, 20, 21, 22, 23, 24],
+                    [25, 26, 27, 28, 29, 30, 31]
+                ],
+                events: [
+                    {
+                        id: 1,
+                        title: "User 01 - Waakdienst Coverage",
+                        start: "2025-08-03T00:00:00+02:00",
+                        end: "2025-08-04T00:00:00+02:00",
+                        user: { name: "User 01" },
+                        shift: { template_name: "Waakdienst Coverage" },
+                        assignment_type: "waakdienst"
+                    },
+                    {
+                        id: 2,
+                        title: "User 02 - Waakdienst Coverage", 
+                        start: "2025-08-10T00:00:00+02:00",
+                        end: "2025-08-11T00:00:00+02:00",
+                        user: { name: "User 02" },
+                        shift: { template_name: "Waakdienst Coverage" },
+                        assignment_type: "waakdienst"
+                    },
+                    {
+                        id: 3,
+                        title: "User 04 - Waakdienst Coverage",
+                        start: "2025-08-17T00:00:00+02:00", 
+                        end: "2025-08-18T00:00:00+02:00",
+                        user: { name: "User 04" },
+                        shift: { template_name: "Waakdienst Coverage" },
+                        assignment_type: "waakdienst"
+                    },
+                    {
+                        id: 4,
+                        title: "User 03 - Incident Planning",
+                        start: "2025-08-05T08:00:00+02:00",
+                        end: "2025-08-05T17:00:00+02:00", 
+                        user: { name: "User 03" },
+                        shift: { template_name: "Incident Planning" },
+                        assignment_type: "incident"
+                    }
+                ],
+                total_events: 4
+            };
+            
+            displayCalendar(testData);
+            hideLoading();
+        }
+        
+        function displayCalendar(data) {
+            // Update stats
+            const waakdienstCount = data.events.filter(e => e.assignment_type === 'waakdienst').length;
+            const incidentCount = data.events.filter(e => e.assignment_type === 'incident').length;
+            const sundayCount = data.events.filter(e => {
+                const date = new Date(e.start);
+                return date.getDay() === 0; // Sunday is 0
+            }).length;
+            
+            document.getElementById('totalEvents').textContent = data.total_events;
+            document.getElementById('waakdienstEvents').textContent = waakdienstCount;
+            document.getElementById('incidentEvents').textContent = incidentCount;
+            document.getElementById('sundayEvents').textContent = sundayCount;
+            
+            // Group events by date
+            const eventsByDate = {};
+            data.events.forEach(event => {
+                const date = event.start.split('T')[0]; // Get date part
+                if (!eventsByDate[date]) {
+                    eventsByDate[date] = [];
+                }
+                eventsByDate[date].push(event);
+            });
+            
+            // Generate calendar grid
+            const tbody = document.getElementById('calendar-body');
+            tbody.innerHTML = '';
+            
+            data.calendar_grid.forEach(week => {
+                const row = document.createElement('tr');
+                
+                week.forEach((day, dayIndex) => {
+                    const cell = document.createElement('td');
+                    
+                    if (day === 0) {
+                        cell.classList.add('other-month');
+                    } else {
+                        const dateKey = `${data.year}-${String(data.month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        
+                        // Mark Sunday cells
+                        if (dayIndex === 6) {
+                            cell.classList.add('sunday');
+                        }
+                        
+                        // Add date number
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'date-number';
+                        dateDiv.textContent = day;
+                        cell.appendChild(dateDiv);
+                        
+                        // Add events for this date
+                        if (eventsByDate[dateKey]) {
+                            eventsByDate[dateKey].forEach(event => {
+                                const eventDiv = document.createElement('div');
+                                eventDiv.className = `event ${event.assignment_type}`;
+                                
+                                const title = document.createElement('span');
+                                title.className = 'event-title';
+                                title.textContent = event.user.name;
+                                eventDiv.appendChild(title);
+                                
+                                const time = document.createElement('span');
+                                time.className = 'event-time';
+                                const startTime = new Date(event.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                                const endTime = new Date(event.end).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                                time.textContent = `${startTime}-${endTime}`;
+                                eventDiv.appendChild(time);
+                                
+                                cell.appendChild(eventDiv);
+                            });
+                        }
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('calendar-content').style.display = 'block';
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('calendar-content').style.display = 'none';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function showError() {
+            document.getElementById('error').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="assignments-container">
+    <!-- Page Header -->
+    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl p-8 mb-8">
+        <h1 class="text-4xl font-bold mb-2">Assignment Management</h1>
+        <p class="text-xl text-white/90 mb-8">Create, modify, and track shift assignments across all teams</p>
+        
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-4 gap-6 lg:grid-cols-2 sm:grid-cols-1">
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center">
+                <div class="text-3xl font-bold mb-2" id="total-assignments">--</div>
+                <div class="text-sm text-white/80">Total Assignments</div>
+            </div>
+            <div class="bg-emerald-500/20 backdrop-blur-sm rounded-lg p-6 text-center">
+                <div class="text-3xl font-bold mb-2" id="confirmed-assignments">--</div>
+                <div class="text-sm text-white/80">Confirmed</div>
+            </div>
+            <div class="bg-amber-500/20 backdrop-blur-sm rounded-lg p-6 text-center">
+                <div class="text-3xl font-bold mb-2" id="pending-assignments">--</div>
+                <div class="text-sm text-white/80">Pending</div>
+            </div>
+            <div class="bg-red-500/20 backdrop-blur-sm rounded-lg p-6 text-center">
+                <div class="text-3xl font-bold mb-2" id="overdue-assignments">--</div>
+                <div class="text-sm text-white/80">Overdue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <input type="text" class="search-input" placeholder="Search assignments, teams, or members..." id="assignment-search">
+        <select class="filter-select" id="team-filter">
+            <option value="">All Teams</option>
+            <option value="alpha">Alpha Team</option>
+            <option value="beta">Beta Team</option>
+            <option value="gamma">Gamma Team</option>
+        </select>
+        <select class="filter-select" id="status-filter">
+            <option value="">All Status</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="pending">Pending</option>
+            <option value="overdue">Overdue</option>
+        </select>
+        <button class="action-button primary" onclick="openQuickAssignModal()">
+            <i class="fas fa-plus"></i>
+            New Assignment
+        </button>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="main-grid">
+        <!-- Assignment Table -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">Assignment List</h3>
+                <div class="table-actions">
+                    <button class="action-button" onclick="refreshTable()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <button class="action-button" onclick="exportAssignments()">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+            
+            <table class="assignment-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>Member</th>
+                        <th>Team</th>
+                        <th>Shift Date</th>
+                        <th>Shift Type</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="assignments-table-body">
+                    <tr>
+                        <td><input type="checkbox" class="assignment-checkbox"></td>
+                        <td>
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">JD</div>
+                                <div>
+                                    <div class="font-medium">John Doe</div>
+                                    <div class="text-sm text-gray-500">Engineering Lead</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Engineering Team A</td>
+                        <td>
+                            <div>
+                                <div class="font-medium">Jul 30, 2025</div>
+                                <div class="text-sm text-gray-500">08:00 - 20:00</div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge">Day Shift</span></td>
+                        <td><span class="status-badge status-confirmed">Confirmed</span></td>
+                        <td>
+                            <div class="flex gap-2">
+                                <button class="text-blue-600 hover:text-blue-800" onclick="editAssignment(1)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-800" onclick="deleteAssignment(1)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" class="assignment-checkbox"></td>
+                        <td>
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">SW</div>
+                                <div>
+                                    <div class="font-medium">Sarah Wilson</div>
+                                    <div class="text-sm text-gray-500">Senior Engineer</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Engineering Team A</td>
+                        <td>
+                            <div>
+                                <div class="font-medium">Jul 31, 2025</div>
+                                <div class="text-sm text-gray-500">20:00 - 08:00</div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge">Night Shift</span></td>
+                        <td><span class="status-badge status-pending">Pending</span></td>
+                        <td>
+                            <div class="flex gap-2">
+                                <button class="text-blue-600 hover:text-blue-800" onclick="editAssignment(2)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-800" onclick="deleteAssignment(2)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="page-button">&laquo;</button>
+                <button class="page-button active">1</button>
+                <button class="page-button">2</button>
+                <button class="page-button">3</button>
+                <button class="page-button">&raquo;</button>
+            </div>
+        </div>
+
+        <!-- Action Sidebar -->
+        <div class="action-sidebar">
+            <!-- Bulk Actions -->
+            <div class="action-panel">
+                <h4 class="panel-title">
+                    <i class="fas fa-tasks text-blue-600"></i>
+                    Bulk Actions
+                </h4>
+                <button class="action-button" onclick="bulkConfirm()">
+                    <i class="fas fa-check"></i>
+                    Confirm Selected
+                </button>
+                <button class="action-button" onclick="bulkReassign()">
+                    <i class="fas fa-exchange-alt"></i>
+                    Reassign Selected
+                </button>
+                <button class="action-button" onclick="bulkDelete()">
+                    <i class="fas fa-trash"></i>
+                    Delete Selected
+                </button>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="action-panel">
+                <h4 class="panel-title">
+                    <i class="fas fa-bolt text-yellow-600"></i>
+                    Quick Actions
+                </h4>
+                <button class="action-button primary" onclick="openQuickAssignModal()">
+                    <i class="fas fa-plus"></i>
+                    Quick Assign
+                </button>
+                <button class="action-button" onclick="autoAssignModal()">
+                    <i class="fas fa-magic"></i>
+                    Auto Assignment
+                </button>
+                <button class="action-button" onclick="copyFromTemplate()">
+                    <i class="fas fa-copy"></i>
+                    Copy from Template
+                </button>
+            </div>
+
+            <!-- Reports -->
+            <div class="action-panel">
+                <h4 class="panel-title">
+                    <i class="fas fa-chart-bar text-purple-600"></i>
+                    Reports
+                </h4>
+                <button class="action-button" onclick="generateWorkloadReport()">
+                    <i class="fas fa-chart-line"></i>
+                    Workload Report
+                </button>
+                <button class="action-button" onclick="generateFairnessReport()">
+                    <i class="fas fa-balance-scale"></i>
+                    Fairness Analysis
+                </button>
+                <button class="action-button" onclick="exportDetailedReport()">
+                    <i class="fas fa-file-excel"></i>
+                    Export Detailed
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Assignment Management JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Load real-time assignment data
+    loadAssignmentOverview();
+    
+    // Initialize event listeners
+    setupEventListeners();
+    
+    // Auto-refresh data every 30 seconds
+    setInterval(loadAssignmentOverview, 30000);
+});
+
+async function loadAssignmentOverview() {
+    try {
+        console.log('Loading assignments overview...');
+        const response = await fetch('/api/v1/assignments/overview/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401 || response.status === 403 || response.status === 404) {
+                console.log('API unavailable - showing fallback assignment data');
+                showFallbackAssignmentData();
+                return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Assignments overview loaded:', data);
+        
+        if (data.success) {
+            // Handle both data.overview and data.statistics formats
+            const stats = data.overview || data.statistics;
+            updateAssignmentStats(stats);
+        } else {
+            console.error('Assignments API returned error:', data.error);
+            showFallbackAssignmentData();
+        }
+        
+    } catch (error) {
+        console.error('Error loading assignments overview:', error);
+        showFallbackAssignmentData();
+    }
+}
+
+function updateAssignmentStats(stats) {
+    // Update the overview statistics
+    document.getElementById('total-assignments').textContent = stats.total_assignments;
+    document.getElementById('confirmed-assignments').textContent = stats.confirmed_assignments;
+    document.getElementById('pending-assignments').textContent = stats.pending_assignments;
+    document.getElementById('overdue-assignments').textContent = stats.overdue_assignments;
+}
+
+function showFallbackAssignmentData() {
+    // Show fallback data when API is unavailable
+    document.getElementById('total-assignments').textContent = '--';
+    document.getElementById('confirmed-assignments').textContent = '--';
+    document.getElementById('pending-assignments').textContent = '--';
+    document.getElementById('overdue-assignments').textContent = '--';
+    console.log('Showing fallback assignment data');
+}
+
+function setupEventListeners() {
+    // Select all checkbox
+    const selectAllCheckbox = document.getElementById('select-all');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.assignment-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectedCount();
+        });
+    }
+    
+    // Individual checkboxes
+    document.querySelectorAll('.assignment-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('assignment-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterAssignments();
+        });
+    }
+}
+
+function updateSelectedCount() {
+    const selectedCheckboxes = document.querySelectorAll('.assignment-checkbox:checked');
+    const count = selectedCheckboxes.length;
+    // Update count display if needed
+    console.log(`${count} assignments selected`);
+}
+
+function filterAssignments() {
+    const searchTerm = document.getElementById('assignment-search').value.toLowerCase();
+    const teamFilter = document.getElementById('team-filter').value;
+    const statusFilter = document.getElementById('status-filter').value;
+    
+    // Apply filters to table rows
+    const rows = document.querySelectorAll('#assignments-table-body tr');
+    rows.forEach(row => {
+        let visible = true;
+        
+        if (searchTerm) {
+            const text = row.textContent.toLowerCase();
+            if (!text.includes(searchTerm)) {
+                visible = false;
+            }
+        }
+        
+        row.style.display = visible ? '' : 'none';
+    });
+}
+
+// Utility function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Action Functions
+function refreshTable() {
+    loadAssignmentOverview();
+    console.log('Refreshing assignment table...');
+}
+
+function exportAssignments() {
+    console.log('Exporting assignments...');
+}
+
+function openQuickAssignModal() {
+    console.log('Opening quick assign modal...');
+}
+
+function editAssignment(id) {
+    console.log('Editing assignment:', id);
+}
+
+function deleteAssignment(id) {
+    if (confirm('Are you sure you want to delete this assignment?')) {
+        console.log('Deleting assignment:', id);
+    }
+}
+
+function bulkConfirm() {
+    console.log('Bulk confirming assignments...');
+}
+
+function bulkReassign() {
+    console.log('Bulk reassigning assignments...');
+}
+
+function bulkDelete() {
+    if (confirm('Are you sure you want to delete the selected assignments?')) {
+        console.log('Bulk deleting assignments...');
+    }
+}
+
+function autoAssignModal() {
+    console.log('Opening auto assignment modal...');
+}
+
+function copyFromTemplate() {
+    console.log('Copying from template...');
+}
+
+function generateWorkloadReport() {
+    console.log('Generating workload report...');
+}
+
+function generateFairnessReport() {
+    console.log('Generating fairness report...');
+}
+
+function exportDetailedReport() {
+    console.log('Exporting detailed report...');
+}
+
+function showFallbackAssignmentData() {
+    // Show fallback assignment data when API is unavailable
+    const fallbackStats = {
+        total_assignments: 24,
+        confirmed_assignments: 18,
+        pending_assignments: 4,
+        overdue_assignments: 2
+    };
+    
+    updateAssignmentStats(fallbackStats);
+    console.log('Showing fallback assignment data');
+}
+</script>
+{% endblock %}

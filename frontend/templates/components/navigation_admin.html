@@ -1,0 +1,211 @@
+<!-- Admin Navigation - Full System Access -->
+<div class="h-full flex flex-col gap-y-5 overflow-y-auto theme-admin px-6 pb-4 shadow-2xl flex-1">
+    <!-- Logo/Brand -->
+    <div class="flex h-20 shrink-0 items-center justify-between border-b border-role pb-4 pt-4">
+        <div class="sidebar-brand">
+            <h1 class="text-white text-xl font-bold flex items-center">
+                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center mr-3 lg:mr-3">
+                    <i class="fas fa-crown text-white"></i>
+                </div>
+                <span class="sidebar-text">TPS Admin</span>
+            </h1>
+            <p class="text-role-accent text-xs mt-1 sidebar-text">System Administrator</p>
+        </div>
+        <!-- Theme Toggle & Notifications -->
+        <div class="flex items-center gap-2 sidebar-text">
+            <!-- Dark/Light Mode Toggle -->
+            <button id="themeToggle" class="text-role-accent hover:text-white transition-colors p-2 rounded-lg hover:bg-role-hover" title="Toggle Theme">
+                <i class="fas fa-moon text-lg" id="themeIcon"></i>
+            </button>
+            <!-- Notifications Bell -->
+            <button class="text-role-accent hover:text-white transition-colors p-2 rounded-lg hover:bg-role-hover">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="absolute -top-1 -right-1 bg-yellow-500 text-red-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">!</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Team Switcher -->
+    <div class="flex items-center justify-between">
+        <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+            System Overview
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1">
+        <ul role="list" class="-mx-2 space-y-1">
+            <!-- Dashboard -->
+            <li>
+                <a href="{% url 'frontend:dashboard' %}" 
+                   class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                    <i class="fas fa-tachometer-alt text-role-accent group-hover:text-white w-5 text-center"></i>
+                    <span class="sidebar-text">Admin Dashboard</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- System Management Section -->
+        <div class="mt-8">
+            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+                System Management
+            </div>
+            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                <li>
+                    <a href="/admin/" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-database text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">Django Admin</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="alert('System Settings - Coming Soon')" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-sliders-h text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">System Settings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="alert('Audit Logs - Coming Soon')" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-file-alt text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">Audit Logs</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- User Management Section -->
+        <div class="mt-8">
+            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+                User Management
+            </div>
+            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                <li>
+                    <a href="/admin/accounts/user/" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-user-edit text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">Manage Users</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="alert('Role Assignment - Coming Soon')" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-user-tag text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">Role Assignment</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Team Management Section -->
+        <div class="mt-8">
+            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+                Team Management
+            </div>
+            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                <li>
+                    <a href="{% url 'frontend:teams' %}" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-users text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">All Teams</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="alert('Create Team - Coming Soon')" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-plus-circle text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">Create Team</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Planning System Section -->
+        <div class="mt-8">
+            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+                Planning System
+            </div>
+            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                <li>
+                    <a href="{% url 'frontend:planning' %}" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-calendar-plus text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">Master Planning</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="alert('Auto Planning - Coming Soon')" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-magic text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">Auto Planning</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="mt-8">
+            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+                Analytics & Reports
+            </div>
+            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                <li>
+                    <a href="{% url 'frontend:analytics' %}" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-chart-line text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">System Analytics</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="alert('Performance Reports - Coming Soon')" 
+                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <i class="fas fa-file-chart-line text-role-accent group-hover:text-white w-5 text-center"></i>
+                        <span class="sidebar-text">Performance Reports</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- User Profile Section -->
+    <div class="border-t border-role mt-auto pt-6">
+        <div class="relative">
+            <button 
+                class="w-full flex items-center justify-between p-3 hover:bg-role-hover rounded-lg transition-colors"
+                data-toggle="dropdown" 
+                data-target="#userProfileMenu"
+            >
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-role-hover rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-user text-white text-sm"></i>
+                    </div>
+                    <div class="sidebar-text">
+                        <div class="text-sm font-medium text-white">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="text-xs text-role-accent">Administrator</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-up text-role-accent"></i>
+            </button>
+            
+            <!-- User Menu -->
+            <div id="userProfileMenu" class="dropdown-menu hidden absolute bottom-full left-0 right-0 mb-2 bg-role-hover rounded-lg shadow-lg border border-role">
+                <div class="p-2">
+                    <a href="{% url 'frontend:profile' %}" class="block px-4 py-2 text-sm hover:bg-role-hover rounded-lg text-role hover:text-white">
+                        <i class="fas fa-user-cog mr-2"></i>Profile Settings
+                    </a>
+                    <a href="#" onclick="alert('System Preferences - Coming Soon')" class="block px-4 py-2 text-sm hover:bg-role-hover rounded-lg text-role hover:text-white">
+                        <i class="fas fa-cog mr-2"></i>Preferences
+                    </a>
+                    <div class="border-t border-role my-2"></div>
+                    <form method="post" action="{% url 'frontend:logout' %}" class="block">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-role-hover rounded-lg text-role-accent">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

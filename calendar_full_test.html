@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Debug - Full Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="h-screen flex flex-col bg-white">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 flex-shrink-0">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-8">
+                    <h1 class="text-2xl font-bold">Team Schedule</h1>
+                    <div class="flex gap-6 text-sm">
+                        <div class="text-center">
+                            <div class="font-semibold" id="total-assignments">-</div>
+                            <div class="opacity-80">Assignments</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="font-semibold" id="active-users">-</div>
+                            <div class="opacity-80">Active Users</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 py-2 font-semibold" id="current-month">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="flex-1 flex flex-col min-h-0">
+            <!-- Header Row -->
+            <div class="flex bg-gray-100 border-b border-gray-200">
+                <div class="w-60 p-3 border-r border-gray-200 flex-shrink-0">
+                    <h3 class="font-semibold text-gray-900 text-sm">Team Members</h3>
+                </div>
+                <div class="flex-1 flex" id="days-header">
+                    <div class="flex-1 p-3 text-gray-500 text-center text-sm">Loading days...</div>
+                </div>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="flex-1 flex min-h-0">
+                <!-- Users Column -->
+                <div class="w-60 border-r border-gray-200 bg-gray-50 flex-shrink-0 flex flex-col">
+                    <div id="users-list" class="flex-1 flex flex-col">
+                        <div class="flex-1 flex items-center justify-center text-gray-500 text-sm">Loading users...</div>
+                    </div>
+                </div>
+                
+                <!-- Assignments Grid -->
+                <div class="flex-1 flex flex-col min-h-0">
+                    <div id="assignments-grid" class="flex-1 flex flex-col">
+                        <div class="flex-1 flex items-center justify-center text-gray-500 text-sm">Loading assignments...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Panel -->
+    <div class="fixed bottom-4 right-4 bg-white border rounded-lg p-4 shadow-lg w-80">
+        <h3 class="font-bold mb-2">Debug Console</h3>
+        <div id="debug-console" class="text-xs font-mono bg-gray-100 p-2 rounded h-32 overflow-y-auto"></div>
+        <div class="mt-2 flex gap-2">
+            <button onclick="testLoad()" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Test Load</button>
+            <button onclick="clearDebug()" class="bg-gray-500 text-white px-3 py-1 rounded text-sm">Clear</button>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentDate = new Date();
+        let currentTeamId = 4; // Team 7
+        let calendarData = null;
+        let isLoading = false;
+
+        function debug(message) {
+            const console_el = document.getElementById('debug-console');
+            const timestamp = new Date().toLocaleTimeString();
+            console_el.innerHTML += `[${timestamp}] ${message}\n`;
+            console_el.scrollTop = console_el.scrollHeight;
+            console.log(message);
+        }
+
+        function clearDebug() {
+            document.getElementById('debug-console').innerHTML = '';
+        }
+
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                   document.querySelector('meta[name="csrf-token"]')?.content || '';
+        }
+
+        async function testLoad() {
+            debug('🚀 Starting calendar load test...');
+            
+            if (!currentTeamId) {
+                debug('❌ No team ID available');
+                return;
+            }
+            
+            isLoading = true;
+            debug(`📅 Loading calendar data for team ID: ${currentTeamId}`);
+            
+            try {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth() + 1;
+                const today = new Date().toISOString().split('T')[0];
+                
+                const url = `/api/v1/calendar/${currentTeamId}/month/?year=${year}&month=${month}&start_date=${today}&extend_to_next_month=true`;
+                debug(`🔗 Fetching: ${url}`);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                debug(`📡 Response: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    debug(`❌ Error response: ${errorText}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                calendarData = await response.json();
+                debug(`✅ Data loaded! Users: ${calendarData.users?.length}, Days: ${calendarData.days?.length}`);
+                
+                renderCalendar();
+                debug('🎉 Calendar rendered successfully!');
+                
+            } catch (error) {
+                debug(`❌ Error: ${error.message}`);
+                renderFallback();
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        function renderCalendar() {
+            if (!calendarData) {
+                debug('❌ No calendar data to render');
+                return;
+            }
+            
+            debug('🎨 Rendering calendar...');
+            
+            // Update header
+            document.getElementById('current-month').textContent = `${calendarData.month_name} ${calendarData.year}`;
+            
+            // Update stats
+            const totalAssignments = calendarData.users.reduce((total, user) => 
+                total + Object.values(user.assignments).flat().length, 0
+            );
+            document.getElementById('total-assignments').textContent = totalAssignments;
+            document.getElementById('active-users').textContent = calendarData.users.length;
+            
+            // Render users
+            renderUsers();
+            renderDaysHeader();
+            renderAssignmentsGrid();
+        }
+
+        function renderUsers() {
+            const usersList = document.getElementById('users-list');
+            usersList.innerHTML = '';
+            
+            if (!calendarData.users || calendarData.users.length === 0) {
+                usersList.innerHTML = '<div class="p-4 text-gray-500">No users found</div>';
+                return;
+            }
+            
+            const userHeight = `calc(100% / ${calendarData.users.length})`;
+            
+            calendarData.users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'p-3 border-b border-gray-200 flex items-center';
+                userDiv.style.height = userHeight;
+                userDiv.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                            ${user.initials}
+                        </div>
+                        <div class="font-medium text-sm truncate">${user.name}</div>
+                    </div>
+                `;
+                usersList.appendChild(userDiv);
+            });
+        }
+
+        function renderDaysHeader() {
+            const daysHeader = document.getElementById('days-header');
+            daysHeader.innerHTML = '';
+            
+            calendarData.days.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'flex-1 p-3 border-r border-gray-200 text-center';
+                dayDiv.innerHTML = `
+                    <div class="text-xs text-gray-600 truncate">${day.day_name}</div>
+                    <div class="text-sm font-semibold">${day.day_number}</div>
+                `;
+                daysHeader.appendChild(dayDiv);
+            });
+        }
+
+        function renderAssignmentsGrid() {
+            const assignmentsGrid = document.getElementById('assignments-grid');
+            assignmentsGrid.innerHTML = '';
+            
+            if (!calendarData.users || calendarData.users.length === 0) {
+                assignmentsGrid.innerHTML = '<div class="flex-1 flex items-center justify-center text-gray-500">No assignments to display</div>';
+                return;
+            }
+            
+            const userHeight = `calc(100% / ${calendarData.users.length})`;
+            
+            calendarData.users.forEach(user => {
+                const userRow = document.createElement('div');
+                userRow.className = 'flex border-b border-gray-200 min-h-0';
+                userRow.style.height = userHeight;
+                
+                calendarData.days.forEach(day => {
+                    const cell = document.createElement('div');
+                    cell.className = 'flex-1 p-1 border-r border-gray-200 hover:bg-gray-50 flex flex-col gap-1 min-w-0 overflow-hidden';
+                    
+                    const userAssignments = user.assignments[day.date] || [];
+                    
+                    if (userAssignments.length > 0) {
+                        const assignment = userAssignments[0];
+                        const assignmentBlock = document.createElement('div');
+                        assignmentBlock.className = 'bg-blue-500 text-white text-xs p-1 rounded truncate';
+                        assignmentBlock.textContent = `${assignment.start_time}-${assignment.end_time}`;
+                        cell.appendChild(assignmentBlock);
+                        
+                        if (userAssignments.length > 1) {
+                            const moreDiv = document.createElement('div');
+                            moreDiv.className = 'text-xs text-gray-500';
+                            moreDiv.textContent = `+${userAssignments.length - 1} more`;
+                            cell.appendChild(moreDiv);
+                        }
+                    }
+                    
+                    userRow.appendChild(cell);
+                });
+                
+                assignmentsGrid.appendChild(userRow);
+            });
+        }
+
+        function renderFallback() {
+            document.getElementById('current-month').textContent = 'Schedule (Error)';
+            document.getElementById('users-list').innerHTML = '<div class="p-4 text-red-500">Failed to load users</div>';
+            document.getElementById('days-header').innerHTML = '<div class="p-4 text-red-500">Failed to load days</div>';
+            document.getElementById('assignments-grid').innerHTML = '<div class="p-4 text-red-500">Failed to load assignments</div>';
+        }
+
+        // Auto-test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            debug('🎯 Page loaded, starting auto-test...');
+            testLoad();
+        });
+    </script>
+</body>
+</html>

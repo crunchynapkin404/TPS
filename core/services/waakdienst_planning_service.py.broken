@@ -1,0 +1,416 @@
+"""
+Waakdienst Planning Service for TPS V1.4  
+Wednesday-to-Wednesday cycles, fairness scoring, conflict detection
+Based on V1.3.1 enhanced_waakdienst_service.py
+"""
+
+import logging
+from datetime import date, time, timedelta
+from typing import List, Dict, Optional, Tuple
+
+from django.utils import timezone
+
+from apps.accounts.models import User
+from apps.assignments.models import Assignment
+from apps.scheduling.models import ShiftInstance, ShiftTemplate
+from apps.leave_management.models import LeaveRequest
+from apps.teams.models import Team, TeamMembership
+from .fairness_service import FairnessService
+from .data_structures import PlanningResult, AssignmentResult, AssignmentCandidate
+
+logger = logging.getLogger(__name__)
+
+
+class WaakdienstPlanningService:
+    """
+    Enhanced waakdienst planning with Wednesday-to-Wednesday cycles
+    Implements fairness scoring and conflict detection
+    Based on V1.3.1 enhanced waakdienst service
+    """
+    
+    def __init__(self, team: Team):
+        self.team = team
+        self.fairness_service = FairnessService(team)
+        
+        # TPS business rules for waakdienst
+        self.max_weeks_per_year = 8
+        self.required_gap_days = 14
+        self.hours_per_week = 168  # Full week coverage
+        
+        # Get qualified engineers
+        self.qualified_engineers = self._get_qualified_engineers()
+        
+        logger.info(f"Initialized Waakdienst Planning for {team.name}")
+        logger.info(f"Qualified engineers: {len(self.qualified_engineers)}")
+    
+    def _get_qualified_engineers(self) -> List[User]:
+        """Get engineers qualified for waakdienst with enhanced criteria"""
+        team_member_ids = TeamMembership.objects.filter(
+            team=self.team, is_active=True
+        ).values_list('user_id', flat=True)
+        
+        # Filter for waakdienst qualifications
+        engineers = User.objects.filter(
+            id__in=team_member_ids,
+            is_active=True
+        ).order_by('ytd_waakdienst_weeks', 'last_name')
+        
+        # Additional skill validation
+        qualified_engineers = []
+        for engineer in engineers:
+            # Check if engineer has technical skills for waakdienst (accept any technical skills)
+            user_skills = engineer.user_skills.filter(
+                proficiency_level__in=['intermediate', 'advanced', 'expert']
+            )
+            
+            # For waakdienst, accept engineers with at least 2 intermediate+ skills
+            if user_skills.count() >= 2:
+                qualified_engineers.append(engineer)
+                
+        return qualified_engineers
+    
+    def find_wednesday_weeks(self, start_date: date, num_weeks: int) -> List[Tuple[date, date]]:
+        """
+        Find Wednesday-to-Wednesday week periods
+        Waakdienst runs from Wednesday to next Wednesday
+        """
+        weeks = []
+        
+        # Find the first Wednesday on or after start_date
+        days_until_wednesday = (2 - start_date.weekday()) % 7  # Wednesday = 2
+        if days_until_wednesday == 0 and start_date.weekday() == 2:
+            first_wednesday = start_date
+        else:
+            first_wednesday = start_date + timedelta(days=days_until_wednesday)
+        
+        current_wednesday = first_wednesday
+        
+        for week_num in range(num_weeks):
+            week_start = current_wednesday
+            week_end = current_wednesday + timedelta(days=6)  # Wednesday to Tuesday
+            weeks.append((week_start, week_end))
+            current_wednesday += timedelta(days=7)
+            
+        return weeks
+    
+    def generate_waakdienst_planning(
+        self, 
+        start_date: date, 
+        weeks: int,
+        algorithm: str = "balanced"
+    ) -> PlanningResult:
+        """
+        Generate waakdienst planning for specified period
+        Returns complete planning with assignments and handovers
+        """
+        try:
+            logger.info(f"Generating waakdienst planning: {start_date} for {weeks} weeks")
+            
+            # Get Wednesday-to-Wednesday periods
+            week_periods = self.find_wednesday_weeks(start_date, weeks)
+            
+            # Generate assignments for each week
+            assignments = []
+            conflicts = []
+            warnings = []
+            
+            for week_start, week_end in week_periods:
+                # Get waakdienst shift template
+                waakdienst_template = ShiftTemplate.objects.filter(
+                    category__name='WAAKDIENST',
+                    name__icontains='waakdienst on-call'
+                ).first()
+                
+                if not waakdienst_template:
+                    conflicts.append("No waakdienst shift template found")
+                    continue
+                
+                # Create shift instance for this week
+                from datetime import datetime, time as dt_time
+                shift_instance = ShiftInstance.objects.create(
+                    template=waakdienst_template,
+                    date=week_start,
+                    start_datetime=datetime.combine(week_start, waakdienst_template.start_time),
+                    end_datetime=datetime.combine(week_end, waakdienst_template.end_time),
+                    status='planned'
+                )
+                
+                # Find best candidate using fairness algorithm
+                assignment_result = self._assign_waakdienst_week(
+                    shift_instance, week_start, week_end, algorithm
+                )
+                
+                if assignment_result.success and assignment_result.assignment_id:
+                    assignments.append(assignment_result)
+                    
+                    # Create handover shifts for Wednesday transitions
+                    handover_assignments = self._create_handover_shifts(
+                        week_start, assignment_result.assignment_id
+                    )
+                    assignments.extend(handover_assignments)
+                else:
+                    conflicts.extend(assignment_result.conflicts or [])
+            
+            # Generate planning summary
+            success = len(conflicts) == 0
+            message = f"Generated {len(assignments)} waakdienst assignments"
+            if conflicts:
+                message += f" with {len(conflicts)} conflicts"
+                
+            return PlanningResult(
+                success=success,
+                message=message,
+                data={
+                    'assignments': assignments,
+                    'week_periods': week_periods,
+                    'algorithm_used': algorithm,
+                    'total_weeks': weeks
+                },
+                errors=conflicts,
+                warnings=warnings,
+                metadata={
+                    'service': 'waakdienst_planning',
+                    'team_id': self.team.id,
+                    'qualified_engineers': len(self.qualified_engineers)
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Waakdienst planning failed: {str(e)}")
+            return PlanningResult(
+                success=False,
+                message=f"Planning failed: {str(e)}",
+                data={},
+                errors=[str(e)]
+            )
+    
+    def _assign_waakdienst_week(
+        self, 
+        shift_instance: ShiftInstance,
+        week_start: date,
+        week_end: date,
+        algorithm: str
+    ) -> AssignmentResult:
+        """
+        Assign waakdienst for a specific week using fairness algorithm
+        """
+        try:
+            # Get candidate rankings
+            rankings = self.fairness_service.get_fairness_ranking(
+                shift_instance, week_start, week_end, self.qualified_engineers
+            )
+            
+            # Apply algorithm-specific selection
+            if algorithm == "balanced":
+                selected_candidate = self._select_balanced_candidate(rankings)
+            elif algorithm == "sequential":
+                selected_candidate = self._select_sequential_candidate(rankings, week_start)
+            else:  # custom
+                selected_candidate = self._select_custom_candidate(rankings, shift_instance)
+            
+            if not selected_candidate:
+                return AssignmentResult(
+                    success=False,
+                    message="No suitable candidate found",
+                    conflicts=["No engineers available for assignment"]
+                )
+            
+            # Validate assignment
+            user = selected_candidate['user']
+            validation_errors = self.fairness_service.validate_assignment_limits(
+                user, shift_instance.template
+            )
+            
+            if validation_errors:
+                return AssignmentResult(
+                    success=False,
+                    message="Assignment validation failed",
+                    conflicts=validation_errors
+                )
+            
+            # Create assignment
+            assignment = Assignment.objects.create(
+                user=user,
+                shift=shift_instance,
+                assigned_by=None,  # System assignment
+                assigned_at=timezone.now(),notes=f"Auto-assigned via {algorithm} algorithm"
+            )
+            
+            # Update user YTD tracking
+            user.ytd_waakdienst_weeks = (user.ytd_waakdienst_weeks or 0) + 1
+            user.save(update_fields=['ytd_waakdienst_weeks'])
+            
+            logger.info(f"Assigned waakdienst week {week_start} to {user.get_full_name()}")
+            
+            return AssignmentResult(
+                success=True,
+                message=f"Assigned to {user.get_full_name()}",
+                assignment_id=assignment.id
+            )
+            
+        except Exception as e:
+            logger.error(f"Waakdienst assignment failed: {str(e)}")
+            return AssignmentResult(
+                success=False,
+                message=f"Assignment failed: {str(e)}",
+                conflicts=[str(e)]
+            )
+    
+    def _select_balanced_candidate(self, rankings: List[Dict]) -> Optional[Dict]:
+        """Select candidate using balanced fairness algorithm"""
+        if not rankings:
+            return None
+            
+        # Select the candidate with lowest fairness score (most fair)
+        return rankings[0]
+    
+    def _select_sequential_candidate(self, rankings: List[Dict], week_start: date) -> Optional[Dict]:
+        """Select candidate using sequential round-robin algorithm"""
+        if not rankings:
+            return None
+            
+        # Get last assignment to determine next in sequence
+        last_assignment = Assignment.objects.filter(
+            shift__template__category__name='WAAKDIENST',
+            shift__date__lt=week_start,
+            status__in=['confirmed', 'proposed']
+        ).order_by('-shift__date').first()
+        
+        if not last_assignment:
+            # No previous assignments, start with first qualified
+            return rankings[0]
+            
+        # Find next user in sequence
+        try:
+            last_user_index = next(
+                i for i, candidate in enumerate(rankings) 
+                if candidate['user_id'] == last_assignment.user.id
+            )
+            next_index = (last_user_index + 1) % len(rankings)
+            return rankings[next_index]
+        except (StopIteration, AttributeError):
+            # Fallback to balanced selection
+            return rankings[0]
+    
+    def _select_custom_candidate(self, rankings: List[Dict], shift_instance: ShiftInstance) -> Optional[Dict]:
+        """Select candidate using custom rule-based optimization"""
+        if not rankings:
+            return None
+            
+        # Custom logic: prefer users with specific skills or lower YTD hours
+        # For now, implement as balanced with skill preference
+        
+        # Filter for users with advanced waakdienst skills
+        advanced_candidates = [
+            candidate for candidate in rankings
+            if self._has_advanced_waakdienst_skills(candidate['user'])
+        ]
+        
+        if advanced_candidates:
+            return advanced_candidates[0]
+        else:
+            return rankings[0]
+    
+    def _has_advanced_waakdienst_skills(self, user: User) -> bool:
+        """Check if user has advanced waakdienst skills"""
+        return user.user_skills.filter(
+            skill__category__name__icontains='waakdienst',
+            proficiency_level__in=['advanced', 'expert']
+        ).exists()
+    
+    def _create_handover_shifts(self, week_start: date, primary_assignment_id: int) -> List[AssignmentResult]:
+        """
+        Create Wednesday handover shifts for smooth transitions
+        Morning handover: 08:00-09:00, Evening handover: 16:00-17:00
+        """
+        handover_assignments = []
+        
+        try:
+            # Morning handover template
+            morning_template = ShiftTemplate.objects.filter(
+                category__name='WAAKDIENST',
+                name__icontains='morning handover'
+            ).first()
+            
+            # Evening handover template  
+            evening_template = ShiftTemplate.objects.filter(
+                category__name='WAAKDIENST', 
+                name__icontains='evening handover'
+            ).first()
+            
+            if morning_template:
+                # Create morning handover shift instance
+                morning_shift = # TODO: Add proper start_datetime and end_datetime calculation
+ ShiftInstance.objects.create(
+                    template=morning_template,
+                    date=week_start,0),0),)
+                
+                # Auto-assign to same user for now (could be enhanced for handover logic)
+                primary_assignment = Assignment.objects.get(id=primary_assignment_id)
+                morning_assignment = Assignment.objects.create(
+                    user=primary_assignment.user,
+                    shift=morning_shift,
+                    assigned_by=None,
+                    assigned_at=timezone.now(),notes="Auto-assigned handover shift"
+                )
+                
+                handover_assignments.append(AssignmentResult(
+                    success=True,
+                    message=f"Morning handover assigned",
+                    assignment_id=morning_assignment.id
+                ))
+            
+            if evening_template:
+                # Create evening handover shift instance
+                evening_shift = # TODO: Add proper start_datetime and end_datetime calculation
+ ShiftInstance.objects.create(
+                    template=evening_template,
+                    date=week_start,0),0),)
+                
+                primary_assignment = Assignment.objects.get(id=primary_assignment_id)
+                evening_assignment = Assignment.objects.create(
+                    user=primary_assignment.user,
+                    shift=evening_shift,
+                    assigned_by=None,
+                    assigned_at=timezone.now(),notes="Auto-assigned handover shift"
+                )
+                
+                handover_assignments.append(AssignmentResult(
+                    success=True,
+                    message=f"Evening handover assigned",
+                    assignment_id=evening_assignment.id
+                ))
+                
+        except Exception as e:
+            logger.error(f"Handover shift creation failed: {str(e)}")
+            handover_assignments.append(AssignmentResult(
+                success=False,
+                message=f"Handover creation failed: {str(e)}",
+                conflicts=[str(e)]
+            ))
+        
+        return handover_assignments
+    
+    def validate_waakdienst_prerequisites(self) -> List[str]:
+        """Validate prerequisites for waakdienst planning"""
+        errors = []
+        
+        if len(self.qualified_engineers) < 3:
+            errors.append(f"Insufficient qualified engineers: {len(self.qualified_engineers)} (minimum 3)")
+            
+        # Check for required shift templates
+        required_templates = [
+            'waakdienst on-call',
+            'waakdienst morning handover', 
+            'waakdienst evening handover'
+        ]
+        
+        for template_name in required_templates:
+            if not ShiftTemplate.objects.filter(
+                category__name='WAAKDIENST',
+                name__icontains=template_name,
+                is_active=True
+            ).exists():
+                errors.append(f"Missing waakdienst template: {template_name}")
+        
+        return errors

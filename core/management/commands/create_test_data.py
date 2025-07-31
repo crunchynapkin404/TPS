@@ -297,8 +297,8 @@ class Command(BaseCommand):
             if current_date.weekday() >= 5:  # Saturday or Sunday
                 weekend_template = templates.filter(name='Weekend Waakdienst').first()
                 if weekend_template:
-                    start_datetime = datetime.combine(current_date, weekend_template.start_time)
-                    end_datetime = datetime.combine(current_date, weekend_template.end_time)
+                    start_datetime = timezone.make_aware(datetime.combine(current_date, weekend_template.start_time))
+                    end_datetime = timezone.make_aware(datetime.combine(current_date, weekend_template.end_time))
                     
                     ShiftInstance.objects.get_or_create(
                         template=weekend_template,
@@ -315,8 +315,8 @@ class Command(BaseCommand):
             if current_date.weekday() < 5:  # Monday to Friday
                 incident_template = templates.filter(name='Incident Response').first()
                 if incident_template:
-                    start_datetime = datetime.combine(current_date, incident_template.start_time)
-                    end_datetime = datetime.combine(current_date, incident_template.end_time)
+                    start_datetime = timezone.make_aware(datetime.combine(current_date, incident_template.start_time))
+                    end_datetime = timezone.make_aware(datetime.combine(current_date, incident_template.end_time))
                     
                     ShiftInstance.objects.get_or_create(
                         template=incident_template,

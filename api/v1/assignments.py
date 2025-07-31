@@ -417,27 +417,27 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             # Base queryset for user's assignments - simplified for now
             user_assignments = Assignment.objects.all()[:100]  # Limit for performance
             
-            # Calculate statistics
+            # Calculate statistics from real data
             total_assignments = user_assignments.count()
-            confirmed_assignments = len([a for a in user_assignments if hasattr(a, 'status') and a.status == 'confirmed'])
-            pending_assignments = len([a for a in user_assignments if hasattr(a, 'status') and a.status in ['pending', 'tentative']])
-            overdue_assignments = max(0, total_assignments - confirmed_assignments - pending_assignments)
+            confirmed_assignments = user_assignments.filter(status='confirmed').count()
+            pending_assignments = user_assignments.filter(status__in=['pending_confirmation', 'tentative']).count()
             
-            # Fallback to mock data if no real assignments
-            if total_assignments == 0:
-                total_assignments = 24
-                confirmed_assignments = 18
-                pending_assignments = 4
-                overdue_assignments = 2
+            # Calculate overdue assignments (assignments past their shift date that aren't completed)
+            today = timezone.now().date()
+            overdue_assignments = user_assignments.filter(
+                shift__start_datetime__date__lt=today,
+                status__in=['pending_confirmation', 'tentative']
+            ).count()
+            
+            # Don't fallback to mock data - return actual values even if zero
+            completion_rate = round((confirmed_assignments / total_assignments * 100) if total_assignments > 0 else 0, 1)
             
             overview_data = {
                 'total_assignments': total_assignments,
                 'confirmed_assignments': confirmed_assignments,
                 'pending_assignments': pending_assignments,
                 'overdue_assignments': overdue_assignments,
-                'completion_rate': round(
-                    (confirmed_assignments / total_assignments * 100) if total_assignments > 0 else 0, 1
-                )
+                'completion_rate': completion_rate
             }
             
             return Response({
@@ -446,17 +446,11 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             })
             
         except Exception as e:
-            # Return fallback data on any error
+            # Return error without mock data fallback
             return Response({
-                'success': True,
-                'overview': {
-                    'total_assignments': 24,
-                    'confirmed_assignments': 18,
-                    'pending_assignments': 4,
-                    'overdue_assignments': 2,
-                    'completion_rate': 75.0
-                }
-            })
+                'success': False,
+                'error': f'Failed to fetch assignments overview: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SwapRequestViewSet(viewsets.ModelViewSet):

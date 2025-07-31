@@ -105,11 +105,11 @@
                 <ul role="list" class="-mx-2 space-y-1">
                     <!-- Leave Request -->
                     <li>
-                        <a href="#" onclick="alert('Leave Requests feature coming soon!')" 
-                           class="text-gray-300 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200 cursor-pointer"
-                           title="Leave Requests (Coming Soon)">
-                            <i class="fas fa-plane text-gray-400 group-hover:text-white w-5 text-center"></i>
-                            <span class="sidebar-text">Leave Requests <small>(Soon)</small></span>
+                        <a href="{% url 'leave_management:overview' %}" 
+                           class="{% if active_nav == 'leave' %}bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Leave Requests">
+                            <i class="fas fa-plane {% if active_nav == 'leave' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <span class="sidebar-text">Leave Requests</span>
                         </a>
                     </li>
                     

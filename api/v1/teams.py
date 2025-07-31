@@ -431,51 +431,121 @@ class TeamViewSet(viewsets.ModelViewSet):
                 try:
                     # Get team statistics using the correct relationship
                     member_count = team.memberships.filter(is_active=True).count()
-                except Exception:
+                    
+                    # Calculate real YTD hours from assignments
+                    from apps.assignments.models import Assignment
+                    from django.db.models import Sum
+                    
+                    ytd_start = timezone.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+                    ytd_assignments = Assignment.objects.filter(
+                        shift__planning_period__teams=team,
+                        shift__start_datetime__gte=ytd_start,
+                        status__in=['confirmed', 'completed']
+                    )
+                    
+                    # Calculate total hours (assuming 8 hours per shift as default)
+                    ytd_hours = 0
+                    for assignment in ytd_assignments:
+                        if hasattr(assignment.shift, 'template') and assignment.shift.template:
+                            shift_duration = assignment.shift.template.duration_hours or 8
+                        else:
+                            shift_duration = 8  # Default shift duration
+                        ytd_hours += shift_duration
+                    
+                    # Calculate coverage percentage from recent assignments
+                    recent_date = timezone.now().date() - timedelta(days=30)
+                    from apps.scheduling.models import ShiftInstance
+                    
+                    recent_shifts = ShiftInstance.objects.filter(
+                        planning_period__teams=team,
+                        start_datetime__date__gte=recent_date
+                    ).count()
+                    
+                    covered_shifts = Assignment.objects.filter(
+                        shift__planning_period__teams=team,
+                        shift__start_datetime__date__gte=recent_date,
+                        status__in=['confirmed', 'completed']
+                    ).count()
+                    
+                    coverage_percentage = round((covered_shifts / recent_shifts * 100) if recent_shifts > 0 else 100, 1)
+                    
+                    # Calculate fairness score using existing service
+                    from core.services.fairness_service import FairnessService
+                    try:
+                        fairness_service = FairnessService(team)
+                        team_members = [membership.user for membership in team.memberships.filter(is_active=True)]
+                        if team_members:
+                            fairness_scores = [
+                                fairness_service.calculate_user_fairness_score(user) 
+                                for user in team_members
+                            ]
+                            fairness_score = round(sum(fairness_scores) / len(fairness_scores), 1)
+                        else:
+                            fairness_score = 0.0
+                    except Exception:
+                        fairness_score = 0.0
+                    
+                    # Calculate workload percentage based on current assignments vs capacity
+                    current_week_start = timezone.now().date() - timedelta(days=timezone.now().weekday())
+                    current_week_assignments = Assignment.objects.filter(
+                        shift__planning_period__teams=team,
+                        shift__start_datetime__date__gte=current_week_start,
+                        shift__start_datetime__date__lt=current_week_start + timedelta(days=7),
+                        status__in=['confirmed', 'pending_confirmation']
+                    ).count()
+                    
+                    # Assume max 5 shifts per member per week
+                    team_capacity = member_count * 5
+                    workload_percentage = round((current_week_assignments / team_capacity * 100) if team_capacity > 0 else 0, 1)
+                    
+                    # Calculate 7-day performance trend
+                    performance_trend = []
+                    for i in range(7):
+                        day_date = timezone.now().date() - timedelta(days=6-i)
+                        day_assignments = Assignment.objects.filter(
+                            shift__planning_period__teams=team,
+                            shift__start_datetime__date=day_date,
+                            status='completed'
+                        ).count()
+                        day_total_shifts = ShiftInstance.objects.filter(
+                            planning_period__teams=team,
+                            start_datetime__date=day_date
+                        ).count()
+                        day_performance = round((day_assignments / day_total_shifts * 100) if day_total_shifts > 0 else 0)
+                        performance_trend.append(day_performance)
+                    
+                except Exception as e:
                     member_count = 0
+                    ytd_hours = 0
+                    coverage_percentage = 0
+                    fairness_score = 0.0
+                    workload_percentage = 0
+                    performance_trend = [0] * 7
                 
-                # Mock some additional data for now
                 teams_data.append({
                     'id': team.id,
                     'name': team.name,
                     'description': team.description or 'Team Operations',
-                    'status': 'Active',
+                    'status': 'Active' if team.is_active else 'Inactive',
                     'member_count': member_count,
-                    'ytd_hours': 2450,  # Mock data
-                    'coverage_percentage': 85,  # Mock data
-                    'fairness_score': 7.8,  # Mock data
-                    'workload_percentage': 78,  # Mock data
-                    'performance_trend': [75, 82, 78, 85, 88, 84, 87]  # Mock 7-day trend
+                    'ytd_hours': ytd_hours,
+                    'coverage_percentage': coverage_percentage,
+                    'fairness_score': fairness_score,
+                    'workload_percentage': min(workload_percentage, 100),  # Cap at 100%
+                    'performance_trend': performance_trend
                 })
             
-            # If no teams found, return mock data
+            # If no teams found, return empty list with message
             if not teams_data:
-                teams_data = [
-                    {
-                        'id': 1,
-                        'name': 'Engineering Team A',
-                        'description': 'Primary engineering operations',
-                        'status': 'Active',
-                        'member_count': 12,
-                        'ytd_hours': 2450,
-                        'coverage_percentage': 85,
-                        'fairness_score': 7.8,
-                        'workload_percentage': 78,
-                        'performance_trend': [75, 82, 78, 85, 88, 84, 87]
-                    },
-                    {
-                        'id': 2,
-                        'name': 'Operations Team B',
-                        'description': 'Operations and maintenance',
-                        'status': 'Active',
-                        'member_count': 8,
-                        'ytd_hours': 1980,
-                        'coverage_percentage': 92,
-                        'fairness_score': 8.2,
-                        'workload_percentage': 65,
-                        'performance_trend': [80, 85, 88, 90, 87, 89, 91]
-                    }
-                ]
+                return Response({
+                    'success': True,
+                    'teams': [],
+                    'message': 'No teams found for the current user',
+                    'total_teams': 0,
+                    'total_active_members': 0,
+                    'active_teams': 0,
+                    'avg_efficiency_rate': 0
+                })
             
             # Calculate overview statistics
             total_teams = teams.count()
@@ -525,29 +595,89 @@ class TeamViewSet(viewsets.ModelViewSet):
                     # Skip if relationship access fails
                     pass
             
-            # If no data found, use mock data
-            if total_teams == 0:
-                total_teams = 2
-                total_members = 20
-                active_members = 18
+            # Calculate efficiency rate based on actual assignment completion
+            from apps.assignments.models import Assignment
+            recent_date = timezone.now().date() - timedelta(days=30)
             
-            # Mock some additional statistics
+            total_recent_assignments = Assignment.objects.filter(
+                shift__planning_period__teams__in=teams,
+                shift__start_datetime__date__gte=recent_date
+            ).count()
+            
+            completed_assignments = Assignment.objects.filter(
+                shift__planning_period__teams__in=teams,
+                shift__start_datetime__date__gte=recent_date,
+                status='completed'
+            ).count()
+            
+            avg_efficiency_rate = round((completed_assignments / total_recent_assignments * 100) if total_recent_assignments > 0 else 0, 1)
+            
+            # Calculate workload distribution
+            current_week_start = timezone.now().date() - timedelta(days=timezone.now().weekday())
+            
+            workload_data = {'balanced': 0, 'overloaded': 0, 'underutilized': 0}
+            performance_data = {'response_time': 0, 'completion_rate': avg_efficiency_rate, 'satisfaction_score': 0}
+            
+            if teams.exists():
+                # Calculate workload distribution by team
+                team_workloads = []
+                for team in teams:
+                    team_members = team.memberships.filter(is_active=True).count()
+                    week_assignments = Assignment.objects.filter(
+                        shift__planning_period__teams=team,
+                        shift__start_datetime__date__gte=current_week_start,
+                        shift__start_datetime__date__lt=current_week_start + timedelta(days=7),
+                        status__in=['confirmed', 'pending_confirmation']
+                    ).count()
+                    
+                    if team_members > 0:
+                        workload_ratio = week_assignments / (team_members * 5)  # Assuming 5 shifts max per member
+                        team_workloads.append(workload_ratio)
+                
+                if team_workloads:
+                    avg_workload = sum(team_workloads) / len(team_workloads)
+                    overloaded_teams = len([w for w in team_workloads if w > 0.9])
+                    underutilized_teams = len([w for w in team_workloads if w < 0.5])
+                    balanced_teams = len(team_workloads) - overloaded_teams - underutilized_teams
+                    
+                    total_teams_count = len(team_workloads)
+                    workload_data = {
+                        'balanced': round((balanced_teams / total_teams_count * 100) if total_teams_count > 0 else 0),
+                        'overloaded': round((overloaded_teams / total_teams_count * 100) if total_teams_count > 0 else 0),
+                        'underutilized': round((underutilized_teams / total_teams_count * 100) if total_teams_count > 0 else 0)
+                    }
+                
+                # Calculate performance metrics
+                # Response time: average time from assignment creation to confirmation
+                confirmed_assignments = Assignment.objects.filter(
+                    shift__planning_period__teams__in=teams,
+                    status='confirmed',
+                    assigned_at__isnull=False,
+                    confirmed_at__isnull=False
+                ).order_by('-assigned_at')[:100]  # Last 100 for performance
+                
+                if confirmed_assignments:
+                    response_times = []
+                    for assignment in confirmed_assignments:
+                        if assignment.confirmed_at and assignment.assigned_at:
+                            delta = assignment.confirmed_at - assignment.assigned_at
+                            response_times.append(delta.total_seconds() / 3600)  # Convert to hours
+                    
+                    if response_times:
+                        performance_data['response_time'] = round(sum(response_times) / len(response_times), 1)
+                
+                # Satisfaction score: simplified based on fairness and completion rates
+                performance_data['satisfaction_score'] = round(min(avg_efficiency_rate / 20, 5.0), 1)  # Scale to 0-5
+            
+            # If no data found, don't use mock data - return actual zeros
             stats = {
                 'total_teams': total_teams,
                 'total_members': total_members,
                 'active_members': active_members,
-                'avg_coverage': 85,  # Mock data
-                'efficiency_rate': 82,  # Mock data
-                'workload_distribution': {
-                    'balanced': 65,
-                    'overloaded': 25,
-                    'underutilized': 10
-                },
-                'performance_metrics': {
-                    'response_time': 2.3,
-                    'completion_rate': 94.5,
-                    'satisfaction_score': 4.2
-                }
+                'avg_coverage': avg_efficiency_rate,
+                'efficiency_rate': avg_efficiency_rate,
+                'workload_distribution': workload_data,
+                'performance_metrics': performance_data
             }
             
             return Response({

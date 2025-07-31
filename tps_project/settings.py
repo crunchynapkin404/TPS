@@ -4,12 +4,17 @@ Enhanced settings with custom User model and TPS apps
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-8g1@i!n4b#_*t5(!bc2dp7^5s3z6nmmx^vc#h$mle4=x45r8qf'
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -162,12 +167,12 @@ REST_FRAMEWORK = {
 
 # TPS Business Configuration
 TPS_CONFIG = {
-    'MAX_WAAKDIENST_WEEKS_PER_YEAR': 8,
-    'MAX_INCIDENT_WEEKS_PER_YEAR': 12,
-    'MIN_GAP_WAAKDIENST_DAYS': 14,
-    'MIN_GAP_INCIDENT_DAYS': 7,
-    'WAAKDIENST_HOURS_PER_WEEK': 168,
-    'INCIDENT_HOURS_PER_WEEK': 45,
+    'MAX_WAAKDIENST_WEEKS_PER_YEAR': int(os.getenv('TPS_MAX_WAAKDIENST_WEEKS_PER_YEAR', '8')),
+    'MAX_INCIDENT_WEEKS_PER_YEAR': int(os.getenv('TPS_MAX_INCIDENT_WEEKS_PER_YEAR', '12')),
+    'MIN_GAP_WAAKDIENST_DAYS': int(os.getenv('TPS_MIN_GAP_WAAKDIENST_DAYS', '14')),
+    'MIN_GAP_INCIDENT_DAYS': int(os.getenv('TPS_MIN_GAP_INCIDENT_DAYS', '7')),
+    'WAAKDIENST_HOURS_PER_WEEK': int(os.getenv('TPS_WAAKDIENST_HOURS_PER_WEEK', '168')),
+    'INCIDENT_HOURS_PER_WEEK': int(os.getenv('TPS_INCIDENT_HOURS_PER_WEEK', '45')),
 }
 
 # Authentication Settings

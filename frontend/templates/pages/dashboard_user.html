@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .advice-card {
+        @apply bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4;
+    }
+    .advice-warning {
+        @apply from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800;
+    }
+    .advice-success {
+        @apply from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-emerald-200 dark:border-emerald-800;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-6 h-full overflow-y-auto">
+    <!-- Welcome Section -->
+    <div class="mb-8">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">Welcome back, {{ user.first_name }}! 👋</div>
+        <div class="text-gray-600 dark:text-gray-400 mt-1">Here's your personal schedule and updates</div>
+    </div>
+
+    <!-- Personal Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- My Shifts This Month -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">This Month</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ this_month_shifts }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Shifts -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Upcoming</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ upcoming_shifts|length }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Requests -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Leave Requests</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ my_leave_requests|length }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="text-center">
+                <a href="{% url 'leave_management:create_request' %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Request Leave
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Advice -->
+    {% if personal_advice %}
+    <div class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Personal Recommendations</h2>
+        {% for advice in personal_advice %}
+        <div class="advice-card {% if advice.type == 'warning' %}advice-warning{% elif advice.type == 'success' %}advice-success{% endif %}">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    {% if advice.type == 'warning' %}
+                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    {% elif advice.type == 'success' %}
+                    <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {% else %}
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {% endif %}
+                </div>
+                <div class="ml-3 flex-1">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ advice.title }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ advice.message }}</p>
+                    {% if advice.action %}
+                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-2 font-medium">{{ advice.action }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Upcoming Shifts -->
+        <div class="lg:col-span-2">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">My Upcoming Shifts</h2>
+                </div>
+                <div class="p-6">
+                    {% if upcoming_shifts %}
+                    <div class="space-y-4">
+                        {% for assignment in upcoming_shifts %}
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ assignment.shift.template.name }}
+                                    </h3>
+                                </div>
+                                <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ assignment.shift.start_datetime|date:"l, F j" }} • 
+                                    {{ assignment.shift.start_datetime|time:"H:i" }} - {{ assignment.shift.end_datetime|time:"H:i" }}
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    {{ assignment.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">No upcoming shifts</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Your schedule is clear for now</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Recent Leave Requests -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">My Leave Requests</h2>
+                </div>
+                <div class="p-6">
+                    {% if my_leave_requests %}
+                    <div class="space-y-3">
+                        {% for request in my_leave_requests %}
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ request.leave_type.name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ request.start_date|date:"d/m/Y" }} - {{ request.end_date|date:"d/m/Y" }}</p>
+                            </div>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full {% if request.status == 'approved' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200{% elif request.status == 'declined' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% else %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200{% endif %}">
+                                {{ request.get_status_display }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'leave_management:overview' %}" class="text-sm text-blue-600 hover:text-blue-500 font-medium">View all requests →</a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No leave requests yet</p>
+                        <a href="{% url 'leave_management:create_request' %}" class="text-sm text-blue-600 hover:text-blue-500 font-medium mt-2 inline-block">Create your first request</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-3">
+                        <a href="{% url 'frontend:schedule' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            View Full Schedule
+                        </a>
+                        <a href="{% url 'leave_management:calendar' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            Leave Calendar
+                        </a>
+                        <a href="{% url 'frontend:profile' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Update Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

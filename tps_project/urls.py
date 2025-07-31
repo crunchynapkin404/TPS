@@ -29,6 +29,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', accounts_login_redirect, name='accounts_login_redirect'),
     path('api/', include('api.urls')),
+    path('leave/', include('apps.leave_management.urls')),
     path('test-formats/', test_formats_view, name='test_formats'),  # Test endpoint
     path('', include('frontend.urls')),
 ]

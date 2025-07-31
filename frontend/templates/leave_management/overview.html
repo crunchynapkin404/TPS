@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .btn {
+        @apply inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    }
+    .btn-primary {
+        @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+    }
+    .btn-secondary {
+        @apply bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+    }
+    .leave-card {
+        @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-all duration-200 hover:shadow-md;
+    }
+    .status-badge {
+        @apply px-3 py-1 text-xs font-medium rounded-full;
+    }
+    .status-draft { @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200; }
+    .status-submitted { @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200; }
+    .status-pending_manager { @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200; }
+    .status-pending_hr { @apply bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200; }
+    .status-approved { @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200; }
+    .status-declined { @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200; }
+    .status-cancelled { @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200; }
+    .status-completed { @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-6 h-full overflow-y-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Leave Management</h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">Manage your leave requests and view team leave schedules</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'leave_management:calendar' %}" class="btn btn-secondary">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Calendar View
+                </a>
+                <a href="{% url 'leave_management:create_request' %}" class="btn btn-primary">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New Request
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Requests</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ stats.total_requests }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pending</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ stats.pending_requests }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Approved</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ stats.approved_requests }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Used Days YTD</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ stats.used_days_ytd|floatformat:1 }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Leave Requests -->
+        <div class="lg:col-span-2">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Leave Requests</h2>
+                        <div class="flex space-x-2">
+                            <select class="text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500" id="statusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="draft">Draft</option>
+                                <option value="submitted">Submitted</option>
+                                <option value="approved">Approved</option>
+                                <option value="declined">Declined</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for request in leave_requests %}
+                    <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 rounded-full" style="background-color: {{ request.leave_type.color }}"></div>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ request.leave_type.name }}
+                                        {% if user.is_manager or user.is_admin %}
+                                            - {{ request.user.get_full_name }}
+                                        {% endif %}
+                                    </h3>
+                                    <span class="status-badge status-{{ request.status }}">
+                                        {{ request.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                    <span class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        {{ request.start_date|date:"d/m/Y" }} - {{ request.end_date|date:"d/m/Y" }}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ request.get_duration_days }} day{{ request.get_duration_days|pluralize }}
+                                    </span>
+                                    <span>{{ request.created_at|date:"d/m/Y" }}</span>
+                                </div>
+                                {% if request.reason %}
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ request.reason|truncatewords:15 }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center space-x-2 ml-4">
+                                <a href="{% url 'leave_management:detail' request.pk %}" class="text-blue-600 hover:text-blue-500 text-sm font-medium">
+                                    View Details
+                                </a>
+                                {% if request.status == 'draft' and request.user == user %}
+                                <a href="{% url 'leave_management:submit_request' request.pk %}" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+                                    Submit
+                                </a>
+                                {% endif %}
+                                {% if request.can_be_cancelled and request.user == user %}
+                                <button onclick="cancelRequest({{ request.pk }})" class="text-red-600 hover:text-red-500 text-sm font-medium">
+                                    Cancel
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-12 text-center">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">No leave requests</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Get started by creating your first leave request</p>
+                        <a href="{% url 'leave_management:create_request' %}" class="btn btn-primary">
+                            Create Leave Request
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Sidebar -->
+        <div class="space-y-6">
+            <!-- Leave Balance -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Leave Balance {{ current_year }}</h2>
+                </div>
+                <div class="p-6">
+                    {% for balance in leave_balances %}
+                    <div class="mb-4 last:mb-0">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 rounded-full" style="background-color: {{ balance.leave_type.color }}"></div>
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ balance.leave_type.name }}</span>
+                            </div>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ balance.remaining|floatformat:1 }} remaining</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div class="h-2 rounded-full transition-all duration-300" 
+                                 style="width: {% widthratio balance.used balance.total_available 100 %}%; background-color: {{ balance.leave_type.color }}"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <span>Used: {{ balance.used|floatformat:1 }}</span>
+                            <span>Total: {{ balance.total_available|floatformat:1 }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No leave balances configured</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Upcoming Leave -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Leave</h2>
+                </div>
+                <div class="p-6">
+                    {% for leave in upcoming_leave %}
+                    <div class="flex items-center space-x-3 mb-3 last:mb-0">
+                        <div class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: {{ leave.leave_type.color }}"></div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ leave.leave_type.name }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ leave.start_date|date:"d/m/Y" }} - {{ leave.end_date|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No upcoming leave</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Pending Approvals (Managers only) -->
+            {% if pending_approvals and user.is_manager %}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Pending Approvals</h2>
+                </div>
+                <div class="p-6">
+                    {% for request in pending_approvals|slice:":5" %}
+                    <div class="flex items-center justify-between mb-3 last:mb-0">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ request.user.get_full_name }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ request.leave_type.name }} • {{ request.start_date|date:"d/m/Y" }}</p>
+                        </div>
+                        <div class="flex space-x-1 ml-2">
+                            <button onclick="approveRequest({{ request.pk }})" class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700">
+                                ✓
+                            </button>
+                            <button onclick="declineRequest({{ request.pk }})" class="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700">
+                                ✗
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function cancelRequest(requestId) {
+    if (confirm('Are you sure you want to cancel this leave request?')) {
+        window.location.href = `/leave/request/${requestId}/cancel/`;
+    }
+}
+
+function approveRequest(requestId) {
+    if (confirm('Are you sure you want to approve this leave request?')) {
+        fetch(`/leave/request/${requestId}/approve/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({notes: ''})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error approving request: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error approving request');
+        });
+    }
+}
+
+function declineRequest(requestId) {
+    const reason = prompt('Please provide a reason for declining:');
+    if (reason !== null) {
+        fetch(`/leave/request/${requestId}/decline/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({reason: reason})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error declining request: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error declining request');
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Status filtering
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const status = this.value;
+    const rows = document.querySelectorAll('[class*="status-"]');
+    
+    rows.forEach(row => {
+        const parent = row.closest('.p-6');
+        if (status === '' || row.classList.contains(`status-${status}`)) {
+            parent.style.display = 'block';
+        } else {
+            parent.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

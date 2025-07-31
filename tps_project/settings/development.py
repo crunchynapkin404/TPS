@@ -23,7 +23,7 @@ DATABASES = {
 }
 
 # Add debug toolbar for development
-if DEBUG:
+if DEBUG and False:  # Disabled to avoid namespace issues
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
     

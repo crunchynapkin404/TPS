@@ -131,6 +131,34 @@
                 </ul>
             </li>
             
+            <!-- Leave Management Section -->
+            <li>
+                <div class="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider mb-3 sidebar-text">
+                    Leave Management
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <!-- Leave Overview -->
+                    <li>
+                        <a href="{% url 'leave_management:overview' %}" 
+                           class="{% if active_nav == 'leave' %}bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Leave Management">
+                            <i class="fas fa-plane {% if active_nav == 'leave' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <span class="sidebar-text">Leave Requests</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Leave Calendar -->
+                    <li>
+                        <a href="{% url 'leave_management:calendar' %}" 
+                           class="{% if active_nav == 'leave_calendar' %}bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Leave Calendar">
+                            <i class="fas fa-calendar-alt {% if active_nav == 'leave_calendar' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <span class="sidebar-text">Leave Calendar</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
             <!-- System Administration Section -->
             <li>
                 <div class="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider mb-3 sidebar-text">

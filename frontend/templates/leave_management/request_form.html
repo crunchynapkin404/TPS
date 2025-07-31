@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6;
+    }
+    .field-group {
+        @apply mb-4;
+    }
+    .field-label {
+        @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
+    }
+    .field-input {
+        @apply mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white;
+    }
+    .field-help {
+        @apply mt-1 text-sm text-gray-500 dark:text-gray-400;
+    }
+    .field-error {
+        @apply mt-1 text-sm text-red-600 dark:text-red-400;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-6 h-full overflow-y-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">New Leave Request</h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">Submit a request for time off</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'leave_management:overview' %}" class="btn btn-secondary">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Overview
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" class="max-w-4xl">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Leave Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="field-group">
+                    <label for="{{ form.leave_type.id_for_label }}" class="field-label">
+                        Leave Type <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.leave_type }}
+                    {% if form.leave_type.errors %}
+                        <div class="field-error">{{ form.leave_type.errors.0 }}</div>
+                    {% endif %}
+                    <div class="field-help">Select the type of leave you're requesting</div>
+                </div>
+
+                <div class="field-group">
+                    <label for="{{ form.request_type.id_for_label }}" class="field-label">
+                        Request Type <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.request_type }}
+                    {% if form.request_type.errors %}
+                        <div class="field-error">{{ form.request_type.errors.0 }}</div>
+                    {% endif %}
+                    <div class="field-help">Full day, partial day, or hourly leave</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dates and Times -->
+        <div class="form-section">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">When</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="field-group">
+                    <label for="{{ form.start_date.id_for_label }}" class="field-label">
+                        Start Date <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                        <div class="field-error">{{ form.start_date.errors.0 }}</div>
+                    {% endif %}
+                    <div class="field-help">First day of leave</div>
+                </div>
+
+                <div class="field-group">
+                    <label for="{{ form.end_date.id_for_label }}" class="field-label">
+                        End Date <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                        <div class="field-error">{{ form.end_date.errors.0 }}</div>
+                    {% endif %}
+                    <div class="field-help">Last day of leave</div>
+                </div>
+            </div>
+
+            <!-- Partial Day/Hourly Fields (hidden by default) -->
+            <div id="timeFields" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6" style="display: none;">
+                <div class="field-group">
+                    <label for="{{ form.start_time.id_for_label }}" class="field-label">
+                        Start Time
+                    </label>
+                    {{ form.start_time }}
+                    {% if form.start_time.errors %}
+                        <div class="field-error">{{ form.start_time.errors.0 }}</div>
+                    {% endif %}
+                    <div class="field-help">For partial day requests</div>
+                </div>
+
+                <div class="field-group">
+                    <label for="{{ form.end_time.id_for_label }}" class="field-label">
+                        End Time
+                    </label>
+                    {{ form.end_time }}
+                    {% if form.end_time.errors %}
+                        <div class="field-error">{{ form.end_time.errors.0 }}</div>
+                    {% endif %}
+                    <div class="field-help">For partial day requests</div>
+                </div>
+
+                <div class="field-group">
+                    <label for="{{ form.hours_requested.id_for_label }}" class="field-label">
+                        Hours Requested
+                    </label>
+                    {{ form.hours_requested }}
+                    {% if form.hours_requested.errors %}
+                        <div class="field-error">{{ form.hours_requested.errors.0 }}</div>
+                    {% endif %}
+                    <div class="field-help">For hourly requests</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="form-section">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Reason</h2>
+            <div class="field-group">
+                <label for="{{ form.reason.id_for_label }}" class="field-label">
+                    Reason for Leave <span class="text-red-500">*</span>
+                </label>
+                {{ form.reason }}
+                {% if form.reason.errors %}
+                    <div class="field-error">{{ form.reason.errors.0 }}</div>
+                {% endif %}
+                <div class="field-help">Provide details about your leave request</div>
+            </div>
+        </div>
+
+        <!-- Summary Box -->
+        <div class="form-section bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Request Summary</h2>
+            <div id="requestSummary" class="text-sm text-gray-600 dark:text-gray-400">
+                <p>Please fill in the form to see your request summary</p>
+            </div>
+        </div>
+
+        <!-- Form Errors -->
+        {% if form.non_field_errors %}
+        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                        Please correct the following errors:
+                    </h3>
+                    <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                        <ul class="list-disc list-inside space-y-1">
+                            {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                <span class="text-red-500">*</span> Required fields
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'leave_management:overview' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+                <button type="submit" name="action" value="save_draft" class="btn btn-secondary">
+                    Save as Draft
+                </button>
+                <button type="submit" name="action" value="submit" class="btn btn-primary">
+                    Submit Request
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const requestTypeField = document.getElementById('{{ form.request_type.id_for_label }}');
+    const timeFields = document.getElementById('timeFields');
+    const startDateField = document.getElementById('{{ form.start_date.id_for_label }}');
+    const endDateField = document.getElementById('{{ form.end_date.id_for_label }}');
+    const leaveTypeField = document.getElementById('{{ form.leave_type.id_for_label }}');
+    const reasonField = document.getElementById('{{ form.reason.id_for_label }}');
+
+    // Toggle time fields based on request type
+    function toggleTimeFields() {
+        const requestType = requestTypeField.value;
+        if (requestType === 'partial_day' || requestType === 'hourly') {
+            timeFields.style.display = 'grid';
+        } else {
+            timeFields.style.display = 'none';
+        }
+        updateSummary();
+    }
+
+    // Update request summary
+    function updateSummary() {
+        const summaryDiv = document.getElementById('requestSummary');
+        const leaveType = leaveTypeField.options[leaveTypeField.selectedIndex]?.text || '';
+        const requestType = requestTypeField.options[requestTypeField.selectedIndex]?.text || '';
+        const startDate = startDateField.value;
+        const endDate = endDateField.value;
+        const reason = reasonField.value;
+
+        if (!leaveType || !startDate || !endDate || !reason) {
+            summaryDiv.innerHTML = '<p>Please fill in all required fields to see your request summary</p>';
+            return;
+        }
+
+        let duration = '';
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            duration = `${days} day${days !== 1 ? 's' : ''}`;
+        }
+
+        const summary = `
+            <div class="space-y-2">
+                <p><strong>Leave Type:</strong> ${leaveType}</p>
+                <p><strong>Request Type:</strong> ${requestType}</p>
+                <p><strong>Period:</strong> ${new Date(startDate).toLocaleDateString('en-GB')} to ${new Date(endDate).toLocaleDateString('en-GB')} (${duration})</p>
+                <p><strong>Reason:</strong> ${reason.substring(0, 100)}${reason.length > 100 ? '...' : ''}</p>
+            </div>
+        `;
+        summaryDiv.innerHTML = summary;
+    }
+
+    // Event listeners
+    requestTypeField.addEventListener('change', toggleTimeFields);
+    startDateField.addEventListener('change', updateSummary);
+    endDateField.addEventListener('change', updateSummary);
+    leaveTypeField.addEventListener('change', updateSummary);
+    reasonField.addEventListener('input', updateSummary);
+
+    // Initialize
+    toggleTimeFields();
+    updateSummary();
+
+    // Auto-set end date to start date if not set
+    startDateField.addEventListener('change', function() {
+        if (!endDateField.value) {
+            endDateField.value = startDateField.value;
+            updateSummary();
+        }
+    });
+
+    // Load leave type information dynamically
+    const leaveTypes = {
+        {% for leave_type in leave_types %}
+        '{{ leave_type.pk }}': {
+            'name': '{{ leave_type.name }}',
+            'description': '{{ leave_type.description }}',
+            'min_advance_notice_days': {{ leave_type.min_advance_notice_days }},
+            'max_days_per_request': {{ leave_type.max_days_per_request|default:'null' }},
+            'requires_approval': {{ leave_type.requires_approval|yesno:'true,false' }},
+        },
+        {% endfor %}
+    };
+
+    leaveTypeField.addEventListener('change', function() {
+        const selectedId = this.value;
+        if (selectedId && leaveTypes[selectedId]) {
+            const leaveType = leaveTypes[selectedId];
+            
+            // Set minimum date based on advance notice requirement
+            const minDate = new Date();
+            minDate.setDate(minDate.getDate() + leaveType.min_advance_notice_days);
+            startDateField.min = minDate.toISOString().split('T')[0];
+            endDateField.min = minDate.toISOString().split('T')[0];
+            
+            // Clear dates if they're before the minimum
+            if (startDateField.value && new Date(startDateField.value) < minDate) {
+                startDateField.value = '';
+                endDateField.value = '';
+            }
+            
+            updateSummary();
+        }
+    });
+
+    // Validate date range
+    function validateDateRange() {
+        const start = new Date(startDateField.value);
+        const end = new Date(endDateField.value);
+        
+        if (startDateField.value && endDateField.value && start > end) {
+            endDateField.setCustomValidity('End date must be after start date');
+        } else {
+            endDateField.setCustomValidity('');
+        }
+    }
+
+    startDateField.addEventListener('change', validateDateRange);
+    endDateField.addEventListener('change', validateDateRange);
+});
+</script>
+{% endblock %}

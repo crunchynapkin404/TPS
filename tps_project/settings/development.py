@@ -22,13 +22,13 @@ DATABASES = {
     }
 }
 
-# Add debug toolbar for development
-if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
-    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-    
-    # Extend INTERNAL_IPS for Tailwind development
-    INTERNAL_IPS += ['localhost', '127.0.0.1']
+# Add debug toolbar for development - temporarily disabled
+# if DEBUG:
+#     INSTALLED_APPS += ['debug_toolbar']
+#     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+#     
+#     # Extend INTERNAL_IPS for Tailwind development
+#     INTERNAL_IPS += ['localhost', '127.0.0.1']
 
 # Development email backend
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

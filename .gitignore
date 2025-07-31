@@ -90,3 +90,20 @@ coverage.xml
 cookies.txt
 *.tmp
 *.temp
+
+# Error logs and debug files
+Error.txt
+error*.log
+debug*.log
+*_debug.html
+
+# Docker and deployment files (if empty)
+docker-compose.yml
+nginx.conf
+deploy.sh
+Dockerfile
+
+# Legacy and backup directories
+legacy_files/
+old/
+backup/

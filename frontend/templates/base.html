@@ -8,12 +8,10 @@
     {% load static %}
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local Font Awesome (removed CDN dependency) -->
+    <!-- Icons will be replaced with Tailwind Heroicons or inline SVG -->
     
-    <!-- Inter Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Inter Font (removed CDN dependency, using system fonts) -->
     <!-- Additional Meta Tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1f2937">

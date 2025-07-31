@@ -418,6 +418,31 @@ class ProfileView(BaseView):
         return context
 
 
+class CalendarUnifiedView(BaseView):
+    """Unified calendar view that consolidates all calendar implementations"""
+    template_name = 'pages/calendar_unified.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get current date
+        today = timezone.now().date()
+        
+        # Get user's teams
+        user = self.request.user
+        user_teams = Team.objects.filter(
+            Q(memberships__user=user) | Q(team_leader=user)
+        ).distinct()
+        
+        context.update({
+            'page_title': 'Unified Calendar',
+            'active_nav': 'calendar',
+            'current_date': today,
+            'user_teams': user_teams,
+        })
+        return context
+
+
 class LoginView(DjangoLoginView):
     """Login page"""
     template_name = 'auth/login.html'

@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-8g1@i!n4b#_*t5(!bc2dp7^5s3z6nmmx^vc#h$mle4=x45r8qf'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -174,3 +174,26 @@ TPS_CONFIG = {
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# Local Apps
+LOCAL_APPS = [
+    'core',
+    'api',
+    'frontend',
+]
+
+# Third-party Apps
+THIRD_PARTY_APPS = [
+    'rest_framework',
+    'tailwind',
+    'theme',
+]
+
+# Complete installed apps list
+INSTALLED_APPS += THIRD_PARTY_APPS + LOCAL_APPS
+
+# Development-specific settings (only for local dev)
+if DEBUG and False:  # Temporarily disabled for clean UI
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+    INTERNAL_IPS = ['127.0.0.1', 'localhost']

@@ -164,7 +164,7 @@ class DashboardView(BaseView):
         planning_periods = PlanningPeriod.objects.filter(
             teams__in=user_teams,
             start_date__gte=today,
-            is_published=False
+            status__in=['draft', 'planning', 'review', 'approved']  # Not yet published
         ).distinct()[:5]
         
         # Unassigned shifts
@@ -205,12 +205,26 @@ class DashboardView(BaseView):
             user=user
         ).select_related('leave_type').order_by('-created_at')[:5]
         
-        # Personal statistics
-        this_month_shifts = Assignment.objects.filter(
-            user=user,
-            shift__start_datetime__gte=today.replace(day=1),
-            status__in=['confirmed', 'completed']
-        ).count()
+        # NEW: Today's engineer assignments (real data)
+        # Get incident engineer assigned for today
+        incident_engineer_today = Assignment.objects.filter(
+            shift__date=today,
+            shift__template__category__name='INCIDENT',
+            status__in=['confirmed', 'completed', 'in_progress']
+        ).select_related('user', 'shift__template').first()
+        
+        # Get waakdienst (on-call) engineer assigned for today
+        waakdienst_engineer_today = Assignment.objects.filter(
+            shift__date=today,
+            shift__template__category__name='WAAKDIENST',
+            status__in=['confirmed', 'completed', 'in_progress']
+        ).select_related('user', 'shift__template').first()
+        
+        # Get total working engineers today (distinct count)
+        total_working_today = Assignment.objects.filter(
+            shift__date=today,
+            status__in=['confirmed', 'completed', 'in_progress']
+        ).values('user').distinct().count()
         
         # Personal advice/recommendations
         personal_advice = self._generate_personal_advice(user, today)
@@ -219,7 +233,9 @@ class DashboardView(BaseView):
             'dashboard_type': 'user',
             'upcoming_shifts': upcoming_shifts,
             'my_leave_requests': my_leave_requests,
-            'this_month_shifts': this_month_shifts,
+            'incident_engineer_today': incident_engineer_today,
+            'waakdienst_engineer_today': waakdienst_engineer_today,
+            'total_working_today': total_working_today,
             'personal_advice': personal_advice,
         }
     

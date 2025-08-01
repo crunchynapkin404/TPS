@@ -2,6 +2,321 @@
 {% load static %}
 
 {% block extra_css %}
+<style>
+/* Modal Styles */
+.modal {
+    backdrop-filter: blur(4px);
+}
+
+/* Team Card Styles */
+.team-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 24px;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+    position: relative;
+    overflow: hidden;
+}
+
+.team-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.team-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.team-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    color: white;
+    margin-right: 16px;
+}
+
+.team-badge.alpha { background: linear-gradient(135deg, #3B82F6, #1E40AF); }
+.team-badge.beta { background: linear-gradient(135deg, #10B981, #047857); }
+.team-badge.gamma { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.team-badge.delta { background: linear-gradient(135deg, #EF4444, #DC2626); }
+
+.team-info h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 4px 0;
+}
+
+.team-description {
+    font-size: 14px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.team-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.team-status.active {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.team-status.planning {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.team-status.maintenance {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.team-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.team-stat {
+    text-align: center;
+}
+
+.team-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+}
+
+.team-stat-label {
+    font-size: 12px;
+    color: #6B7280;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.workload-indicator {
+    height: 8px;
+    background-color: #F3F4F6;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.workload-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.workload-fill.low { background: linear-gradient(90deg, #10B981, #34D399); }
+.workload-fill.medium { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+.workload-fill.high { background: linear-gradient(90deg, #EF4444, #F87171); }
+
+.member-avatars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    min-height: 32px;
+}
+
+.member-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    position: relative;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.member-avatar.online::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 8px;
+    height: 8px;
+    background: #10B981;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.performance-chart {
+    height: 40px;
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    margin-bottom: 20px;
+    padding: 0 4px;
+}
+
+.performance-bar {
+    flex: 1;
+    background: #E5E7EB;
+    border-radius: 2px;
+    min-height: 4px;
+    transition: all 0.3s ease;
+}
+
+.performance-bar.excellent { background: linear-gradient(180deg, #10B981, #059669); }
+.performance-bar.good { background: linear-gradient(180deg, #3B82F6, #2563EB); }
+.performance-bar.average { background: linear-gradient(180deg, #F59E0B, #D97706); }
+
+.team-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    flex: 1;
+}
+
+.btn i {
+    margin-right: 6px;
+    font-size: 12px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    background: white;
+    color: #6B7280;
+    border: 1px solid #D1D5DB;
+}
+
+.btn-outline:hover {
+    background: #F9FAFB;
+    color: #374151;
+    border-color: #9CA3AF;
+}
+
+.add-team-card {
+    background: linear-gradient(135deg, #F8FAFC, #F1F5F9);
+    border: 2px dashed #CBD5E1;
+    border-radius: 16px;
+    padding: 48px 24px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.add-team-card:hover {
+    border-color: #3B82F6;
+    background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+    transform: translateY(-2px);
+}
+
+/* Filter tabs */
+.filter-tab {
+    padding: 8px 16px;
+    background: #F3F4F6;
+    color: #6B7280;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.filter-tab.active {
+    background: #3B82F6;
+    color: white;
+}
+
+.filter-tab:hover:not(.active) {
+    background: #E5E7EB;
+    color: #374151;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Form styles */
+.form-section {
+    background: #F9FAFB;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.form-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .team-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .team-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        flex: none;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -107,6 +422,333 @@
         </div>
     </div>
 </div>
+
+<!-- Team Management Modals -->
+<!-- Add Team Modal -->
+<div id="add-team-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Add New Team</h3>
+                <button onclick="closeAddTeamModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="add-team-form" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Team Name *</label>
+                        <input type="text" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Department *</label>
+                        <input type="text" name="department" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Location</label>
+                        <input type="text" name="location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Contact Email</label>
+                        <input type="email" name="contact_email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Min Members/Shift</label>
+                        <input type="number" name="min_members_per_shift" min="1" value="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Max Members/Shift</label>
+                        <input type="number" name="max_members_per_shift" min="1" value="5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Preferred Team Size</label>
+                        <input type="number" name="preferred_team_size" min="1" value="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" name="allows_auto_assignment" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <label class="ml-2 block text-sm text-gray-900">Allow automatic shift assignments</label>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeAddTeamModal()" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <span class="btn-text">Create Team</span>
+                        <span class="loading-spinner hidden">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div id="add-user-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Add New User</h3>
+                <button onclick="closeAddUserModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="add-user-form" class="space-y-6">
+                <!-- Basic Information -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-md font-medium text-gray-900 mb-3">Basic Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">First Name *</label>
+                            <input type="text" name="first_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Last Name *</label>
+                            <input type="text" name="last_name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Employee ID *</label>
+                            <input type="text" name="employee_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Username *</label>
+                            <input type="text" name="username" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email *</label>
+                            <input type="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Role and Department -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-md font-medium text-gray-900 mb-3">Role and Department</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">System Role *</label>
+                            <select name="role" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="USER">User</option>
+                                <option value="PLANNER">Planner</option>
+                                <option value="MANAGER">Manager</option>
+                                <option value="ADMIN">Administrator</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Department</label>
+                            <input type="text" name="department" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-md font-medium text-gray-900 mb-3">Contact Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="tel" name="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Location</label>
+                            <input type="text" name="location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Emergency Contact</label>
+                            <input type="text" name="emergency_contact" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Emergency Phone</label>
+                            <input type="tel" name="emergency_phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Password -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-md font-medium text-gray-900 mb-3">Account Security</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Password *</label>
+                            <input type="password" name="password" required minlength="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Confirm Password *</label>
+                            <input type="password" name="password_confirm" required minlength="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeAddUserModal()" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <span class="btn-text">Create User</span>
+                        <span class="loading-spinner hidden">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- User Skills Management Modal -->
+<div id="user-skills-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Manage User Skills</h3>
+                <button onclick="closeUserSkillsModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="skills-user-info" class="bg-blue-50 p-4 rounded-lg mb-6">
+                <h4 class="font-medium text-blue-900">User: <span id="skills-user-name">-</span></h4>
+                <p class="text-sm text-blue-700">Employee ID: <span id="skills-user-id">-</span></p>
+            </div>
+            
+            <!-- Add New Skill -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                <h4 class="text-md font-medium text-gray-900 mb-3">Add New Skill</h4>
+                <form id="add-skill-form" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Skill Category</label>
+                        <select name="skill_category" id="skill-category-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Skill</label>
+                        <select name="skill_id" id="skill-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="">Select Skill</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Proficiency Level</label>
+                        <select name="proficiency_level" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="learning">Learning</option>
+                            <option value="basic">Basic</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-green-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Add Skill
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Current Skills -->
+            <div class="bg-white border rounded-lg">
+                <div class="px-4 py-3 bg-gray-50 border-b">
+                    <h4 class="text-md font-medium text-gray-900">Current Skills</h4>
+                </div>
+                <div id="current-skills-list" class="p-4">
+                    <div class="text-gray-500 text-center py-8">
+                        <i class="fas fa-cogs text-3xl mb-2"></i>
+                        <p>Loading user skills...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end mt-6">
+                <button onclick="closeUserSkillsModal()" class="bg-gray-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Team Member Management Modal -->
+<div id="team-members-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-5xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Manage Team Members</h3>
+                <button onclick="closeTeamMembersModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="team-info" class="bg-blue-50 p-4 rounded-lg mb-6">
+                <h4 class="font-medium text-blue-900">Team: <span id="team-name">-</span></h4>
+                <p class="text-sm text-blue-700">Department: <span id="team-department">-</span></p>
+            </div>
+            
+            <!-- Add New Member -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                <h4 class="text-md font-medium text-gray-900 mb-3">Add Team Member</h4>
+                <form id="add-member-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">User</label>
+                        <select name="user_id" id="available-users-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="">Select User</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Team Role</label>
+                        <select name="role_id" id="team-roles-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="">Select Role</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-green-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Add Member
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Current Members -->
+            <div class="bg-white border rounded-lg">
+                <div class="px-4 py-3 bg-gray-50 border-b">
+                    <h4 class="text-md font-medium text-gray-900">Current Members</h4>
+                </div>
+                <div id="team-members-list" class="overflow-x-auto">
+                    <div class="text-gray-500 text-center py-8">
+                        <i class="fas fa-users text-3xl mb-2"></i>
+                        <p>Loading team members...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end mt-6">
+                <button onclick="closeTeamMembersModal()" class="bg-gray-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -152,7 +794,7 @@ function initializeTeamsPage() {
 async function loadTeamsData() {
     try {
         console.log('Loading teams data...');
-        const response = await fetch('/api/v1/teams/overview/', {
+        let response = await fetch('/api/v1/teams/overview/', {
             method: 'GET',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -161,12 +803,18 @@ async function loadTeamsData() {
             credentials: 'same-origin'
         });
         
+        // If authentication fails, try fallback endpoint
+        if (!response.ok && (response.status === 401 || response.status === 403)) {
+            console.log('Authentication required - using fallback endpoint');
+            response = await fetch('/api/v1/teams/overview/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+        }
+        
         if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-                console.log('Authentication required for teams data - showing fallback');
-                showFallbackTeamsData();
-                return;
-            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
@@ -191,7 +839,7 @@ async function loadTeamsData() {
 async function loadTeamStatistics() {
     try {
         console.log('Loading team statistics...');
-        const response = await fetch('/api/v1/teams/statistics/', {
+        let response = await fetch('/api/v1/teams/statistics/', {
             method: 'GET',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -200,12 +848,18 @@ async function loadTeamStatistics() {
             credentials: 'same-origin'
         });
         
+        // If authentication fails, try fallback endpoint
+        if (!response.ok && (response.status === 401 || response.status === 403)) {
+            console.log('Authentication required - using fallback endpoint');
+            response = await fetch('/api/v1/teams/statistics/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+        }
+        
         if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-                console.log('Authentication required for team statistics - showing fallback');
-                showFallbackStatisticsData();
-                return;
-            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
@@ -216,10 +870,12 @@ async function loadTeamStatistics() {
             updateStatisticsOverview(data.statistics);
         } else {
             console.error('Team statistics API returned error:', data.error);
+            showFallbackStatisticsData();
         }
         
     } catch (error) {
         console.error('Error loading team statistics:', error);
+        showFallbackStatisticsData();
     }
 }
 
@@ -596,7 +1252,12 @@ function generatePlanning(teamId) {
 
 function openAddTeamModal() {
     console.log('Opening add team modal');
-    alert('Add New Team feature coming soon! This will open a modal to create a new team.');
+    document.getElementById('add-team-modal').style.display = 'block';
+}
+
+function closeAddTeamModal() {
+    document.getElementById('add-team-modal').style.display = 'none';
+    document.getElementById('add-team-form').reset();
 }
 
 function showFallbackTeamsData() {
@@ -665,5 +1326,934 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Global variables for modal management
+let currentTeamId = null;
+let currentUserId = null;
+let skillsData = [];
+let skillCategoriesData = [];
+let teamRolesData = [];
+let availableUsersData = [];
+
+// Team Management Functions
+async function handleAddTeamSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.loading-spinner');
+    
+    // Show loading state
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    submitBtn.disabled = true;
+    
+    try {
+        const teamData = {
+            name: formData.get('name'),
+            description: formData.get('description'),
+            department: formData.get('department'),
+            location: formData.get('location'),
+            contact_email: formData.get('contact_email'),
+            min_members_per_shift: parseInt(formData.get('min_members_per_shift')),
+            max_members_per_shift: parseInt(formData.get('max_members_per_shift')),
+            preferred_team_size: parseInt(formData.get('preferred_team_size')),
+            allows_auto_assignment: formData.get('allows_auto_assignment') === 'on'
+        };
+        
+        const response = await fetch('/api/v1/teams/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(teamData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showNotification('Team created successfully!', 'success');
+            closeAddTeamModal();
+            loadTeamsData(); // Refresh teams data
+        } else {
+            showNotification(result.error || 'Failed to create team', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error creating team:', error);
+        showNotification('Network error. Please try again.', 'error');
+    } finally {
+        // Reset button state
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
+}
+
+// User Management Functions
+function openAddUserModal() {
+    document.getElementById('add-user-modal').style.display = 'block';
+}
+
+function closeAddUserModal() {
+    document.getElementById('add-user-modal').style.display = 'none';
+    document.getElementById('add-user-form').reset();
+}
+
+async function handleAddUserSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.loading-spinner');
+    
+    // Validate password confirmation
+    const password = formData.get('password');
+    const passwordConfirm = formData.get('password_confirm');
+    
+    if (password !== passwordConfirm) {
+        showNotification('Passwords do not match', 'error');
+        return;
+    }
+    
+    // Show loading state
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    submitBtn.disabled = true;
+    
+    try {
+        const userData = {
+            username: formData.get('username'),
+            email: formData.get('email'),
+            first_name: formData.get('first_name'),
+            last_name: formData.get('last_name'),
+            employee_id: formData.get('employee_id'),
+            role: formData.get('role'),
+            department: formData.get('department'),
+            phone: formData.get('phone'),
+            location: formData.get('location'),
+            emergency_contact: formData.get('emergency_contact'),
+            emergency_phone: formData.get('emergency_phone'),
+            password: password,
+            password_confirm: passwordConfirm
+        };
+        
+        const response = await fetch('/api/v1/users/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showNotification('User created successfully!', 'success');
+            closeAddUserModal();
+            loadTeamsData(); // Refresh teams data to show new user counts
+        } else {
+            const errorMsg = result.error || result.message || 'Failed to create user';
+            showNotification(errorMsg, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error creating user:', error);
+        showNotification('Network error. Please try again.', 'error');
+    } finally {
+        // Reset button state
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
+}
+
+// Skills Management Functions
+async function openUserSkillsModal(userId) {
+    currentUserId = userId;
+    document.getElementById('user-skills-modal').style.display = 'block';
+    
+    // Load user info
+    await loadUserInfo(userId);
+    
+    // Load skills data
+    await loadSkillsData();
+    
+    // Load user's current skills
+    await loadUserSkills(userId);
+}
+
+function closeUserSkillsModal() {
+    document.getElementById('user-skills-modal').style.display = 'none';
+    currentUserId = null;
+}
+
+async function loadUserInfo(userId) {
+    try {
+        const response = await fetch(`/api/v1/users/${userId}/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const user = await response.json();
+            document.getElementById('skills-user-name').textContent = `${user.first_name} ${user.last_name}`;
+            document.getElementById('skills-user-id').textContent = user.employee_id;
+        }
+    } catch (error) {
+        console.error('Error loading user info:', error);
+    }
+}
+
+async function loadSkillsData() {
+    try {
+        // Load skill categories
+        let categoriesResponse = await fetch('/api/v1/skills/categories/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        // Try fallback if authentication fails
+        if (!categoriesResponse.ok && (categoriesResponse.status === 401 || categoriesResponse.status === 403)) {
+            categoriesResponse = await fetch('/api/v1/skills/categories/fallback/');
+        }
+        
+        if (categoriesResponse.ok) {
+            const categoriesData = await categoriesResponse.json();
+            skillCategoriesData = categoriesData.categories || [];
+            populateSkillCategories();
+        }
+        
+        // Load all skills
+        let skillsResponse = await fetch('/api/v1/skills/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        // Try fallback if authentication fails
+        if (!skillsResponse.ok && (skillsResponse.status === 401 || skillsResponse.status === 403)) {
+            skillsResponse = await fetch('/api/v1/skills/fallback/');
+        }
+        
+        if (skillsResponse.ok) {
+            const skillsData = await skillsResponse.json();
+            this.skillsData = skillsData.skills || [];
+        }
+        
+    } catch (error) {
+        console.error('Error loading skills data:', error);
+        // Use fallback mock data
+        skillCategoriesData = [
+            {id: 1, name: 'Network', color: '#3B82F6'},
+            {id: 2, name: 'Security', color: '#EF4444'},
+            {id: 3, name: 'Development', color: '#10B981'},
+            {id: 4, name: 'Database', color: '#F59E0B'}
+        ];
+        populateSkillCategories();
+    }
+}
+
+function populateSkillCategories() {
+    const select = document.getElementById('skill-category-select');
+    select.innerHTML = '<option value="">Select Category</option>';
+    
+    skillCategoriesData.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        select.appendChild(option);
+    });
+}
+
+async function loadUserSkills(userId) {
+    try {
+        const response = await fetch(`/api/v1/users/${userId}/skills/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            renderUserSkills(data.skills || []);
+        } else {
+            // Show empty state
+            renderUserSkills([]);
+        }
+    } catch (error) {
+        console.error('Error loading user skills:', error);
+        renderUserSkills([]);
+    }
+}
+
+function renderUserSkills(skills) {
+    const container = document.getElementById('current-skills-list');
+    
+    if (skills.length === 0) {
+        container.innerHTML = `
+            <div class="text-gray-500 text-center py-8">
+                <i class="fas fa-cogs text-3xl mb-2"></i>
+                <p>No skills assigned yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const skillsHtml = skills.map(userSkill => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-2">
+            <div class="flex-1">
+                <div class="font-medium text-gray-900">${userSkill.skill.name}</div>
+                <div class="text-sm text-gray-600">${userSkill.skill.category.name}</div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="px-2 py-1 text-xs font-medium rounded-full ${getProficiencyClass(userSkill.proficiency_level)}">
+                    ${userSkill.proficiency_level}
+                </span>
+                <button onclick="removeUserSkill(${userSkill.id})" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = skillsHtml;
+}
+
+function getProficiencyClass(level) {
+    const classes = {
+        'learning': 'bg-gray-100 text-gray-800',
+        'basic': 'bg-blue-100 text-blue-800',
+        'intermediate': 'bg-yellow-100 text-yellow-800',
+        'advanced': 'bg-green-100 text-green-800',
+        'expert': 'bg-purple-100 text-purple-800'
+    };
+    return classes[level] || 'bg-gray-100 text-gray-800';
+}
+
+async function handleAddSkillSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const skillData = {
+        user_id: currentUserId,
+        skill_id: parseInt(formData.get('skill_id')),
+        proficiency_level: formData.get('proficiency_level')
+    };
+    
+    try {
+        const response = await fetch('/api/v1/user-skills/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(skillData)
+        });
+        
+        if (response.ok) {
+            showNotification('Skill added successfully!', 'success');
+            form.reset();
+            loadUserSkills(currentUserId);
+        } else {
+            const result = await response.json();
+            showNotification(result.error || 'Failed to add skill', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding skill:', error);
+        showNotification('Network error. Please try again.', 'error');
+    }
+}
+
+async function removeUserSkill(userSkillId) {
+    if (!confirm('Are you sure you want to remove this skill?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/v1/user-skills/${userSkillId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            showNotification('Skill removed successfully!', 'success');
+            loadUserSkills(currentUserId);
+        } else {
+            showNotification('Failed to remove skill', 'error');
+        }
+    } catch (error) {
+        console.error('Error removing skill:', error);
+        showNotification('Network error. Please try again.', 'error');
+    }
+}
+
+// Team Members Management Functions  
+async function openTeamMembersModal(teamId) {
+    currentTeamId = teamId;
+    document.getElementById('team-members-modal').style.display = 'block';
+    
+    // Load team info
+    await loadTeamInfo(teamId);
+    
+    // Load available users and team roles
+    await loadAvailableUsers();
+    await loadTeamRoles();
+    
+    // Load current team members
+    await loadTeamMembers(teamId);
+}
+
+function closeTeamMembersModal() {
+    document.getElementById('team-members-modal').style.display = 'none';
+    currentTeamId = null;
+}
+
+async function loadTeamInfo(teamId) {
+    try {
+        const response = await fetch(`/api/v1/teams/${teamId}/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const team = await response.json();
+            document.getElementById('team-name').textContent = team.name;
+            document.getElementById('team-department').textContent = team.department;
+        }
+    } catch (error) {
+        console.error('Error loading team info:', error);
+    }
+}
+
+async function loadAvailableUsers() {
+    try {
+        let response = await fetch('/api/v1/users/?is_active=true', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        // Try fallback if authentication fails
+        if (!response.ok && (response.status === 401 || response.status === 403)) {
+            response = await fetch('/api/v1/users/available/');
+        }
+        
+        if (response.ok) {
+            const data = await response.json();
+            availableUsersData = data.results || [];
+            populateAvailableUsers();
+        }
+    } catch (error) {
+        console.error('Error loading available users:', error);
+        // Use fallback data
+        availableUsersData = [
+            {'id': 1, 'first_name': 'John', 'last_name': 'Doe', 'employee_id': 'EMP001'},
+            {'id': 2, 'first_name': 'Jane', 'last_name': 'Smith', 'employee_id': 'EMP002'},
+            {'id': 3, 'first_name': 'Bob', 'last_name': 'Johnson', 'employee_id': 'EMP003'}
+        ];
+        populateAvailableUsers();
+    }
+}
+
+function populateAvailableUsers() {
+    const select = document.getElementById('available-users-select');
+    select.innerHTML = '<option value="">Select User</option>';
+    
+    availableUsersData.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = `${user.first_name} ${user.last_name} (${user.employee_id})`;
+        select.appendChild(option);
+    });
+}
+
+async function loadTeamRoles() {
+    try {
+        let response = await fetch('/api/v1/teams/roles/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        // Always use fallback endpoint since it's simpler
+        if (!response.ok) {
+            response = await fetch('/api/v1/teams/roles/');
+        }
+        
+        if (response.ok) {
+            const data = await response.json();
+            teamRolesData = data.roles || [];
+            populateTeamRoles();
+        }
+    } catch (error) {
+        console.error('Error loading team roles:', error);
+        // Use fallback data
+        teamRolesData = [
+            {id: 1, name: 'member', description: 'Team Member'},
+            {id: 2, name: 'coordinator', description: 'Team Coordinator'},
+            {id: 3, name: 'lead', description: 'Team Lead'}
+        ];
+        populateTeamRoles();
+    }
+}
+
+function populateTeamRoles() {
+    const select = document.getElementById('team-roles-select');
+    select.innerHTML = '<option value="">Select Role</option>';
+    
+    teamRolesData.forEach(role => {
+        const option = document.createElement('option');
+        option.value = role.id;
+        option.textContent = role.description || role.name;
+        select.appendChild(option);
+    });
+}
+
+async function loadTeamMembersList(teamId) {
+    try {
+        const response = await fetch(`/api/v1/teams/${teamId}/members/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            renderTeamMembersList(data.members || []);
+        } else {
+            renderTeamMembersList([]);
+        }
+    } catch (error) {
+        console.error('Error loading team members:', error);
+        renderTeamMembersList([]);
+    }
+}
+
+function renderTeamMembersList(members) {
+    const container = document.getElementById('team-members-list');
+    
+    if (members.length === 0) {
+        container.innerHTML = `
+            <div class="text-gray-500 text-center py-8">
+                <i class="fas fa-users text-3xl mb-2"></i>
+                <p>No team members yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const membersHtml = `
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skills</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                ${members.map(member => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                                        ${member.user.first_name.charAt(0)}${member.user.last_name.charAt(0)}
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${member.user.first_name} ${member.user.last_name}</div>
+                                    <div class="text-sm text-gray-500">${member.user.employee_id}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                ${member.role.name}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <button onclick="openUserSkillsModal(${member.user.id})" class="text-indigo-600 hover:text-indigo-900">
+                                <i class="fas fa-cogs mr-1"></i>
+                                Manage Skills
+                            </button>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="removeMemberFromTeam(${member.id})" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash-alt mr-1"></i>
+                                Remove
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    
+    container.innerHTML = membersHtml;
+}
+
+async function handleAddMemberSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const memberData = {
+        user_id: parseInt(formData.get('user_id')),
+        role_id: parseInt(formData.get('role_id'))
+    };
+    
+    try {
+        const response = await fetch(`/api/v1/teams/${currentTeamId}/add-member/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(memberData)
+        });
+        
+        if (response.ok) {
+            showNotification('Member added successfully!', 'success');
+            form.reset();
+            loadTeamMembersList(currentTeamId);
+            loadTeamsData(); // Refresh main page
+        } else {
+            const result = await response.json();
+            showNotification(result.error || 'Failed to add member', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding team member:', error);
+        showNotification('Network error. Please try again.', 'error');
+    }
+}
+
+async function removeMemberFromTeam(membershipId) {
+    if (!confirm('Are you sure you want to remove this member from the team?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/v1/teams/${currentTeamId}/remove-member/?user_id=${membershipId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            showNotification('Member removed successfully!', 'success');
+            loadTeamMembersList(currentTeamId);
+            loadTeamsData(); // Refresh main page
+        } else {
+            showNotification('Failed to remove member', 'error');
+        }
+    } catch (error) {
+        console.error('Error removing team member:', error);
+        showNotification('Network error. Please try again.', 'error');
+    }
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg max-w-sm ${
+        type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+        type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
+        type === 'warning' ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
+        'bg-blue-50 text-blue-800 border border-blue-200'
+    }`;
+    
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas ${
+                    type === 'success' ? 'fa-check-circle' :
+                    type === 'error' ? 'fa-exclamation-circle' :
+                    type === 'warning' ? 'fa-exclamation-triangle' :
+                    'fa-info-circle'
+                }"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium">${message}</p>
+            </div>
+            <div class="ml-auto pl-3">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Enhanced team card creation with management buttons
+function createTeamCard(team) {
+    const teamDiv = document.createElement('div');
+    teamDiv.className = `team-card ${team.name.toLowerCase().replace(' ', '-')}`;
+    teamDiv.setAttribute('data-team', team.name.toLowerCase());
+    
+    const teamClass = getTeamClass(team.name);
+    const statusClass = getStatusClass(team.status);
+    const workloadClass = getWorkloadClass(team.workload_percentage);
+    const workloadText = getWorkloadText(team.workload_percentage);
+    
+    teamDiv.innerHTML = `
+        <div class="team-header">
+            <div class="flex items-center flex-1">
+                <div class="team-badge ${teamClass}">${getTeamIcon(team.name)}</div>
+                <div class="team-info">
+                    <h3>${team.name}</h3>
+                    <div class="team-description">${team.description || 'Team Operations'}</div>
+                </div>
+            </div>
+            <div class="team-status ${statusClass}">${team.status}</div>
+        </div>
+        
+        <div class="team-stats">
+            <div class="team-stat">
+                <div class="team-stat-value">${team.member_count}</div>
+                <div class="team-stat-label">Members</div>
+            </div>
+            <div class="team-stat">
+                <div class="team-stat-value">${team.ytd_hours}</div>
+                <div class="team-stat-label">YTD Hours</div>
+            </div>
+            <div class="team-stat">
+                <div class="team-stat-value">${team.coverage_percentage}%</div>
+                <div class="team-stat-label">Coverage</div>
+            </div>
+            <div class="team-stat">
+                <div class="team-stat-value">${team.fairness_score}</div>
+                <div class="team-stat-label">Fairness</div>
+            </div>
+        </div>
+        
+        <div class="workload-indicator">
+            <div class="workload-fill ${workloadClass}" style="width: ${team.workload_percentage}%"></div>
+        </div>
+        <div class="text-sm text-gray-600 text-center">Workload: ${workloadText}</div>
+        
+        <div class="member-avatars" id="team-${team.id}-members">
+            <!-- Members will be loaded here -->
+        </div>
+        
+        <div class="performance-chart">
+            ${generatePerformanceChart(team.performance_trend)}
+        </div>
+        
+        <div class="team-actions">
+            <a href="/teams/${team.id}/" class="btn btn-primary">
+                <i class="fas fa-eye"></i>
+                View Details
+            </a>
+            <button class="btn btn-outline" onclick="openTeamMembersModal(${team.id})">
+                <i class="fas fa-users"></i>
+                Manage Members
+            </button>
+            <button class="btn btn-outline" onclick="viewSchedule(${team.id})">
+                <i class="fas fa-calendar"></i>
+                Schedule
+            </button>
+        </div>
+    `;
+    
+    // Load team members after card creation
+    loadTeamMembersForCard(team.id, `team-${team.id}-members`);
+    
+    return teamDiv;
+}
+
+// Function to load team members for card display (different from modal)
+async function loadTeamMembersForCard(teamId, containerId) {
+    try {
+        const response = await fetch(`/api/v1/teams/${teamId}/members/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.members) {
+            renderTeamMembersForCard(data.members, containerId);
+        }
+        
+    } catch (error) {
+        console.error(`Error loading members for team ${teamId}:`, error);
+    }
+}
+
+function renderTeamMembersForCard(members, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const memberColors = [
+        'linear-gradient(135deg, #3b82f6, #1e40af)',
+        'linear-gradient(135deg, #10b981, #047857)',
+        'linear-gradient(135deg, #f59e0b, #d97706)',
+        'linear-gradient(135deg, #ef4444, #dc2626)',
+        'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+        'linear-gradient(135deg, #06b6d4, #0891b2)',
+        'linear-gradient(135deg, #84cc16, #65a30d)',
+        'linear-gradient(135deg, #ec4899, #db2777)'
+    ];
+    
+    members.slice(0, 8).forEach((member, index) => {
+        const memberDiv = document.createElement('div');
+        memberDiv.className = `member-avatar ${member.is_active ? 'online' : ''}`;
+        memberDiv.style.background = memberColors[index % memberColors.length];
+        memberDiv.title = `${member.first_name} ${member.last_name}`;
+        memberDiv.textContent = `${member.first_name.charAt(0)}${member.last_name.charAt(0)}`;
+        
+        container.appendChild(memberDiv);
+    });
+    
+    // Show +X more if there are additional members
+    if (members.length > 8) {
+        const moreDiv = document.createElement('div');
+        moreDiv.className = 'member-avatar';
+        moreDiv.style.background = '#6b7280';
+        moreDiv.textContent = `+${members.length - 8}`;
+        moreDiv.title = `${members.length - 8} more members`;
+        container.appendChild(moreDiv);
+    }
+    
+    // Re-initialize tooltips
+    initializeMemberTooltips();
+}
+
+// Fix the loadTeamMembers function name collision  
+async function loadTeamMembers(teamId) {
+    return loadTeamMembersList(teamId);
+}
+
+// Initialize form event listeners when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTeamsPage();
+    loadTeamsData();
+    loadTeamStatistics();
+    
+    // Add form event listeners
+    const addTeamForm = document.getElementById('add-team-form');
+    if (addTeamForm) {
+        addTeamForm.addEventListener('submit', handleAddTeamSubmit);
+    }
+    
+    const addUserForm = document.getElementById('add-user-form');
+    if (addUserForm) {
+        addUserForm.addEventListener('submit', handleAddUserSubmit);
+    }
+    
+    const addSkillForm = document.getElementById('add-skill-form');
+    if (addSkillForm) {
+        addSkillForm.addEventListener('submit', handleAddSkillSubmit);
+    }
+    
+    const addMemberForm = document.getElementById('add-member-form');
+    if (addMemberForm) {
+        addMemberForm.addEventListener('submit', handleAddMemberSubmit);
+    }
+    
+    // Handle skill category change
+    const skillCategorySelect = document.getElementById('skill-category-select');
+    if (skillCategorySelect) {
+        skillCategorySelect.addEventListener('change', function() {
+            const categoryId = this.value;
+            populateSkillsByCategory(categoryId);
+        });
+    }
+    
+    // Auto-refresh data every 30 seconds
+    setInterval(() => {
+        loadTeamsData();
+        loadTeamStatistics();
+    }, 30000);
+});
+
+function populateSkillsByCategory(categoryId) {
+    const skillSelect = document.getElementById('skill-select');
+    skillSelect.innerHTML = '<option value="">Select Skill</option>';
+    
+    if (!categoryId || !skillsData.length) return;
+    
+    const categorySkills = skillsData.filter(skill => skill.category_id == categoryId);
+    categorySkills.forEach(skill => {
+        const option = document.createElement('option');
+        option.value = skill.id;
+        option.textContent = skill.name;
+        skillSelect.appendChild(option);
+    });
+}
+
+// Additional quick access functions for main page
+function addNewUser() {
+    openAddUserModal();
+}
+
+function addNewTeam() {
+    openAddTeamModal();
+}
 </script>
 {% endblock %}

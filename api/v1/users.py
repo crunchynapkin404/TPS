@@ -66,7 +66,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter queryset based on user permissions and query parameters"""
         queryset = User.objects.select_related().prefetch_related(
-            'userskill_set__skill',
+            'user_skills__skill',
             'team_memberships__team',
             'team_memberships__role'
         )
@@ -81,25 +81,20 @@ class UserViewSet(viewsets.ModelViewSet):
         if role:
             queryset = queryset.filter(role=role)
         
-        # Filter by department
-        department = self.request.query_params.get('department')
-        if department:
-            queryset = queryset.filter(department=department)
-        
         # Filter by team
         team_id = self.request.query_params.get('team_id')
         if team_id:
             queryset = queryset.filter(
-                teammembership__team_id=team_id,
-                teammembership__is_active=True
+                team_memberships__team_id=team_id,
+                team_memberships__is_active=True
             )
         
         # Filter by skills
         skill_ids = self.request.query_params.getlist('skill_ids')
         if skill_ids:
             queryset = queryset.filter(
-                userskill__skill_id__in=skill_ids,
-                userskill__proficiency_level__gte=3  # Proficient or above
+                user_skills__skill_id__in=skill_ids,
+                user_skills__proficiency_level__in=['advanced', 'expert']
             ).distinct()
         
         # Search by name or employee ID

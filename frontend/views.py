@@ -325,97 +325,8 @@ class TeamDetailView(BaseView):
 
 
 class ScheduleView(BaseView):
-    """Schedule calendar page with timeline view - desktop optimized"""
+    """Schedule calendar page with timeline view - production ready"""
     template_name = 'pages/schedule.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Get current date and week range
-        today = timezone.now().date()
-        
-        # Get week parameter or default to current week
-        week_offset = int(self.request.GET.get('week', 0))
-        current_week_start = today - timedelta(days=today.weekday()) + timedelta(weeks=week_offset)
-        week_days = [current_week_start + timedelta(days=i) for i in range(7)]
-        
-        # Get all teams and their members
-        user = self.request.user
-        user_teams = Team.objects.filter(
-            Q(memberships__user=user) | Q(team_leader=user)
-        ).prefetch_related('memberships__user')
-        
-        # Get all team members for vertical display
-        team_members = []
-        for team in user_teams:
-            for membership in team.memberships.all():
-                team_members.append({
-                    'user': membership.user,
-                    'team': team,
-                    'role': membership.role
-                })
-        
-        # Get all shifts for the week
-        week_shifts = ShiftInstance.objects.filter(
-            start_datetime__date__gte=current_week_start,
-            start_datetime__date__lte=current_week_start + timedelta(days=6),
-            planning_period__teams__in=user_teams
-        ).select_related('template', 'template__category')
-        
-        # Get assignments for the week
-        week_assignments = Assignment.objects.filter(
-            shift__in=week_shifts,
-            status__in=['confirmed', 'pending_confirmation']
-        ).select_related('user', 'shift')
-        
-        # Create timeline data structure: member -> day -> assignments
-        timeline_data = {}
-        for member_data in team_members:
-            member_id = member_data['user'].id
-            timeline_data[member_id] = {
-                'member': member_data,
-                'days': {}
-            }
-            
-            # Initialize each day
-            for day in week_days:
-                timeline_data[member_id]['days'][day.isoformat()] = []
-        
-        # Populate assignments into timeline
-        for assignment in week_assignments:
-            if assignment.user and assignment.user.id in timeline_data:
-                shift_date = assignment.shift.start_datetime.date()
-                day_key = shift_date.isoformat()
-                if day_key in timeline_data[assignment.user.id]['days']:
-                    timeline_data[assignment.user.id]['days'][day_key].append(assignment)
-        
-        # Calculate week statistics
-        total_shifts = week_shifts.count()
-        assigned_shifts = week_assignments.filter(status='confirmed').count()
-        coverage_percentage = (assigned_shifts / total_shifts * 100) if total_shifts > 0 else 100
-        
-        context.update({
-            'page_title': 'Schedule Calendar',
-            'active_nav': 'schedule',
-            'week_start': current_week_start,
-            'week_days': week_days,
-            'timeline_data': timeline_data,
-            'team_members': team_members,
-            'user_teams': user_teams,
-            'week_shifts': week_shifts,
-            'total_shifts': total_shifts,
-            'assigned_shifts': assigned_shifts,
-            'coverage_percentage': round(coverage_percentage, 1),
-            'week_offset': week_offset,
-            'prev_week': week_offset - 1,
-            'next_week': week_offset + 1,
-        })
-        return context
-
-
-class ScheduleNewView(TemplateView):  # Temporarily removed LoginRequiredMixin for debugging
-    """New clean Tailwind-based schedule calendar"""
-    template_name = 'pages/schedule_new.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -423,31 +334,21 @@ class ScheduleNewView(TemplateView):  # Temporarily removed LoginRequiredMixin f
         # Get current date
         today = timezone.now().date()
         
-        # For debugging, get a test user
-        from apps.accounts.models import User
-        try:
-            user = User.objects.get(username='user2')
-        except User.DoesNotExist:
-            user = User.objects.first()
-            
         # Get user's teams for filtering
+        user = self.request.user
         user_teams = Team.objects.filter(
             Q(memberships__user=user) | Q(team_leader=user)
-        )
-        
-        # Debug: print user and teams info
-        print(f"DEBUG: User = {user.username if user else 'None'}")
-        print(f"DEBUG: User teams = {[(t.pk, t.name) for t in user_teams]}")
+        ).distinct()
         
         context.update({
             'page_title': 'Team Schedule',
             'active_nav': 'schedule',
             'current_date': today,
             'user_teams': user_teams,
-            'debug_user': user.username if user else 'None',
-            'debug_teams': [(t.pk, t.name) for t in user_teams],
         })
         return context
+
+
 
 
 class AssignmentsView(BaseView):
@@ -560,29 +461,7 @@ class ProfileView(BaseView):
         return context
 
 
-class CalendarUnifiedView(BaseView):
-    """Unified calendar view that consolidates all calendar implementations"""
-    template_name = 'pages/calendar_unified.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Get current date
-        today = timezone.now().date()
-        
-        # Get user's teams
-        user = self.request.user
-        user_teams = Team.objects.filter(
-            Q(memberships__user=user) | Q(team_leader=user)
-        ).distinct()
-        
-        context.update({
-            'page_title': 'Unified Calendar',
-            'active_nav': 'calendar',
-            'current_date': today,
-            'user_teams': user_teams,
-        })
-        return context
+
 
 
 class LoginView(DjangoLoginView):

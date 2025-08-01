@@ -2,143 +2,601 @@
 {% load static %}
 
 {% block extra_css %}
-<!-- CSRF Token for API calls -->
 <meta name="csrf-token" content="{{ csrf_token }}">
+<style>
+    /* Make calendar take full viewport, accounting for sidebar */
+    .calendar-container {
+        position: fixed !important;
+        top: 0 !important;
+        left: 280px !important; /* w-70 = 280px */
+        right: 0 !important;
+        bottom: 0 !important;
+        height: 100vh !important;
+        width: calc(100vw - 280px) !important;
+        z-index: 10 !important;
+    }
+    
+    /* Large screen sidebar adjustment */
+    @media (min-width: 1024px) {
+        .calendar-container {
+            left: 320px !important; /* lg:w-80 = 320px */
+            width: calc(100vw - 320px) !important;
+        }
+    }
+    
+    /* Perfect alignment for all calendar views using CSS Grid */
+    .calendar-grid {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        height: 100%;
+    }
+
+    /* Week view specific CSS Grid */
+    .week-container {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        grid-template-rows: auto 1fr;
+        height: 100%;
+        gap: 0;
+    }
+
+    .week-header-corner {
+        grid-column: 1;
+        grid-row: 1;
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .week-days-header {
+        grid-column: 2;
+        grid-row: 1;
+        display: flex;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .week-users-list {
+        grid-column: 1;
+        grid-row: 2;
+        border-right: 1px solid #e2e8f0;
+        overflow-y: auto;
+    }
+
+    .week-content {
+        grid-column: 2;
+        grid-row: 2;
+        overflow: auto;
+    }
+
+    /* Month view specific CSS Grid */
+    .month-container {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        grid-template-rows: auto 1fr;
+        height: 100%;
+        gap: 0;
+    }
+
+    .month-header-corner {
+        grid-column: 1;
+        grid-row: 1;
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .month-days-header {
+        grid-column: 2;
+        grid-row: 1;
+        display: flex;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .month-users-list {
+        grid-column: 1;
+        grid-row: 2;
+        border-right: 1px solid #e2e8f0;
+        overflow-y: auto;
+    }
+
+    .month-content {
+        grid-column: 2;
+        grid-row: 2;
+        overflow: auto;
+    }
+
+    /* Year view styling */
+    .year-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    /* Assignment blocks with enhanced styling */
+    .assignment-block {
+        font-size: 10px;
+        padding: 3px 6px;
+        margin-bottom: 1px;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.2);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .assignment-block:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10;
+        border-color: rgba(255,255,255,0.4);
+    }
+
+    .assignment-block:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    /* Assignment type specific styles with gradients */
+    .assignment-waakdienst {
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+        border-left: 3px solid #1d4ed8;
+    }
+
+    .assignment-incident {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-left: 3px solid #b91c1c;
+    }
+
+    .assignment-standby {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-left: 3px solid #047857;
+    }
+
+    .assignment-training {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        border-left: 3px solid #6d28d9;
+    }
+
+    .assignment-meeting {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        border-left: 3px solid #b45309;
+    }
+
+    .assignment-leave {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        border-left: 3px solid #374151;
+    }
+
+    .assignment-changes {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        border-left: 3px solid #4338ca;
+    }
+
+    .assignment-maintenance {
+        background: linear-gradient(135deg, #14b8a6, #0d9488);
+        border-left: 3px solid #0f766e;
+    }
+
+    .assignment-other {
+        background: linear-gradient(135deg, #64748b, #475569);
+        border-left: 3px solid #334155;
+    }
+
+    /* Calendar cell enhancements */
+    .calendar-cell {
+        position: relative;
+        transition: all 0.2s ease;
+        min-height: 60px;
+        border-bottom: 1px solid #e5e7eb;
+        border-right: 1px solid #e5e7eb;
+    }
+
+    .calendar-cell:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+    }
+
+    .calendar-cell.has-assignments {
+        background-color: rgba(248, 250, 252, 0.8);
+    }
+
+    /* Weekend and today indicators - subtle background highlights */
+    .day-weekend {
+        background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+        border-top: 2px solid #f59e0b;
+    }
+
+    .day-today {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe) !important;
+        border-top: 3px solid #3b82f6;
+        box-shadow: 0 0 0 1px #93c5fd;
+        animation: todayPulse 2s infinite;
+    }
+
+    @keyframes todayPulse {
+        0%, 100% { box-shadow: 0 0 0 1px #93c5fd; }
+        50% { box-shadow: 0 0 0 2px #93c5fd; }
+    }
+    
+    /* Cell weekend/today backgrounds - much more subtle */
+    .calendar-cell.cell-weekend {
+        background-color: rgba(251, 191, 36, 0.05) !important;
+        border-right: 1px solid #f59e0b;
+        border-left: 3px solid #f59e0b;
+    }
+    
+    .calendar-cell.cell-today {
+        background-color: rgba(59, 130, 246, 0.08) !important;
+        border-right: 2px solid #3b82f6;
+        border-left: 3px solid #3b82f6;
+        position: relative;
+    }
+    
+    .calendar-cell.cell-today::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #3b82f6;
+        z-index: 1;
+    }
+
+    /* Consolidated assignment special styling */
+    .assignment-block[data-is-consolidated="true"] {
+        background: linear-gradient(135deg, #3b82f6, #1e40af, #1e3a8a) !important;
+        border-left: 4px solid #1d4ed8 !important;
+        font-weight: 700;
+        position: relative;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .assignment-block[data-is-consolidated="true"]::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 8px;
+        height: 8px;
+        background: #fbbf24;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.8), 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .assignment-block[data-is-consolidated="true"]::before {
+        content: attr(data-shift-count) 'x';
+        position: absolute;
+        top: 1px;
+        left: 2px;
+        font-size: 8px;
+        font-weight: 800;
+        color: rgba(255,255,255,0.9);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* Drag and drop visual feedback */
+    .assignment-block.dragging {
+        opacity: 0.7;
+        transform: rotate(2deg) scale(1.05);
+        z-index: 1000;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        cursor: grabbing;
+    }
+
+    .calendar-cell.drag-over {
+        background-color: rgba(59, 130, 246, 0.15);
+        border: 2px dashed #3b82f6;
+        border-radius: 6px;
+        transform: scale(1.02);
+        transition: all 0.2s ease;
+    }
+
+    .calendar-cell.empty-cell::before {
+        content: '+';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 24px;
+        height: 24px;
+        border: 2px dashed #d1d5db;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #9ca3af;
+        font-weight: bold;
+    }
+
+    .calendar-cell.empty-cell:hover::before {
+        opacity: 1;
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .assignment-block {
+            font-size: 9px;
+            padding: 1px 4px;
+        }
+        
+        .calendar-cell {
+            min-height: 50px;
+        }
+        
+        .week-container,
+        .month-container {
+            grid-template-columns: 150px 1fr;
+        }
+    }
+
+    /* Dark mode adjustments */
+    .dark .calendar-cell {
+        border-bottom: 1px solid #374151;
+        border-right: 1px solid #374151;
+    }
+    
+    .dark .calendar-cell.has-assignments {
+        background-color: rgba(31, 41, 55, 0.8);
+    }
+    
+    .dark .calendar-cell.empty-cell::before {
+        border-color: #4b5563;
+    }
+    
+    .dark .assignment-block {
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    .dark .calendar-cell.cell-weekend {
+        background-color: rgba(217, 119, 6, 0.1) !important;
+        border-left: 3px solid #f59e0b;
+    }
+    
+    .dark .calendar-cell.cell-today {
+        background-color: rgba(37, 99, 235, 0.15) !important;
+        border-left: 3px solid #3b82f6;
+    }
+
+    /* Scrollbar styling */
+    .month-content::-webkit-scrollbar,
+    .week-content::-webkit-scrollbar,
+    .month-users-list::-webkit-scrollbar,
+    .week-users-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .month-content::-webkit-scrollbar-track,
+    .week-content::-webkit-scrollbar-track,
+    .month-users-list::-webkit-scrollbar-track,
+    .week-users-list::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .month-content::-webkit-scrollbar-thumb,
+    .week-content::-webkit-scrollbar-thumb,
+    .month-users-list::-webkit-scrollbar-thumb,
+    .week-users-list::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+    .month-content::-webkit-scrollbar-thumb:hover,
+    .week-content::-webkit-scrollbar-thumb:hover,
+    .month-users-list::-webkit-scrollbar-thumb:hover,
+    .week-users-list::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 {% csrf_token %}
-<div class="h-full bg-white dark:bg-gray-800 overflow-hidden flex flex-col">
-    <!-- Header with Month Navigation -->
-    <div class="bg-gradient-to-br from-slate-800 to-slate-700 dark:from-slate-900 dark:to-slate-800 p-4 text-white flex justify-between items-center flex-wrap gap-4 flex-shrink-0">
-        <div>
-            <div class="text-2xl font-semibold">Team Schedule</div>
-            <div class="flex gap-5 text-sm" id="calendar-stats">
-                <div class="flex flex-col items-center">
-                    <div class="text-lg font-bold" id="total-assignments">-</div>
-                    <div class="text-gray-300">Assignments</div>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="text-lg font-bold" id="active-users">-</div>
-                    <div class="text-gray-300">Active Users</div>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="text-lg font-bold" id="waakdienst-coverage">-</div>
-                    <div class="text-xs uppercase tracking-wide text-gray-400">Waakdienst (7d)</div>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="text-lg font-bold" id="incident-coverage">-</div>
-                    <div class="text-xs uppercase tracking-wide text-gray-400">Incident (5d)</div>
-                </div>
-            </div>
-        </div>
-        <div class="header-info">
-            <div class="flex gap-3 items-center">
-                <button class="bg-white/20 hover:bg-white/30 border-0 text-white px-3 py-2 rounded-md cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95" onclick="changeMonth(-1)">
-                    <i class="fas fa-chevron-left"></i> Previous
-                </button>
-                <div class="font-semibold mx-3" id="current-month">
-                    Loading...
-                </div>
-                <button class="bg-white/20 hover:bg-white/30 border-0 text-white px-3 py-2 rounded-md cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95" onclick="changeMonth(1)">
-                    Next <i class="fas fa-chevron-right"></i>
-                </button>
-                <button class="bg-white/20 hover:bg-white/30 border-0 text-white px-3 py-2 rounded-md cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95" onclick="goToCurrentMonth()">
-                    Today
-                </button>
-                <button class="bg-white/20 hover:bg-white/30 border-0 text-white px-3 py-2 rounded-md cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95" onclick="changeMonth(1)">
-                    Next <i class="fas fa-chevron-right"></i>
-                </button>
-                <button class="bg-white/20 hover:bg-white/30 border-0 text-white px-3 py-2 rounded-md cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95" onclick="goToCurrentMonth()">
-                    Today
-                </button>
-                <button class="bg-white/20 hover:bg-white/30 border-0 text-white px-3 py-2 rounded-md cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95" onclick="showKeyboardShortcuts()" title="Keyboard Shortcuts">
-                    <i class="fas fa-keyboard"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Calendar Grid Container -->
-    <div class="flex-1 grid grid-cols-[240px_1fr] overflow-hidden min-h-0">
-        <!-- Users Sidebar -->
-        <div class="bg-gray-50 dark:bg-gray-700 border-r-2 border-gray-200 dark:border-gray-600 flex flex-col h-full">
-            <div class="bg-gray-700 dark:bg-gray-800 text-white font-semibold text-center border-b-2 border-gray-600 dark:border-gray-500 text-base h-16 flex items-center justify-center flex-shrink-0">
-                Team Members
-            </div>
-            <div class="flex-1 overflow-y-auto min-h-0" id="users-list">
-                <div class="text-center text-gray-500 dark:text-gray-400 p-4">Loading users...</div>
-            </div>
-        </div>
-        
-        <!-- Calendar Content -->
-        <div class="flex flex-col overflow-hidden h-full min-h-0">
-            <!-- Days Header -->
-            <div class="bg-gray-700 dark:bg-gray-800 text-white h-16 flex-shrink-0 overflow-hidden">
-                <div class="flex" id="days-header">
-                    <div class="text-center text-gray-500 dark:text-gray-400 p-4">Loading days...</div>
+
+<div class="calendar-container h-full flex flex-col bg-white dark:bg-gray-800 overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white p-3 flex-shrink-0">
+        <div class="flex justify-between items-center">
+            <!-- Title & Stats -->
+            <div class="flex items-center gap-6">
+                <h1 class="text-xl font-bold">Team Schedule</h1>
+                <div class="flex gap-4 text-sm">
+                    <div class="text-center">
+                        <div class="font-semibold" id="total-assignments">-</div>
+                        <div class="opacity-80">Assignments</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-semibold" id="active-users">-</div>
+                        <div class="opacity-80">Active Users</div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Assignment Grid -->
-            <div class="flex-1 overflow-auto min-h-0" id="assignments-grid-container">
-                <div class="flex min-h-full" id="assignments-grid">
-                    <div class="text-center text-gray-500 dark:text-gray-400 p-4">Loading assignments...</div>
+            <!-- Navigation & View Switcher -->
+            <div class="flex items-center gap-4">
+                <!-- View Switcher -->
+                <div class="flex bg-white/10 rounded-lg p-1">
+                    <button onclick="switchView('week')" id="view-week" class="px-3 py-1 rounded-md text-xs font-medium transition-colors">
+                        Week
+                    </button>
+                    <button onclick="switchView('month')" id="view-month" class="px-3 py-1 rounded-md text-xs font-medium bg-white/20 text-white">
+                        Month
+                    </button>
+                    <button onclick="switchView('year')" id="view-year" class="px-3 py-1 rounded-md text-xs font-medium transition-colors">
+                        Year
+                    </button>
                 </div>
+                
+                <!-- Navigation -->
+                <div class="flex items-center gap-2">
+                    <button onclick="navigatePrevious()" class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm">
+                        ← Previous
+                    </button>
+                    <div class="px-3 py-2 font-semibold text-sm" id="current-period">Loading...</div>
+                    <button onclick="navigateNext()" class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm">
+                        Next →
+                    </button>
+                    <button onclick="goToToday()" class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm">
+                        Today
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Views Container -->
+    <div class="flex-1 flex flex-col min-h-0">
+        <!-- Week View -->
+        <div id="week-view" class="hidden">
+            <div class="week-container">
+                <!-- Header corner -->
+                <div class="week-header-corner p-3 flex items-center justify-center">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Team Members</span>
+                </div>
+                
+                <!-- Days header -->
+                <div id="week-days-header" class="week-days-header">
+                    <!-- Days will be populated by JavaScript -->
+                </div>
+                
+                <!-- Users list -->
+                <div id="week-users-list" class="week-users-list">
+                    <!-- Users will be populated by JavaScript -->
+                </div>
+                
+                <!-- Assignment content -->
+                <div id="week-content" class="week-content">
+                    <!-- Assignment grid will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Month View -->
+        <div id="month-view" class="flex-1 flex flex-col min-h-0">
+            <div class="month-container">
+                <!-- Header corner -->
+                <div class="month-header-corner p-3 flex items-center justify-center">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Team Members</span>
+                </div>
+                
+                <!-- Days header -->
+                <div id="days-header" class="month-days-header">
+                    <!-- Days will be populated by JavaScript -->
+                </div>
+                
+                <!-- Users list -->
+                <div id="users-list" class="month-users-list">
+                    <!-- Users will be populated by JavaScript -->
+                </div>
+                
+                <!-- Assignment content -->
+                <div id="assignments-grid" class="month-content">
+                    <!-- Assignment grid will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Year View -->
+        <div id="year-view" class="hidden flex-1 p-4 overflow-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto" id="year-months">
+                <!-- 12 month cards will be generated here -->
             </div>
         </div>
     </div>
 </div>
 
-<!-- Assignment Detail Modal -->
-<div id="assignment-modal" class="hidden">
-    <!-- Will be populated by JavaScript -->
+<!-- Notification Area -->
+<div id="notifications" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+<!-- Assignment Modal -->
+<div id="assignment-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+        <!-- Modal content will be inserted here -->
+    </div>
 </div>
 
-<!-- Bulk Actions Toolbar -->
-<div class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 px-5 py-3 rounded-xl shadow-lg hidden z-[1001] gap-3 items-center" id="bulk-actions">
-    <span class="text-sm">Selected: <span id="selection-count">0</span> items</span>
-    <button class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-all duration-200" onclick="bulkMoveAssignments()">Move</button>
-    <button class="px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-all duration-200" onclick="bulkCopyAssignments()">Copy</button>
-    <button class="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-200" onclick="bulkDeleteAssignments()">Delete</button>
-    <button class="px-3 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-all duration-200" onclick="clearSelection()">Clear</button>
-</div>
-
-<!-- Context Menu -->
-<div class="fixed bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-2 z-[1000] min-w-[160px] hidden" id="context-menu">
-    <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-2" onclick="contextAction('view')">
-        <i class="fas fa-eye"></i> View Details
-    </div>
-    <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-2" onclick="contextAction('edit')">
-        <i class="fas fa-edit"></i> Edit Assignment
-    </div>
-    <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
-    <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-2" onclick="contextAction('copy')">
-        <i class="fas fa-copy"></i> Copy Assignment
-    </div>
-    <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-2" onclick="contextAction('move')">
-        <i class="fas fa-arrows-alt"></i> Move Assignment
-    </div>
-    <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
-    <div class="px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer flex items-center gap-2" onclick="contextAction('delete')">
-        <i class="fas fa-trash"></i> Delete Assignment
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Clean Schedule JavaScript
-let currentDate = new Date();
-let currentTeamId = 4;
-let calendarData = null;
-let selectedAssignments = new Set();
-let draggedAssignment = null;
-let isMultiSelectMode = false;
-let contextMenuTarget = null;
+console.log('🚀 New Calendar Loading...');
 
-// Global date/time formatting functions for consistent EU format
+// Global state
+let currentDate = new Date();
+let currentTeamId = 4; // Use working team ID like the old version
+let calendarData = null;
+let isLoading = false;
+let currentView = 'month'; // week, month, year
+
+// Utility functions
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        warning: 'bg-yellow-500',
+        info: 'bg-blue-500'
+    };
+    
+    notification.className = `${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300`;
+    notification.textContent = message;
+    
+    const container = document.getElementById('notifications');
+    if (container) {
+        container.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    } else {
+        console.log(`Notification (${type}):`, message);
+    }
+}
+
 function formatDate(date) {
+    return new Date(date).toLocaleDateString('en-GB');
+}
+
+function formatTime(time) {
+    return time.substring(0, 5); // Remove seconds
+}
+
+// Initialize calendar when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 DOM loaded, initializing calendar...');
+    
+    // Initialize with month view
+    switchView('month');
+    
+    // Close modal when clicking outside
+    const modal = document.getElementById('assignment-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    }
+});
+
+console.log('📝 Calendar script loaded successfully!');
+</script>
+{% endblock %}
     // DD/MM/YYYY format
     if (typeof date === 'string') {
         date = new Date(date);

@@ -92,6 +92,8 @@
             
             <!-- Main Content Area -->
             <div class="flex-1 min-w-0 h-full transition-all duration-300 ease-in-out bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 overflow-hidden">
+                <!-- Header with language switch -->
+                {% include 'components/header.html' %}
                 <div class="h-full w-full overflow-hidden">
                     {% block content %}{% endblock %}
                 </div>

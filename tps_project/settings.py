@@ -145,6 +145,12 @@ USE_I18N = True
 USE_L10N = True  # Enable localization
 USE_TZ = True
 
+# Language support for TPS - English and Dutch
+LANGUAGES = [
+    ('en', 'English'),
+    ('nl', 'Dutch'),
+]
+
 # Custom locale directory
 LOCALE_PATHS = [
     BASE_DIR / 'locale',

@@ -30,3 +30,17 @@ factory-boy==3.3.*
 # Utilities
 python-dotenv==1.0.*
 pillow==10.0.*
+
+# Production Dependencies
+gunicorn==23.0.*
+gevent==24.2.*
+psutil==6.1.*
+whitenoise==6.8.*
+
+# Monitoring & Logging
+structlog==24.4.*
+django-health-check==3.18.*
+
+# Security & Performance
+django-ratelimit==4.1.*
+channels-redis==4.2.*

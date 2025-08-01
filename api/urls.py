@@ -1,10 +1,18 @@
 """
 TPS V1.4 - API URL Configuration
 URL routing for Django REST Framework API endpoints
+ENHANCED with async performance-optimized endpoints
 """
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+
+# Import async views for performance optimization
+try:
+    from api.v1 import async_views
+    ASYNC_VIEWS_AVAILABLE = True
+except ImportError:
+    ASYNC_VIEWS_AVAILABLE = False
 
 from api.v1.users import UserViewSet
 from api.v1.teams import TeamViewSet
@@ -338,6 +346,15 @@ urlpatterns = [
     # Authentication endpoints
     path('auth/', include('rest_framework.urls')),
 ]
+
+# Add async performance-optimized endpoints if available
+if ASYNC_VIEWS_AVAILABLE:
+    urlpatterns.extend([
+        # Async performance-optimized endpoints
+        path('v1/async/dashboard/', async_views.async_dashboard_data, name='async-dashboard-data'),
+        path('v1/async/team-workload/', async_views.async_team_workload_stats, name='async-team-workload'),
+        path('v1/async/bulk-operations/', async_views.async_bulk_operations, name='async-bulk-operations'),
+    ])
 
 # Note: JSON format is default - no need for format suffix patterns
 

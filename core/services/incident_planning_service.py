@@ -56,9 +56,9 @@ class IncidentPlanningService:
         """Get engineers qualified for incident response roles"""
         from apps.accounts.models import User
         
-        # Simple qualification: just need "Incidenten" skill
+        # Simple qualification: just need "Incident" skill
         qualified_users = User.objects.filter(
-            user_skills__skill__name="Incidenten"
+            user_skills__skill__name="Incident"
         ).distinct()
         
         if exclude_user:

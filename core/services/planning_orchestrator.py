@@ -107,7 +107,7 @@ class PlanningOrchestrator:
         for user in team_members:
             # Check if user has any of the core operational skills
             has_operational_skills = user.user_skills.filter(
-                skill__name__in=['Incidenten', 'Waakdienst', 'Projects', 'Changes']
+                skill__name__in=['Incident', 'Waakdienst', 'Projects', 'Changes']
             ).exists()
             
             if not has_operational_skills:

@@ -27,7 +27,7 @@ class SkillsService:
         """
         Get users qualified for a specific shift template
         Based on simplified skill system with only 4 skills:
-        - Incidenten (incident response)
+        - Incident (incident response)
         - Projects (daily default work)
         - Changes (daily default work)
         - Waakdienst (on-call duty)
@@ -46,7 +46,7 @@ class SkillsService:
         # Map shift categories to required skills
         category_skill_mapping = {
             'WAAKDIENST': 'Waakdienst',
-            'INCIDENT': 'Incidenten',
+            'INCIDENT': 'Incident',
             'CHANGES': 'Changes',
             'PROJECTS': 'Projects'
         }
@@ -87,7 +87,7 @@ class SkillsService:
         # Map shift categories to required skills
         category_skill_mapping = {
             'WAAKDIENST': 'Waakdienst',
-            'INCIDENT': 'Incidenten'
+            'INCIDENT': 'Incident'
         }
         
         required_skill_name = category_skill_mapping.get(shift_template.category.name)
@@ -181,7 +181,7 @@ class SkillsService:
         # Map shift categories to required skills
         category_skill_mapping = {
             'WAAKDIENST': 'Waakdienst',
-            'INCIDENT': 'Incidenten',
+            'INCIDENT': 'Incident',
             'CHANGES': 'Changes', 
             'PROJECTS': 'Projects'
         }
@@ -211,7 +211,7 @@ class SkillsService:
         ).count()
         
         # Minimum requirements based on skill type
-        min_required = 3 if required_skill_name in ['Waakdienst', 'Incidenten'] else 2
+        min_required = 3 if required_skill_name in ['Waakdienst', 'Incident'] else 2
         
         if qualified_count < min_required:
             skill_gaps['missing_skills'].append({
@@ -313,7 +313,7 @@ class SkillsService:
         # Map shift categories to required skills
         category_skill_mapping = {
             'WAAKDIENST': 'Waakdienst',
-            'INCIDENT': 'Incidenten',
+            'INCIDENT': 'Incident',
             'CHANGES': 'Changes',
             'PROJECTS': 'Projects'
         }

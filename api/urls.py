@@ -41,11 +41,11 @@ from api.v1.assignments_overview import (
 from api.v1.profile import (
     get_current_user_profile, update_current_user_profile, update_user_preferences,
     add_user_skill, update_user_skill, delete_user_skill
+)
 
 from api.v1.skills import (
     skill_categories, skills_list, user_skills, create_user_skill, 
     update_user_skill, delete_user_skill
-
 )
 
 # Notification API imports

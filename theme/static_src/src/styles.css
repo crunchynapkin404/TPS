@@ -123,7 +123,7 @@
   }
   
   .form-input {
-    @apply block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-gray-100 text-sm transition-colors;
+    @apply block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 text-sm transition-colors;
   }
   
   .form-input:disabled {
@@ -140,11 +140,11 @@
   }
   
   .btn-primary {
-    @apply btn border-transparent text-white bg-primary hover:bg-primary-dark focus:ring-primary;
+    @apply btn border-transparent text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500;
   }
   
   .btn-secondary {
-    @apply btn border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-primary;
+    @apply btn border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:ring-blue-500;
   }
   
   .btn-success {

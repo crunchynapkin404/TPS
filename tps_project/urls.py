@@ -19,15 +19,21 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
+from django.http import HttpResponse
 from core.views import test_formats_view
 
 def accounts_login_redirect(request):
     """Redirect /accounts/login/ to /login/"""
     return redirect('/login/')
 
+def favicon_view(request):
+    """Serve favicon"""
+    return redirect('/static/images/favicon.svg')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', accounts_login_redirect, name='accounts_login_redirect'),
+    path('favicon.ico', favicon_view, name='favicon'),
     path('api/', include('api.urls')),
     path('leave/', include('apps.leave_management.urls')),
     path('test-formats/', test_formats_view, name='test_formats'),  # Test endpoint

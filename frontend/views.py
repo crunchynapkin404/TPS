@@ -43,7 +43,6 @@ class DashboardView(BaseView):
         dashboard_context.update({
             'page_title': 'Dashboard',
             'active_nav': 'dashboard',
-            'today': timezone.now().date(),  # Add today's date
         })
         
         context.update(dashboard_context)

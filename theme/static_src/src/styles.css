@@ -10,6 +10,54 @@
 }
 
 @layer components {
+  /* Sidebar Components */
+  .sidebar-text {
+    @apply transition-opacity duration-300;
+  }
+  
+  .sidebar-brand {
+    @apply transition-opacity duration-300;
+  }
+  
+  /* Sidebar collapse behavior */
+  .sidebar-collapsed .sidebar-text {
+    @apply opacity-0 pointer-events-none;
+  }
+  
+  .sidebar-collapsed .sidebar-brand {
+    @apply opacity-0 pointer-events-none;
+  }
+  
+  /* Theme-specific role colors */
+  .theme-admin {
+    @apply bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800;
+  }
+  
+  .theme-manager {
+    @apply bg-gradient-to-b from-amber-900 to-amber-800 dark:from-amber-900 dark:to-amber-800;
+  }
+  
+  .theme-planner {
+    @apply bg-gradient-to-b from-blue-900 to-blue-800 dark:from-blue-900 dark:to-blue-800;
+  }
+  
+  .theme-user {
+    @apply bg-gradient-to-b from-purple-900 to-purple-800 dark:from-purple-900 dark:to-purple-800;
+  }
+  
+  /* Role-specific border and accent colors */
+  .border-role {
+    @apply border-gray-700 dark:border-gray-600;
+  }
+  
+  .text-role-accent {
+    @apply text-gray-300 dark:text-gray-400;
+  }
+  
+  .bg-role-hover {
+    @apply bg-gray-700 dark:bg-gray-600;
+  }
+
   /* Form Components */
   .form-label {
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;

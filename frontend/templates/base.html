@@ -65,8 +65,8 @@
     {% if user.is_authenticated %}
         <div class="flex h-screen w-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
             <!-- Sidebar with Alpine.js toggle functionality -->
-            <div class="flex-shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-visible z-40 flex flex-col bg-gray-800 dark:bg-gray-900 w-70 lg:w-80" 
-                 :class="sidebarCollapsed ? 'w-16' : 'w-70 lg:w-80'"
+            <div class="flex-shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-visible z-40 flex flex-col bg-gray-800 dark:bg-gray-900" 
+                 :class="sidebarCollapsed ? 'w-16' : 'w-72 lg:w-80'"
                  id="sidebar">
                 <!-- Desktop Toggle Button -->
                 <button @click="sidebarCollapsed = !sidebarCollapsed"

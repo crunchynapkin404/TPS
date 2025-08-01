@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # Language switching support
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -64,6 +65,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',  # Required for language switching
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -139,7 +141,7 @@ else:
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
 
-LANGUAGE_CODE = 'en-gb'  # Use British English for DD/MM/YYYY format
+LANGUAGE_CODE = 'en'  # Default language
 TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
 USE_L10N = True  # Enable localization

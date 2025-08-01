@@ -1,0 +1,40 @@
+# Dutch translation for TPS
+msgid ""
+msgstr ""
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "My Schedule"
+msgstr "Mijn Schema"
+
+msgid "My Assignments"
+msgstr "Mijn Opdrachten"
+
+msgid "My Team"
+msgstr "Mijn Team"
+
+msgid "Swap Requests"
+msgstr "Wissel Verzoeken"
+
+msgid "My Leave"
+msgstr "Mijn Verlof"
+
+msgid "Welcome back"
+msgstr "Welkom terug"
+
+msgid "TPS User"
+msgstr "TPS Gebruiker"
+
+msgid "Team Member"
+msgstr "Teamlid"
+
+msgid "My Work"
+msgstr "Mijn Werk"
+
+msgid "Team"
+msgstr "Team"

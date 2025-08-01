@@ -30,7 +30,53 @@
             </div>
         </div>
         <!-- Theme Toggle & Notifications -->
-        <div class="flex items-center gap-2" :class="sidebarCollapsed ? 'flex-col absolute right-2 top-2' : ''">>>
+        <div class="flex items-center gap-2" :class="sidebarCollapsed ? 'flex-col absolute right-2 top-2' : ''" x-data="{ languageDropdownOpen: false }">
+            <!-- DEBUG: This should be visible -->
+            <div class="text-red-500 font-bold">🌐</div>
+            
+            <!-- Language Toggle -->
+            <div class="relative">
+                <button @click="languageDropdownOpen = !languageDropdownOpen" 
+                        class="text-blue-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-blue-700 flex items-center gap-1" 
+                        title="Change Language">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                    </svg>
+                    <span x-show="!sidebarCollapsed" class="text-xs font-medium">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% if LANGUAGE_CODE == 'nl' %}NL{% else %}EN{% endif %}
+                    </span>
+                </button>
+                
+                <!-- Language dropdown menu -->
+                <div x-show="languageDropdownOpen && !sidebarCollapsed" 
+                     @click.away="languageDropdownOpen = false"
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="transform opacity-100 scale-100"
+                     x-transition:leave-end="transform opacity-0 scale-95"
+                     class="absolute top-full right-0 mt-2 w-40 bg-blue-700 rounded-lg shadow-lg border border-blue-600 z-50">
+                    <div class="p-2">
+                        <form action="{% url 'set_language' %}" method="post" class="block">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+                            <button type="submit" name="language" value="en" class="w-full text-left px-3 py-2 text-sm text-blue-100 hover:text-white hover:bg-blue-600 rounded-lg {% get_current_language as LANGUAGE_CODE %}{% if LANGUAGE_CODE == 'en' %}bg-blue-600{% endif %}">
+                                <span class="mr-2">🇬🇧</span>English
+                            </button>
+                        </form>
+                        <form action="{% url 'set_language' %}" method="post" class="block">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+                            <button type="submit" name="language" value="nl" class="w-full text-left px-3 py-2 text-sm text-blue-100 hover:text-white hover:bg-blue-600 rounded-lg {% if LANGUAGE_CODE == 'nl' %}bg-blue-600{% endif %}">
+                                <span class="mr-2">🇳🇱</span>Nederlands
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Dark/Light Mode Toggle -->
             <button @click="$store.theme.toggle()" 
                     class="text-blue-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-blue-700" 
@@ -98,7 +144,7 @@
                         <a href="{% url 'frontend:schedule' %}" 
                            class="{% if active_nav == 'schedule' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''"
-                           :title="sidebarCollapsed ? 'My Schedule' : ''">>>
+                           :title="sidebarCollapsed ? 'My Schedule' : ''">
                             <svg class="w-5 h-5 {% if active_nav == 'schedule' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
@@ -110,7 +156,7 @@
                         <a href="{% url 'frontend:assignments' %}" 
                            class="{% if active_nav == 'assignments' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''"
-                           :title="sidebarCollapsed ? 'My Assignments' : ''">>
+                           :title="sidebarCollapsed ? 'My Assignments' : ''">
                             <svg class="w-5 h-5 {% if active_nav == 'assignments' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                             </svg>
@@ -123,7 +169,7 @@
             <!-- Team Section -->
             <li>
                 <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3 mt-6 sidebar-text">
-                    Team
+                    {% trans 'Team' %}
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
                     <!-- My Team -->
@@ -131,11 +177,11 @@
                         <a href="{% url 'frontend:teams' %}" 
                            class="{% if active_nav == 'teams' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''"
-                           :title="sidebarCollapsed ? 'My Team' : ''">>
+                           :title="sidebarCollapsed ? 'My Team' : ''">
                             <svg class="w-5 h-5 {% if active_nav == 'teams' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                             </svg>
-                            <span x-show="!sidebarCollapsed" class="sidebar-text">My Team</span>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">{% trans 'My Team' %}</span>
                         </a>
                     </li>
                     <!-- Swap Requests -->
@@ -143,11 +189,11 @@
                         <a href="{% url 'frontend:swap_requests' %}" 
                            class="{% if active_nav == 'swap_requests' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''"
-                           :title="sidebarCollapsed ? 'Swap Requests' : ''">>
+                           :title="sidebarCollapsed ? 'Swap Requests' : ''">
                             <svg class="w-5 h-5 {% if active_nav == 'swap_requests' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                             </svg>
-                            <span x-show="!sidebarCollapsed" class="sidebar-text">Swap Requests</span>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">{% trans 'Swap Requests' %}</span>
                         </a>
                     </li>
                 </ul>

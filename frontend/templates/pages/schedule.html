@@ -4,6 +4,9 @@
 {% block extra_css %}
 <meta name="csrf-token" content="{{ csrf_token }}">
 <style>
+    /* Alpine.js cloak - Hide elements until Alpine loads */
+    [x-cloak] { display: none !important; }
+    
     /* Make calendar take full viewport, accounting for sidebar */
     .calendar-container {
         position: fixed !important;
@@ -112,99 +115,154 @@
         height: 100%;
     }
 
-    /* Assignment blocks with enhanced styling */
+    /* Enhanced assignment blocks with better styling */
     .assignment-block {
         font-size: 10px;
-        padding: 3px 6px;
+        padding: 2px 4px;
         margin-bottom: 1px;
-        border-radius: 4px;
+        border-radius: 3px;
         color: white;
         cursor: pointer;
         font-weight: 600;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        text-shadow: 0 1px 1px rgba(0,0,0,0.3);
         transition: all 0.2s ease;
         position: relative;
         overflow: hidden;
         border: 1px solid rgba(255,255,255,0.2);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .assignment-block:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
         z-index: 10;
         border-color: rgba(255,255,255,0.4);
     }
 
-    .assignment-block:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
-
-    /* Assignment type specific styles with gradients */
+    /* Assignment type specific styles */
     .assignment-waakdienst {
-        background: linear-gradient(135deg, #3b82f6, #1e40af);
-        border-left: 3px solid #1d4ed8;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-left: 2px solid #047857;
     }
 
     .assignment-incident {
         background: linear-gradient(135deg, #ef4444, #dc2626);
-        border-left: 3px solid #b91c1c;
+        border-left: 2px solid #b91c1c;
     }
 
-    .assignment-standby {
-        background: linear-gradient(135deg, #10b981, #059669);
-        border-left: 3px solid #047857;
+    .assignment-changes {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        border-left: 2px solid #6d28d9;
+    }
+
+    .assignment-maintenance {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        border-left: 2px solid #b45309;
+    }
+
+    .assignment-support {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-left: 2px solid #1d4ed8;
     }
 
     .assignment-training {
-        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-        border-left: 3px solid #6d28d9;
+        background: linear-gradient(135deg, #14b8a6, #0d9488);
+        border-left: 2px solid #0f766e;
+    }
+
+    .assignment-standby {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        border-left: 2px solid #4338ca;
     }
 
     .assignment-meeting {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        border-left: 3px solid #b45309;
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        border-left: 2px solid #c2410c;
     }
 
     .assignment-leave {
         background: linear-gradient(135deg, #6b7280, #4b5563);
-        border-left: 3px solid #374151;
-    }
-
-    .assignment-changes {
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
-        border-left: 3px solid #4338ca;
-    }
-
-    .assignment-maintenance {
-        background: linear-gradient(135deg, #14b8a6, #0d9488);
-        border-left: 3px solid #0f766e;
+        border-left: 2px solid #374151;
     }
 
     .assignment-other {
         background: linear-gradient(135deg, #64748b, #475569);
-        border-left: 3px solid #334155;
+        border-left: 2px solid #334155;
     }
 
     /* Calendar cell enhancements */
     .calendar-cell {
         position: relative;
         transition: all 0.2s ease;
-        min-height: 60px;
+        min-height: 50px;
         border-bottom: 1px solid #e5e7eb;
         border-right: 1px solid #e5e7eb;
     }
 
     .calendar-cell:hover {
         background-color: rgba(59, 130, 246, 0.05);
+        border-color: rgba(59, 130, 246, 0.2);
     }
 
     .calendar-cell.has-assignments {
         background-color: rgba(248, 250, 252, 0.8);
     }
 
-    /* Weekend and today indicators - subtle background highlights */
+    /* Empty cell indicator */
+    .calendar-cell.empty-cell {
+        position: relative;
+    }
+
+    .calendar-cell.empty-cell::before {
+        content: '+';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        border: 1px dashed #d1d5db;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: bold;
+    }
+
+    .calendar-cell.empty-cell:hover::before {
+        opacity: 1;
+        border-color: #3b82f6;
+        color: #3b82f6;
+    }
+
+    /* Loading states */
+    .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* Weekend and today indicators */
     .day-weekend {
         background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
         border-top: 2px solid #f59e0b;
@@ -222,21 +280,21 @@
         50% { box-shadow: 0 0 0 2px #93c5fd; }
     }
     
-    /* Cell weekend/today backgrounds - much more subtle */
+    /* Cell weekend/today backgrounds */
     .calendar-cell.cell-weekend {
         background-color: rgba(251, 191, 36, 0.05) !important;
         border-right: 1px solid #f59e0b;
-        border-left: 3px solid #f59e0b;
+        border-left: 2px solid #f59e0b;
     }
     
     .calendar-cell.cell-today {
         background-color: rgba(59, 130, 246, 0.08) !important;
         border-right: 2px solid #3b82f6;
-        border-left: 3px solid #3b82f6;
+        border-left: 2px solid #3b82f6;
         position: relative;
     }
     
-    .calendar-cell.cell-today::before {
+    .calendar-cell.cell-today::after {
         content: '';
         position: absolute;
         top: 0;
@@ -247,96 +305,25 @@
         z-index: 1;
     }
 
-    /* Consolidated assignment special styling */
-    .assignment-block[data-is-consolidated="true"] {
-        background: linear-gradient(135deg, #3b82f6, #1e40af, #1e3a8a) !important;
-        border-left: 4px solid #1d4ed8 !important;
-        font-weight: 700;
-        position: relative;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        border: 1px solid rgba(255,255,255,0.3);
-    }
-
-    .assignment-block[data-is-consolidated="true"]::after {
-        content: '';
-        position: absolute;
-        top: 2px;
-        right: 2px;
-        width: 8px;
-        height: 8px;
-        background: #fbbf24;
-        border-radius: 50%;
-        box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.8), 0 1px 3px rgba(0,0,0,0.2);
-    }
-
-    .assignment-block[data-is-consolidated="true"]::before {
-        content: attr(data-shift-count) 'x';
-        position: absolute;
-        top: 1px;
-        left: 2px;
-        font-size: 8px;
-        font-weight: 800;
-        color: rgba(255,255,255,0.9);
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    }
-
-    /* Drag and drop visual feedback */
-    .assignment-block.dragging {
-        opacity: 0.7;
-        transform: rotate(2deg) scale(1.05);
-        z-index: 1000;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        cursor: grabbing;
-    }
-
-    .calendar-cell.drag-over {
-        background-color: rgba(59, 130, 246, 0.15);
-        border: 2px dashed #3b82f6;
-        border-radius: 6px;
-        transform: scale(1.02);
-        transition: all 0.2s ease;
-    }
-
-    .calendar-cell.empty-cell::before {
-        content: '+';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 24px;
-        height: 24px;
-        border: 2px dashed #d1d5db;
-        border-radius: 50%;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        color: #9ca3af;
-        font-weight: bold;
-    }
-
-    .calendar-cell.empty-cell:hover::before {
-        opacity: 1;
-        border-color: #3b82f6;
-        color: #3b82f6;
-    }
-
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .assignment-block {
             font-size: 9px;
-            padding: 1px 4px;
+            padding: 1px 3px;
         }
         
         .calendar-cell {
-            min-height: 50px;
+            min-height: 40px;
         }
         
         .week-container,
         .month-container {
-            grid-template-columns: 150px 1fr;
+            grid-template-columns: 120px 1fr;
+        }
+        
+        .calendar-container {
+            left: 0 !important;
+            width: 100vw !important;
         }
     }
 
@@ -352,50 +339,41 @@
     
     .dark .calendar-cell.empty-cell::before {
         border-color: #4b5563;
+        color: #6b7280;
+    }
+    
+    .dark .calendar-cell.empty-cell:hover::before {
+        border-color: #60a5fa;
+        color: #60a5fa;
     }
     
     .dark .assignment-block {
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.4);
     }
     
     .dark .calendar-cell.cell-weekend {
         background-color: rgba(217, 119, 6, 0.1) !important;
-        border-left: 3px solid #f59e0b;
+        border-left: 2px solid #f59e0b;
     }
     
     .dark .calendar-cell.cell-today {
         background-color: rgba(37, 99, 235, 0.15) !important;
-        border-left: 3px solid #3b82f6;
+        border-left: 2px solid #3b82f6;
     }
 
-    /* Scrollbar styling */
-    .month-content::-webkit-scrollbar,
-    .week-content::-webkit-scrollbar,
-    .month-users-list::-webkit-scrollbar,
-    .week-users-list::-webkit-scrollbar {
-        width: 6px;
+    .dark .loading-skeleton {
+        background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
     }
-
-    .month-content::-webkit-scrollbar-track,
-    .week-content::-webkit-scrollbar-track,
-    .month-users-list::-webkit-scrollbar-track,
-    .week-users-list::-webkit-scrollbar-track {
-        background: #f1f5f9;
+    
+    /* Ensure modal is hidden by default */
+    .assignment-modal-overlay {
+        display: none !important;
     }
-
-    .month-content::-webkit-scrollbar-thumb,
-    .week-content::-webkit-scrollbar-thumb,
-    .month-users-list::-webkit-scrollbar-thumb,
-    .week-users-list::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 3px;
-    }
-
-    .month-content::-webkit-scrollbar-thumb:hover,
-    .week-content::-webkit-scrollbar-thumb:hover,
-    .month-users-list::-webkit-scrollbar-thumb:hover,
-    .week-users-list::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+    
+    .assignment-modal-overlay[style*="display: flex"] {
+        display: flex !important;
     }
 </style>
 {% endblock %}
@@ -422,8 +400,33 @@
                 </div>
             </div>
             
-            <!-- Navigation & View Switcher -->
+            <!-- Navigation & Controls -->
             <div class="flex items-center gap-4">
+                <!-- Team Selector -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm flex items-center gap-2">
+                        <span x-text="selectedTeam ? selectedTeam.name : 'Select Team'"></span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-50 border border-gray-200 dark:border-gray-600">
+                        <template x-for="team in availableTeams" :key="team.id">
+                            <button @click="selectTeam(team); open = false" 
+                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
+                                    x-text="team.name">
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                
                 <!-- View Switcher -->
                 <div class="flex bg-white/10 rounded-lg p-1">
                     <button @click="switchView('week')" class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
@@ -433,10 +436,6 @@
                     <button @click="switchView('month')" class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
                             :class="currentView === 'month' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white'">
                         Month
-                    </button>
-                    <button @click="switchView('year')" class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
-                            :class="currentView === 'year' ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white'">
-                        Year
                     </button>
                 </div>
                 
@@ -453,12 +452,47 @@
                         Today
                     </button>
                 </div>
+                
+                <!-- Actions -->
+                <div class="flex items-center gap-2">
+                    <button @click="refreshCalendar()" 
+                            :disabled="isLoading"
+                            class="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm disabled:opacity-50">
+                        <svg class="w-4 h-4" :class="{ 'animate-spin': isLoading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Loading State -->
+    <div x-show="isLoading" class="flex-1 flex items-center justify-center">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div class="text-gray-600 dark:text-gray-400">Loading schedule...</div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div x-show="error && !isLoading" class="flex-1 flex items-center justify-center">
+        <div class="text-center">
+            <div class="text-red-500 mb-4">
+                <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            <div class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Failed to load schedule</div>
+            <div class="text-gray-600 dark:text-gray-400 mb-4" x-text="error"></div>
+            <button @click="loadCalendar()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Try Again
+            </button>
+        </div>
+    </div>
+
     <!-- Calendar Views Container -->
-    <div class="flex-1 flex flex-col min-h-0">
+    <div x-show="!isLoading && !error" class="flex-1 flex flex-col min-h-0">
         <!-- Week View -->
         <div x-show="currentView === 'week'" class="flex-1 flex flex-col min-h-0">
             <div class="week-container">
@@ -508,37 +542,118 @@
                 </div>
             </div>
         </div>
-
-        <!-- Year View -->
-        <div x-show="currentView === 'year'" class="flex-1 p-4 overflow-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto" x-html="yearView">
-                <!-- 12 month cards will be generated here -->
-            </div>
-        </div>
     </div>
 </div>
 
-<!-- Assignment Modal -->
-<div x-show="showModal" 
-     @click.away="closeModal()"
-     x-transition:enter="transition ease-out duration-100"
+<!-- Quick Assignment Modal -->
+<div x-show="showAssignmentModal && !isLoading" 
+     x-cloak
+     @click.away="closeAssignmentModal()"
+     @keydown.escape.window="closeAssignmentModal()"
+     x-transition:enter="transition ease-out duration-200"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
-     x-transition:leave="transition ease-in duration-75"
+     x-transition:leave="transition ease-in duration-150"
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
-     class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+     class="fixed inset-0 bg-black/50 flex items-center justify-center assignment-modal-overlay"
+     style="display: none; z-index: 9999 !important;">
     <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4"
          @click.stop
-         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="transform opacity-0 scale-95"
          x-transition:enter-end="transform opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="transform opacity-100 scale-100"
          x-transition:leave-end="transform opacity-0 scale-95">
-        <div x-html="modalContent">
-            <!-- Modal content will be inserted here -->
+        
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Assignment</h3>
+            <button @click="closeAssignmentModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
+        
+        <form @submit.prevent="createQuickAssignment()">
+            <!-- User Selection -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    User
+                </label>
+                <select x-model="assignmentForm.user_id" required
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <option value="">Select user...</option>
+                    <template x-for="user in availableUsers" :key="user.id">
+                        <option :value="user.id" x-text="user.name"></option>
+                    </template>
+                </select>
+            </div>
+            
+            <!-- Date -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Date
+                </label>
+                <input type="date" x-model="assignmentForm.date" required
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+            </div>
+            
+            <!-- Assignment Type -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Type
+                </label>
+                <select x-model="assignmentForm.assignment_type" required
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                    <template x-for="type in assignmentTypes" :key="type.value">
+                        <option :value="type.value" x-text="type.label"></option>
+                    </template>
+                </select>
+            </div>
+            
+            <!-- Time -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Start Time
+                    </label>
+                    <input type="time" x-model="assignmentForm.start_time" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        End Time
+                    </label>
+                    <input type="time" x-model="assignmentForm.end_time" required
+                           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                </div>
+            </div>
+            
+            <!-- Notes -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Notes (Optional)
+                </label>
+                <textarea x-model="assignmentForm.notes" rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          placeholder="Any additional notes..."></textarea>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex justify-end gap-3">
+                <button type="button" @click="closeAssignmentModal()"
+                        class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" :disabled="isCreating"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+                    <span x-show="!isCreating">Create Assignment</span>
+                    <span x-show="isCreating">Creating...</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -546,17 +661,35 @@
 
 {% block extra_js %}
 <script>
-// Alpine.js Calendar Data
+// Alpine.js Calendar Data - Full API Integration
 function calendarData() {
     return {
         // State
         currentDate: new Date(),
-        currentTeamId: 4,
+        selectedTeam: null,
+        availableTeams: [],
         calendarData: null,
-        isLoading: false,
+        availableUsers: [],
+        assignmentTypes: [],
+        isLoading: true,
+        error: null,
         currentView: 'month',
-        showModal: false,
-        modalContent: '',
+        isInitialized: false,
+        
+        // Modals - Explicitly initialized to false
+        showAssignmentModal: false,
+        isCreating: false,
+        
+        // Forms
+        assignmentForm: {
+            user_id: '',
+            date: '',
+            assignment_type: 'waakdienst',
+            start_time: '09:00',
+            end_time: '17:00',
+            notes: '',
+            team_id: 4
+        },
         
         // Stats
         stats: {
@@ -565,80 +698,392 @@ function calendarData() {
         },
         
         // Configuration
-        CONFIG: {
-            API_TIMEOUT: 30000,
-            RETRY_ATTEMPTS: 3,
-            DEBOUNCE_DELAY: 300
-        },
+        API_BASE: '/api/v1',
+        CSRF_TOKEN: document.querySelector('[name="csrf-token"]').getAttribute('content'),
         
         // Computed properties
         get currentPeriod() {
             if (this.currentView === 'week') {
                 const startOfWeek = new Date(this.currentDate);
-                startOfWeek.setDate(this.currentDate.getDate() - this.currentDate.getDay() + 1);
+                const day = startOfWeek.getDay();
+                const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+                startOfWeek.setDate(diff);
+                
                 const endOfWeek = new Date(startOfWeek);
                 endOfWeek.setDate(startOfWeek.getDate() + 6);
                 
-                return `${startOfWeek.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${endOfWeek.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                return `${this.formatDate(startOfWeek, 'short')} - ${this.formatDate(endOfWeek, 'short')}`;
             } else if (this.currentView === 'month') {
-                return this.currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-            } else if (this.currentView === 'year') {
-                return this.currentDate.getFullYear().toString();
+                return this.formatDate(this.currentDate, 'month-year');
             }
             return 'Loading...';
         },
         
         get weekDaysHeader() {
-            return `<div class="flex-1 p-4 text-center"><div class="text-sm text-gray-600 dark:text-gray-400">Week View</div></div>`;
+            if (!this.calendarData || !this.calendarData.days) {
+                return '<div class="flex-1 p-4 text-center text-gray-500">Loading days...</div>';
+            }
+            
+            let html = '';
+            for (const day of this.calendarData.days.slice(0, 7)) { // Week view - first 7 days
+                const isToday = this.isToday(day.date);
+                const isWeekend = day.is_weekend;
+                
+                html += `
+                    <div class="flex-1 p-3 border-r border-gray-200 text-center ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''} ${isWeekend ? 'bg-amber-50 dark:bg-amber-900/20' : ''}">
+                        <div class="text-xs text-gray-600 dark:text-gray-400 truncate">${day.day_name}</div>
+                        <div class="text-sm font-semibold ${isToday ? 'text-blue-600 dark:text-blue-400' : ''}">${day.day_number}</div>
+                    </div>
+                `;
+            }
+            return html;
         },
         
         get weekUsersList() {
-            return `<div class="p-4 text-center"><div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Demo Mode</div></div>`;
+            if (!this.calendarData || !this.calendarData.users) {
+                return '<div class="p-4 text-center text-gray-500">Loading users...</div>';
+            }
+            
+            let html = '';
+            const userHeight = `calc(100% / ${this.calendarData.users.length})`;
+            
+            for (const user of this.calendarData.users) {
+                html += `
+                    <div class="p-3 border-b border-gray-200 flex items-center" style="height: ${userHeight}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                                ${user.initials}
+                            </div>
+                            <div class="font-medium text-sm truncate">${this.escapeHtml(user.name)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            return html;
         },
         
         get weekContent() {
-            return this.getDemoContent('Week');
+            if (!this.calendarData || !this.calendarData.users || !this.calendarData.days) {
+                return '<div class="flex-1 flex items-center justify-center text-gray-500">Loading assignments...</div>';
+            }
+            
+            let html = '';
+            const userHeight = `calc(100% / ${this.calendarData.users.length})`;
+            
+            for (const user of this.calendarData.users) {
+                html += `<div class="flex border-b border-gray-200 min-h-0" style="height: ${userHeight}">`;
+                
+                for (const day of this.calendarData.days.slice(0, 7)) {
+                    const userAssignments = user.assignments[day.date] || [];
+                    const isToday = this.isToday(day.date);
+                    const isWeekend = day.is_weekend;
+                    
+                    html += `
+                        <div class="flex-1 p-1 border-r border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex flex-col gap-1 min-w-0 overflow-hidden cursor-pointer
+                                ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''} 
+                                ${isWeekend ? 'bg-amber-50 dark:bg-amber-900/20' : ''}"
+                             onclick="calendarInstance.openQuickAssignmentModal('${user.id}', '${day.date}')">
+                    `;
+                    
+                    for (const assignment of userAssignments) {
+                        const typeClass = this.getAssignmentTypeClass(assignment.type);
+                        html += `
+                            <div class="assignment-block ${typeClass} text-xs p-1 rounded truncate" 
+                                 title="${this.escapeHtml(assignment.type)} - ${assignment.start_time}-${assignment.end_time}">
+                                ${assignment.start_time}-${assignment.end_time}
+                            </div>
+                        `;
+                    }
+                    
+                    if (userAssignments.length === 0) {
+                        html += '<div class="text-xs text-gray-400 opacity-0 hover:opacity-100 transition-opacity">+</div>';
+                    }
+                    
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            return html;
         },
         
         get monthDaysHeader() {
-            return `<div class="flex-1 p-4 text-center"><div class="text-sm text-gray-600 dark:text-gray-400">Month View</div></div>`;
+            if (!this.calendarData || !this.calendarData.days) {
+                return '<div class="flex-1 p-4 text-center text-gray-500">Loading days...</div>';
+            }
+            
+            let html = '';
+            for (const day of this.calendarData.days) {
+                const isToday = this.isToday(day.date);
+                const isWeekend = day.is_weekend;
+                const isNextMonth = day.is_next_month;
+                
+                html += `
+                    <div class="flex-1 p-2 border-r border-gray-200 text-center min-w-0
+                            ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''} 
+                            ${isWeekend ? 'bg-amber-50 dark:bg-amber-900/20' : ''}
+                            ${isNextMonth ? 'opacity-50' : ''}">
+                        <div class="text-xs text-gray-600 dark:text-gray-400 truncate">${day.day_name}</div>
+                        <div class="text-sm font-semibold ${isToday ? 'text-blue-600 dark:text-blue-400' : ''}">${day.day_number}</div>
+                    </div>
+                `;
+            }
+            return html;
         },
         
         get monthUsersList() {
-            return `<div class="p-4 text-center"><div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Demo Mode</div></div>`;
+            if (!this.calendarData || !this.calendarData.users) {
+                return '<div class="p-4 text-center text-gray-500">Loading users...</div>';
+            }
+            
+            let html = '';
+            const userHeight = `calc(100% / ${this.calendarData.users.length})`;
+            
+            for (const user of this.calendarData.users) {
+                html += `
+                    <div class="p-2 border-b border-gray-200 flex items-center" style="height: ${userHeight}">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                                ${user.initials}
+                            </div>
+                            <div class="font-medium text-xs truncate">${this.escapeHtml(user.name)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            return html;
         },
         
         get monthContent() {
-            return this.getDemoContent('Month');
+            if (!this.calendarData || !this.calendarData.users || !this.calendarData.days) {
+                return '<div class="flex-1 flex items-center justify-center text-gray-500">Loading assignments...</div>';
+            }
+            
+            let html = '';
+            const userHeight = `calc(100% / ${this.calendarData.users.length})`;
+            
+            for (const user of this.calendarData.users) {
+                html += `<div class="flex border-b border-gray-200 min-h-0" style="height: ${userHeight}">`;
+                
+                for (const day of this.calendarData.days) {
+                    const userAssignments = user.assignments[day.date] || [];
+                    const isToday = this.isToday(day.date);
+                    const isWeekend = day.is_weekend;
+                    const isNextMonth = day.is_next_month;
+                    
+                    html += `
+                        <div class="flex-1 p-1 border-r border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex flex-col gap-1 min-w-0 overflow-hidden cursor-pointer
+                                ${isToday ? 'bg-blue-50 dark:bg-blue-900/20' : ''} 
+                                ${isWeekend ? 'bg-amber-50 dark:bg-amber-900/20' : ''}
+                                ${isNextMonth ? 'opacity-50' : ''}"
+                             onclick="calendarInstance.openQuickAssignmentModal('${user.id}', '${day.date}')">
+                    `;
+                    
+                    // Show first assignment and count if more
+                    if (userAssignments.length > 0) {
+                        const assignment = userAssignments[0];
+                        const typeClass = this.getAssignmentTypeClass(assignment.type);
+                        html += `
+                            <div class="assignment-block ${typeClass} text-xs p-1 rounded truncate" 
+                                 title="${this.escapeHtml(assignment.type)} - ${assignment.start_time}-${assignment.end_time}">
+                                ${assignment.start_time.substring(0, 5)}
+                            </div>
+                        `;
+                        
+                        if (userAssignments.length > 1) {
+                            html += `<div class="text-xs text-gray-500">+${userAssignments.length - 1}</div>`;
+                        }
+                    } else {
+                        html += '<div class="text-xs text-gray-400 opacity-0 hover:opacity-100 transition-opacity">+</div>';
+                    }
+                    
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            return html;
         },
         
-        get yearView() {
-            return this.getDemoContent('Year');
+        // API Methods
+        async apiCall(endpoint, options = {}) {
+            const url = `${this.API_BASE}${endpoint}`;
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.CSRF_TOKEN,
+                },
+                credentials: 'same-origin'
+            };
+            
+            try {
+                const response = await fetch(url, { ...defaultOptions, ...options });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+                    throw new Error(errorData.error || `API request failed: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error(`API Error (${endpoint}):`, error);
+                throw error;
+            }
         },
         
-        // Methods
-        getDemoContent(viewType) {
-            return `
-                <div class="flex-1 flex items-center justify-center">
-                    <div class="text-center p-8">
-                        <div class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                            🎯 ${viewType} Schedule Ready for Production
-                        </div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Consolidated schedule with best practices implemented
-                        </div>
-                        <div class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
-                            <div>✅ Multiple view support (Week/Month/Year)</div>
-                            <div>✅ Drag & drop assignments</div>
-                            <div>✅ Consolidated Waakdienst shifts</div>
-                            <div>✅ Enhanced error handling</div>
-                            <div>✅ Loading states & notifications</div>
-                            <div>✅ Keyboard shortcuts</div>
-                            <div>✅ Responsive design</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+        async loadTeams() {
+            try {
+                const response = await this.apiCall('/teams/');
+                this.availableTeams = response.results || response || [];
+                
+                // Set default team
+                if (this.availableTeams.length > 0 && !this.selectedTeam) {
+                    this.selectedTeam = this.availableTeams.find(t => t.id === 4) || this.availableTeams[0];
+                }
+                
+                return this.availableTeams;
+            } catch (error) {
+                console.error('Failed to load teams:', error);
+                // Use fallback
+                this.availableTeams = [{ id: 4, name: 'TPS Team' }];
+                this.selectedTeam = this.availableTeams[0];
+                return this.availableTeams;
+            }
+        },
+        
+        async loadUsers() {
+            try {
+                const response = await this.apiCall('/users/');
+                this.availableUsers = (response.results || response || []).map(user => ({
+                    id: user.id,
+                    name: user.full_name || `${user.first_name} ${user.last_name}`.trim() || user.username,
+                    initials: this.getUserInitials(user)
+                }));
+                return this.availableUsers;
+            } catch (error) {
+                console.error('Failed to load users:', error);
+                this.availableUsers = [];
+                return this.availableUsers;
+            }
+        },
+        
+        async loadAssignmentTypes() {
+            try {
+                const response = await this.apiCall('/assignments/types/');
+                this.assignmentTypes = response.assignment_types || [];
+                return this.assignmentTypes;
+            } catch (error) {
+                console.error('Failed to load assignment types:', error);
+                // Use fallback
+                this.assignmentTypes = [
+                    { value: 'waakdienst', label: '🛡️ Waakdienst' },
+                    { value: 'incident', label: '🚨 Incident Response' },
+                    { value: 'changes', label: '⚙️ Change Management' },
+                    { value: 'maintenance', label: '🔧 Maintenance' },
+                    { value: 'support', label: '💬 Support' },
+                    { value: 'training', label: '📚 Training' }
+                ];
+                return this.assignmentTypes;
+            }
+        },
+        
+        async loadCalendar(retryCount = 0) {
+            if (this.isLoading && retryCount === 0) {
+                return;
+            }
+            
+            if (!this.selectedTeam) {
+                await this.loadTeams();
+            }
+            
+            this.isLoading = true;
+            this.error = null;
+            
+            // Ensure modal is closed during loading
+            if (retryCount === 0) {
+                this.showAssignmentModal = false;
+            }
+            
+            try {
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth() + 1;
+                
+                let endpoint = `/calendar/${this.selectedTeam.id}/month/?year=${year}&month=${month}`;
+                
+                if (this.currentView === 'week') {
+                    endpoint += '&extend_to_next_month=true';
+                }
+                
+                const data = await this.apiCall(endpoint);
+                this.calendarData = data;
+                
+                // Update stats
+                this.stats.activeUsers = data.users ? data.users.length : 0;
+                this.stats.totalAssignments = data.users ? 
+                    data.users.reduce((total, user) => 
+                        total + Object.values(user.assignments).flat().length, 0
+                    ) : 0;
+                
+                console.log('📅 Calendar loaded successfully:', {
+                    team: this.selectedTeam.name,
+                    view: this.currentView,
+                    users: this.stats.activeUsers,
+                    assignments: this.stats.totalAssignments
+                });
+                
+            } catch (error) {
+                console.error('❌ Calendar load failed:', error);
+                this.error = error.message;
+                
+                if (retryCount < 2) {
+                    console.log(`🔄 Retrying calendar load (${retryCount + 1}/3)...`);
+                    setTimeout(() => this.loadCalendar(retryCount + 1), 1000);
+                    return;
+                }
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        
+        async createQuickAssignment() {
+            if (this.isCreating) return;
+            
+            console.log('📝 Creating assignment:', this.assignmentForm);
+            this.isCreating = true;
+            
+            try {
+                const data = await this.apiCall('/assignments/quick-create/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        ...this.assignmentForm,
+                        team_id: this.selectedTeam?.id || 4
+                    })
+                });
+                
+                if (data.success) {
+                    this.$dispatch('show-notification', { 
+                        message: 'Assignment created successfully!', 
+                        type: 'success' 
+                    });
+                    
+                    // Close modal and refresh
+                    this.closeAssignmentModal();
+                    setTimeout(() => this.loadCalendar(), 500); // Small delay for UX
+                } else {
+                    throw new Error(data.error || 'Failed to create assignment');
+                }
+                
+            } catch (error) {
+                console.error('Failed to create assignment:', error);
+                this.$dispatch('show-notification', { 
+                    message: error.message || 'Failed to create assignment', 
+                    type: 'error' 
+                });
+            } finally {
+                this.isCreating = false;
+            }
         },
         
         // View management
@@ -654,8 +1099,6 @@ function calendarData() {
                 this.currentDate.setDate(this.currentDate.getDate() - 7);
             } else if (this.currentView === 'month') {
                 this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-            } else if (this.currentView === 'year') {
-                this.currentDate.setFullYear(this.currentDate.getFullYear() - 1);
             }
             this.loadCalendar();
         },
@@ -665,8 +1108,6 @@ function calendarData() {
                 this.currentDate.setDate(this.currentDate.getDate() + 7);
             } else if (this.currentView === 'month') {
                 this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-            } else if (this.currentView === 'year') {
-                this.currentDate.setFullYear(this.currentDate.getFullYear() + 1);
             }
             this.loadCalendar();
         },
@@ -676,84 +1117,232 @@ function calendarData() {
             this.loadCalendar();
         },
         
-        // Calendar loading
-        async loadCalendar(retryCount = 0) {
-            if (this.isLoading && retryCount === 0) {
-                console.log('⏳ Already loading, skipping...');
-                return;
-            }
-            
-            this.isLoading = true;
-            
-            try {
-                // Simple fallback rendering for now
-                this.renderFallbackCalendar();
-                this.$dispatch('show-notification', { message: 'Demo calendar loaded', type: 'info' });
-            } catch (error) {
-                console.error('❌ Error loading calendar:', error);
-                this.$dispatch('show-notification', { message: 'Failed to load calendar', type: 'error' });
-                this.renderFallbackCalendar();
-            } finally {
-                this.isLoading = false;
-            }
+        refreshCalendar() {
+            this.loadCalendar();
         },
         
-        renderFallbackCalendar() {
-            // Update stats
-            this.stats.totalAssignments = 0;
-            this.stats.activeUsers = 0;
+        selectTeam(team) {
+            this.selectedTeam = team;
+            this.loadCalendar();
         },
         
         // Modal management
-        closeModal() {
-            this.showModal = false;
-            this.modalContent = '';
+        openQuickAssignmentModal(userId = '', date = '') {
+            // Prevent modal opening while loading, if already open, or during initialization
+            if (this.isLoading || this.showAssignmentModal || !this.calendarData || !this.isInitialized) {
+                console.log('⚠️ Modal open blocked - system busy or not ready', {
+                    isLoading: this.isLoading,
+                    showAssignmentModal: this.showAssignmentModal,
+                    hasCalendarData: !!this.calendarData,
+                    isInitialized: this.isInitialized
+                });
+                return;
+            }
+            
+            console.log('🔧 Opening assignment modal:', { userId, date });
+            
+            // Reset form
+            this.assignmentForm = {
+                user_id: userId,
+                date: date,
+                assignment_type: 'waakdienst',
+                start_time: '09:00',
+                end_time: '17:00',
+                notes: '',
+                team_id: this.selectedTeam?.id || 4
+            };
+            
+            // Reset creation state
+            this.isCreating = false;
+            
+            // Show modal
+            this.showAssignmentModal = true;
         },
         
-        openModal(content) {
-            this.modalContent = content;
-            this.showModal = true;
+        closeAssignmentModal() {
+            console.log('❌ Closing assignment modal');
+            this.showAssignmentModal = false;
+            this.isCreating = false;
+            
+            // Reset form to prevent issues
+            this.assignmentForm = {
+                user_id: '',
+                date: '',
+                assignment_type: 'waakdienst',
+                start_time: '09:00',
+                end_time: '17:00',
+                notes: '',
+                team_id: this.selectedTeam?.id || 4
+            };
+        },
+        
+        // Debug function to check modal state
+        debugModalState() {
+            console.log('🐛 Modal Debug State:', {
+                showAssignmentModal: this.showAssignmentModal,
+                isLoading: this.isLoading,
+                isCreating: this.isCreating,
+                hasCalendarData: !!this.calendarData,
+                timestamp: new Date().toISOString()
+            });
+        },
+        
+        // Utility methods
+        formatDate(date, format = 'short') {
+            const d = new Date(date);
+            
+            if (format === 'short') {
+                return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            } else if (format === 'month-year') {
+                return d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+            }
+            
+            return d.toLocaleDateString('en-GB');
+        },
+        
+        isToday(dateString) {
+            const today = new Date().toISOString().split('T')[0];
+            return dateString === today;
+        },
+        
+        getUserInitials(user) {
+            if (user.first_name && user.last_name) {
+                return `${user.first_name[0]}${user.last_name[0]}`;
+            }
+            return user.username ? user.username.substring(0, 2).toUpperCase() : '??';
+        },
+        
+        getAssignmentTypeClass(type) {
+            const typeClasses = {
+                'waakdienst': 'assignment-waakdienst',
+                'incident': 'assignment-incident',
+                'changes': 'assignment-changes',
+                'maintenance': 'assignment-maintenance',
+                'support': 'assignment-support',
+                'training': 'assignment-training',
+                'standby': 'assignment-standby',
+                'meeting': 'assignment-meeting',
+                'leave': 'assignment-leave'
+            };
+            return typeClasses[type.toLowerCase()] || 'assignment-other';
+        },
+        
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         },
         
         // Keyboard shortcuts
         handleKeydown(e) {
-            // Escape key closes modal
             if (e.key === 'Escape') {
-                this.closeModal();
+                this.closeAssignmentModal();
+                return;
             }
             
-            // Arrow keys for navigation (when no input is focused)
-            if (!document.activeElement || document.activeElement.tagName !== 'INPUT') {
+            // Only handle other shortcuts when modal is closed and not in input fields
+            if (this.showAssignmentModal) return;
+            
+            if (!document.activeElement || !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
                 if (e.key === 'ArrowLeft') {
                     e.preventDefault();
                     this.navigatePrevious();
                 } else if (e.key === 'ArrowRight') {
                     e.preventDefault();
                     this.navigateNext();
+                } else if (e.key === 'r' || e.key === 'R') {
+                    e.preventDefault();
+                    this.refreshCalendar();
+                } else if (e.key === 'w' || e.key === 'W') {
+                    e.preventDefault();
+                    this.switchView('week');
+                } else if (e.key === 'm' || e.key === 'M') {
+                    e.preventDefault();
+                    this.switchView('month');
+                } else if (e.key === 't' || e.key === 'T') {
+                    e.preventDefault();
+                    this.goToToday();
+                } else if (e.key === 'n' || e.key === 'N') {
+                    e.preventDefault();
+                    this.openQuickAssignmentModal();
                 }
             }
         },
         
         // Initialize
-        init() {
-            console.log('🎯 Calendar initialized with Alpine.js');
+        async init() {
+            console.log('🎯 TPS Schedule System initializing...');
             
-            // Load initial calendar
-            this.switchView('month');
+            // Force modal state to closed on init - this prevents any persistent state issues
+            this.showAssignmentModal = false;
+            this.isCreating = false;
+            
+            // Add explicit delay to ensure DOM is ready
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Set global reference for onclick handlers
+            window.calendarInstance = this;
+            
+            try {
+                // Load initial data
+                await Promise.all([
+                    this.loadTeams(),
+                    this.loadUsers(),
+                    this.loadAssignmentTypes()
+                ]);
+                
+                // Load calendar
+                await this.loadCalendar();
+                
+                // Mark as fully initialized
+                this.isInitialized = true;
+                
+                console.log('✅ TPS Schedule System initialized successfully');
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize schedule system:', error);
+                this.error = 'Failed to initialize schedule system';
+                this.isLoading = false;
+                this.isInitialized = false; // Reset initialization flag on error
+            }
             
             // Add keyboard event listeners
             document.addEventListener('keydown', (e) => this.handleKeydown(e));
             
-            // Add visibility change handler to refresh when page becomes visible
+            // Add visibility change handler
             document.addEventListener('visibilitychange', () => {
                 if (!document.hidden) {
                     setTimeout(() => this.loadCalendar(), 1000);
+                }
+            });
+            
+            // Watch for unexpected modal state changes
+            this.$watch('showAssignmentModal', (value, oldValue) => {
+                if (value !== oldValue) {
+                    console.log('🔍 Modal state changed:', { from: oldValue, to: value, timestamp: new Date().toISOString() });
                 }
             });
         }
     }
 }
 
-console.log('📝 TPS Calendar - Production Ready with Alpine.js ✅');
+console.log('📝 TPS Schedule System - Full API Integration Ready ✅');
+
+// Add global debugging function
+window.debugSchedule = function() {
+    const instance = window.calendarInstance;
+    if (instance) {
+        console.log('🐛 Schedule Debug Info:', {
+            isLoading: instance.isLoading,
+            showAssignmentModal: instance.showAssignmentModal,
+            isCreating: instance.isCreating,
+            selectedTeam: instance.selectedTeam,
+            calendarData: !!instance.calendarData,
+            error: instance.error
+        });
+    } else {
+        console.log('❌ No calendar instance found');
+    }
+};
 </script>
 {% endblock %}

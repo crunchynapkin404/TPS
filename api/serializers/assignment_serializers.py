@@ -69,8 +69,8 @@ class AssignmentSerializer(serializers.ModelSerializer):
         model = Assignment
         fields = [
             'id', 'shift', 'shift_id', 'user', 'user_id', 'user_full_name',
-            'role', 'status', 'assigned_by', 'assigned_by_id', 'assigned_at',
-            'confirmed_at', 'completed_at', 'notes', 'performance_rating'
+            'assignment_type', 'status', 'assigned_by', 'assigned_by_id', 'assigned_at',
+            'confirmed_at', 'completed_at', 'assignment_notes', 'user_notes'
         ]
         read_only_fields = ['assigned_at']
     
@@ -89,7 +89,7 @@ class AssignmentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assignment
         fields = [
-            'id', 'user_name', 'shift_name', 'shift_date', 'role',
+            'id', 'user_name', 'shift_name', 'shift_date', 'assignment_type',
             'status', 'assigned_at'
         ]
     
@@ -126,10 +126,33 @@ class SwapRequestSerializer(serializers.ModelSerializer):
     requesting_assignment = AssignmentListSerializer(read_only=True)
     requesting_assignment_id = serializers.IntegerField(write_only=True)
     target_assignment = AssignmentListSerializer(read_only=True)
-    target_assignment_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    
+    # Custom field to handle empty strings and None values
+    target_assignment_id = serializers.CharField(
+        write_only=True, 
+        required=False, 
+        allow_blank=True, 
+        allow_null=True
+    )
+    
     requesting_user = serializers.StringRelatedField(read_only=True)
     target_user = serializers.StringRelatedField(read_only=True)
     approved_by = serializers.StringRelatedField(read_only=True)
+    
+    # Custom datetime field with multiple format support
+    expires_at = serializers.DateTimeField(
+        input_formats=[
+            '%Y-%m-%dT%H:%M',      # HTML datetime-local format
+            '%d/%m/%Y %H:%M',      # DD/MM/YYYY format
+            '%d/%m/%Y %H:%M:%S',   # DD/MM/YYYY with seconds
+            '%d-%m-%Y %H:%M',      # DD-MM-YYYY format
+            '%Y-%m-%d %H:%M:%S',   # ISO format with seconds
+            '%Y-%m-%d %H:%M',      # ISO format without seconds
+        ],
+        error_messages={
+            'invalid': 'Datetime has wrong format. Use one of these formats instead: DD/MM/YYYY hh:mm, DD/MM/YYYY hh:mm:ss, DD-MM-YYYY hh:mm, YYYY-MM-DD hh:mm:ss.'
+        }
+    )
     
     class Meta:
         model = SwapRequest
@@ -141,6 +164,29 @@ class SwapRequestSerializer(serializers.ModelSerializer):
             'additional_notes', 'resolution_notes'
         ]
         read_only_fields = ['request_id', 'requested_at', 'resolved_at']
+    
+    def validate_target_assignment_id(self, value):
+        """Handle empty string values for target_assignment_id"""
+        if value == '' or value is None:
+            return None
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            raise serializers.ValidationError("A valid integer is required.")
+    
+    def validate(self, attrs):
+        """Custom validation for the entire serializer"""
+        # Handle target_assignment_id conversion
+        target_id = attrs.get('target_assignment_id')
+        if target_id == '' or target_id is None:
+            attrs['target_assignment_id'] = None
+        elif isinstance(target_id, str):
+            try:
+                attrs['target_assignment_id'] = int(target_id)
+            except (ValueError, TypeError):
+                attrs['target_assignment_id'] = None
+        
+        return attrs
 
 
 class BulkAssignmentSerializer(serializers.Serializer):
@@ -196,17 +242,17 @@ class PlanningRequestSerializer(serializers.Serializer):
     preview_only = serializers.BooleanField(default=False)
     configuration = serializers.JSONField(required=False)
     
-    def validate(self, data):
+    def validate(self, attrs):
         """Validate planning request"""
-        if data['start_date'] >= data['end_date']:
+        if attrs['start_date'] >= attrs['end_date']:
             raise serializers.ValidationError("Start date must be before end date")
         
         # Validate date range (maximum 12 weeks)
-        date_diff = (data['end_date'] - data['start_date']).days
+        date_diff = (attrs['end_date'] - attrs['start_date']).days
         if date_diff > 84:  # 12 weeks
             raise serializers.ValidationError("Planning period cannot exceed 12 weeks")
         
-        return data
+        return attrs
 
 
 class PlanningResultSerializer(serializers.Serializer):

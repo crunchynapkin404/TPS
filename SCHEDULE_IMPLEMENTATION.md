@@ -2,7 +2,7 @@
 
 ## Overview
 
-The TPS Schedule System has been completely rewritten as a full API-driven, production-ready solution using Alpine.js and Tailwind CSS. This implementation provides a modern, interactive calendar interface for managing team assignments.
+The TPS Schedule System needs a full API-driven, production-ready solution using Alpine.js and Tailwind CSS. This implementation provides a modern, interactive calendar interface for managing team assignments.
 
 ## Features Implemented
 

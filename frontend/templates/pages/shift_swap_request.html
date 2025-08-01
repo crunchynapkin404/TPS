@@ -63,29 +63,16 @@
 
     <!-- Action Bar -->
     <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
-        <div class="flex items-center space-x-4">
-            <select x-model="filterStatus" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option value="">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="declined">Declined</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="expired">Expired</option>
-            </select>
-            
-            <select x-model="filterUrgency" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option value="">All Urgency</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="emergency">Emergency</option>
-            </select>
+        <div class="flex items-center space-x-2">
+            <button @click="openNewRequestModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                <i class="fas fa-plus"></i>
+                <span>New Swap Request</span>
+            </button>
         </div>
         
-        <button @click="openNewRequestModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
-            <i class="fas fa-plus"></i>
-            <span>New Swap Request</span>
-        </button>
+        <div class="text-sm text-gray-600">
+            Showing <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
+        </div>
     </div>
 
     <!-- My Assignments Section -->
@@ -121,35 +108,208 @@
         </div>
     </div>
 
-    <!-- My Swap Requests Section -->
-    <div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">My Swap Requests</h2>
-        <div class="space-y-4">
-            <template x-for="request in filteredRequests" :key="request.id">
-                <div class="swap-card">
+    <!-- Advanced Filters Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select x-model="filterStatus" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="declined">Declined</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="expired">Expired</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Urgency</label>
+                    <select x-model="filterUrgency" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Urgency</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="emergency">Emergency</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                    <select x-model="filterDateRange" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-end">
+                    <button @click="clearFilters()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <i class="fas fa-times mr-1"></i>
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-600">
+                    Showing <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swap Requests Table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 class="text-xl font-bold text-gray-900">Shift Swap Requests</h2>
+        </div>
+        
+        <!-- Desktop Table View -->
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('id')">
+                            <div class="flex items-center space-x-1">
+                                <span>Request ID</span>
+                                <i class="fas fa-sort text-gray-400"></i>
+                            </div>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('status')">
+                            <div class="flex items-center space-x-1">
+                                <span>Status</span>
+                                <i class="fas fa-sort text-gray-400"></i>
+                            </div>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giving Up</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taking Over</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('urgency_level')">
+                            <div class="flex items-center space-x-1">
+                                <span>Urgency</span>
+                                <i class="fas fa-sort text-gray-400"></i>
+                            </div>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('requested_at')">
+                            <div class="flex items-center space-x-1">
+                                <span>Requested</span>
+                                <i class="fas fa-sort text-gray-400"></i>
+                            </div>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('expires_at')">
+                            <div class="flex items-center space-x-1">
+                                <span>Expires</span>
+                                <i class="fas fa-sort text-gray-400"></i>
+                            </div>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <template x-for="request in paginatedRequests" :key="request.id">
+                        <tr class="hover:bg-gray-50" :class="getRowClass(request)">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="text-sm font-medium text-gray-900" x-text="`#${request.id}`"></div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center space-x-2">
+                                    <span :class="getStatusClass(request.status)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.status"></span>
+                                    <span x-show="isUrgent(request)" class="px-1.5 py-0.5 bg-red-100 text-red-800 rounded-full text-xs">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm">
+                                    <div class="font-medium text-gray-900" x-text="request.requesting_assignment.shift_name"></div>
+                                    <div class="text-gray-500">
+                                        <span x-text="formatDate(request.requesting_assignment.shift_date)"></span>
+                                        <span class="mx-1">•</span>
+                                        <span x-text="`${request.requesting_assignment.start_time} - ${request.requesting_assignment.end_time}`"></span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div x-show="request.target_assignment" class="text-sm">
+                                    <div class="font-medium text-gray-900" x-text="request.target_assignment?.shift_name"></div>
+                                    <div class="text-gray-500">
+                                        <span x-text="request.target_assignment ? formatDate(request.target_assignment.shift_date) : ''"></span>
+                                        <span x-show="request.target_assignment" class="mx-1">•</span>
+                                        <span x-text="request.target_assignment ? `${request.target_assignment.start_time} - ${request.target_assignment.end_time}` : ''"></span>
+                                    </div>
+                                </div>
+                                <div x-show="!request.target_assignment" class="text-sm text-gray-500 italic">
+                                    Open Request
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span :class="getUrgencyClass(request.urgency_level)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.urgency_level"></span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div x-text="formatDateTime(request.requested_at)"></div>
+                                <div class="text-xs text-gray-400" x-text="getTimeAgo(request.requested_at)"></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div x-show="request.expires_at">
+                                    <div x-text="formatDateTime(request.expires_at)"></div>
+                                    <div class="text-xs" :class="isExpiringSoon(request) ? 'text-red-500' : 'text-gray-400'" x-text="getTimeUntilExpiry(request.expires_at)"></div>
+                                </div>
+                                <div x-show="!request.expires_at" class="text-gray-400 italic">No expiry</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <button @click="viewRequestDetails(request)" class="text-blue-600 hover:text-blue-900" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    
+                                    <!-- Manager Actions -->
+                                    <template x-if="canApprove(request)">
+                                        <div class="flex space-x-1">
+                                            <button @click="approveRequest(request)" class="text-green-600 hover:text-green-900" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button @click="declineRequest(request)" class="text-red-600 hover:text-red-900" title="Decline">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                    
+                                    <!-- User Actions -->
+                                    <template x-if="canCancel(request)">
+                                        <button @click="cancelRequest(request)" class="text-red-600 hover:text-red-900" title="Cancel">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </template>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="lg:hidden space-y-4 p-4">
+            <template x-for="request in paginatedRequests" :key="request.id">
+                <div class="swap-card" :class="getRowClass(request)">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex-1">
                             <div class="flex items-center space-x-3 mb-2">
                                 <h3 class="text-lg font-semibold text-gray-900">
-                                    Swap Request #<span x-text="request.id"></span>
+                                    Request #<span x-text="request.id"></span>
                                 </h3>
                                 <span :class="getStatusClass(request.status)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.status"></span>
-                                <span :class="getUrgencyClass(request.urgency_level)" class="urgent-badge" x-text="request.urgency_level"></span>
+                                <span :class="getUrgencyClass(request.urgency_level)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.urgency_level"></span>
                             </div>
                             <p class="text-sm text-gray-600 mb-3" x-text="request.reason"></p>
                         </div>
-                        
-                        <div class="flex space-x-2">
-                            <button @click="viewRequestDetails(request)" class="text-blue-600 hover:text-blue-800 p-2">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button x-show="request.status === 'pending'" @click="cancelRequest(request)" class="text-red-600 hover:text-red-800 p-2">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <!-- Requesting Assignment -->
                         <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                             <h4 class="font-medium text-red-800 mb-2">Giving Up</h4>
@@ -177,12 +337,72 @@
                         </div>
                     </div>
                     
-                    <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
-                        <span>Requested: <span x-text="formatDateTime(request.requested_at)"></span></span>
-                        <span>Expires: <span x-text="formatDateTime(request.expires_at)"></span></span>
+                    <div class="flex items-center justify-between text-sm text-gray-500 border-t pt-3">
+                        <div class="flex items-center space-x-4">
+                            <span>Requested: <span x-text="formatDateTime(request.requested_at)"></span></span>
+                            <span x-show="request.expires_at">Expires: <span x-text="formatDateTime(request.expires_at)"></span></span>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <button @click="viewRequestDetails(request)" class="text-blue-600 hover:text-blue-800 p-2">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            
+                            <template x-if="canApprove(request)">
+                                <div class="flex space-x-1">
+                                    <button @click="approveRequest(request)" class="text-green-600 hover:text-green-800 p-2">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button @click="declineRequest(request)" class="text-red-600 hover:text-red-800 p-2">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </template>
+                            
+                            <template x-if="canCancel(request)">
+                                <button @click="cancelRequest(request)" class="text-red-600 hover:text-red-800 p-2">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </template>
+        </div>
+
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    Showing <span x-text="((currentPage - 1) * itemsPerPage) + 1"></span> to 
+                    <span x-text="Math.min(currentPage * itemsPerPage, filteredRequests.length)"></span> of 
+                    <span x-text="filteredRequests.length"></span> results
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <button @click="previousPage()" :disabled="currentPage === 1" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                        Previous
+                    </button>
+                    
+                    <template x-for="page in pageNumbers" :key="page">
+                        <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                            <span x-text="page"></span>
+                        </button>
+                    </template>
+                    
+                    <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div x-show="filteredRequests.length === 0" class="text-center py-12">
+            <i class="fas fa-exchange-alt text-4xl text-gray-400 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No swap requests found</h3>
+            <p class="text-gray-600 mb-4">No swap requests match your current filters.</p>
+            <button @click="clearFilters()" class="text-blue-600 hover:text-blue-800 text-sm">Clear all filters</button>
         </div>
     </div>
 
@@ -198,6 +418,114 @@
             
             <form @submit.prevent="submitSwapRequest()">
                 <!-- Assignment Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Assignment to Give Up *</label>
+                    <select x-model="newRequest.requesting_assignment_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select assignment to give up</option>
+                        <template x-for="assignment in myAssignments" :key="assignment.id">
+                            <option :value="assignment.id" x-text="`${assignment.shift_name} - ${formatDate(assignment.shift_date)} (${assignment.start_time} - ${assignment.end_time})`"></option>
+                        </template>
+                    </select>
+                </div>
+                
+                <!-- Swap Type -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Swap Type</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" x-model="newRequest.swap_type" value="open" class="mr-2">
+                            <span>Open Request (Anyone can take)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" x-model="newRequest.swap_type" value="direct" class="mr-2">
+                            <span>Direct Swap</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Target Assignment (for direct swaps) -->
+                <div x-show="newRequest.swap_type === 'direct'" class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Assignment to Take Over</label>
+                    <select x-model="newRequest.target_assignment_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select assignment to take over</option>
+                        <template x-for="assignment in availableAssignments" :key="assignment.id">
+                            <option :value="assignment.id" x-text="`${assignment.shift_name} - ${assignment.user_name} - ${formatDate(assignment.shift_date)} (${assignment.start_time} - ${assignment.end_time})`"></option>
+                        </template>
+                    </select>
+                </div>
+                
+                <!-- Reason -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Swap *</label>
+                    <textarea x-model="newRequest.reason" required rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Please explain why you need this swap..."></textarea>
+                </div>
+                
+                <!-- Urgency Level -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
+                    <select x-model="newRequest.urgency_level" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="low">Low - Can wait</option>
+                        <option value="medium">Medium - Preferred timing</option>
+                        <option value="high">High - Important</option>
+                        <option value="emergency">Emergency - Urgent</option>
+                    </select>
+                </div>
+                
+                <!-- Expiry Date -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Request Expires</label>
+                    <input type="datetime-local" x-model="newRequest.expires_at" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-sm text-gray-500 mt-1">Leave empty for no expiry</p>
+                </div>
+                
+                <!-- Additional Notes -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                    <textarea x-model="newRequest.additional_notes" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Any additional information..."></textarea>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="closeNewRequestModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">Create Request</span>
+                        <span x-show="isSubmitting">Creating...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Decline Modal -->
+    <div x-show="showDeclineModal" @click.away="closeDeclineModal()" x-transition class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Reject Swap Request</h2>
+                <button @click="closeDeclineModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form @submit.prevent="submitDecline()">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason for rejecting:</label>
+                    <textarea x-model="declineReason" required rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please provide a reason for rejecting this request..."></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="closeDeclineModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">Reject Request</span>
+                        <span x-show="isSubmitting">Rejecting...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Select Assignment to Swap</label>
                     <select x-model="newRequest.requesting_assignment_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -310,9 +638,21 @@ function swapRequestApp() {
         // Filters
         filterStatus: '',
         filterUrgency: '',
+        filterDateRange: '',
+        
+        // Sorting
+        sortField: 'requested_at',
+        sortDirection: 'desc',
+        
+        // Pagination
+        currentPage: 1,
+        itemsPerPage: 10,
         
         // Modal state
         showNewRequestModal: false,
+        showDeclineModal: false,
+        declineRequest: null,
+        declineReason: '',
         isSubmitting: false,
         
         // New request form
@@ -326,12 +666,563 @@ function swapRequestApp() {
             expires_at: ''
         },
         
+        // User permissions
+        userRole: 'operationeel',
+        
+        // Computed properties
+        get paginatedRequests() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            return this.filteredRequests.slice(start, end);
+        },
+        
+        get totalPages() {
+            return Math.ceil(this.filteredRequests.length / this.itemsPerPage);
+        },
+        
+        get pageNumbers() {
+            const pages = [];
+            const maxPages = 5;
+            let start = Math.max(1, this.currentPage - Math.floor(maxPages / 2));
+            let end = Math.min(this.totalPages, start + maxPages - 1);
+            
+            if (end - start + 1 < maxPages) {
+                start = Math.max(1, end - maxPages + 1);
+            }
+            
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+            return pages;
+        },
+        
+        // Initialize
+        init() {
+            // Create sample data for demonstration since API needs auth
+            this.loadSampleData();
+            this.filterRequests();
+            this.setDefaultExpiry();
+        },
+        
+        // Load sample data for demonstration
+        loadSampleData() {
+            // Sample assignments
+            this.myAssignments = [
+                {
+                    id: 1,
+                    shift_name: 'Morning Shift',
+                    shift_date: '2025-08-05',
+                    start_time: '08:00',
+                    end_time: '16:00',
+                    status: 'confirmed'
+                },
+                {
+                    id: 2,
+                    shift_name: 'Evening Shift',
+                    shift_date: '2025-08-08',
+                    start_time: '16:00',
+                    end_time: '00:00',
+                    status: 'confirmed'
+                }
+            ];
+            
+            // Sample swap requests
+            this.swapRequests = [
+                {
+                    id: 1,
+                    status: 'pending',
+                    urgency_level: 'high',
+                    reason: 'Family emergency',
+                    requested_at: '2025-08-01T10:30:00',
+                    expires_at: '2025-08-03T23:59:59',
+                    requesting_assignment: {
+                        shift_name: 'Night Shift',
+                        shift_date: '2025-08-02',
+                        start_time: '23:00',
+                        end_time: '07:00'
+                    },
+                    target_assignment: null
+                },
+                {
+                    id: 2,
+                    status: 'pending',
+                    urgency_level: 'medium',
+                    reason: 'Medical appointment',
+                    requested_at: '2025-07-30T14:15:00',
+                    expires_at: '2025-08-05T12:00:00',
+                    requesting_assignment: {
+                        shift_name: 'Day Shift',
+                        shift_date: '2025-08-04',
+                        start_time: '09:00',
+                        end_time: '17:00'
+                    },
+                    target_assignment: {
+                        shift_name: 'Evening Shift',
+                        shift_date: '2025-08-06',
+                        start_time: '17:00',
+                        end_time: '01:00'
+                    }
+                },
+                {
+                    id: 3,
+                    status: 'approved',
+                    urgency_level: 'low',
+                    reason: 'Personal commitment',
+                    requested_at: '2025-07-28T09:00:00',
+                    expires_at: null,
+                    requesting_assignment: {
+                        shift_name: 'Weekend Shift',
+                        shift_date: '2025-08-03',
+                        start_time: '08:00',
+                        end_time: '16:00'
+                    },
+                    target_assignment: null
+                },
+                {
+                    id: 4,
+                    status: 'expired',
+                    urgency_level: 'emergency',
+                    reason: 'Urgent personal matter',
+                    requested_at: '2025-07-25T16:45:00',
+                    expires_at: '2025-07-31T23:59:59',
+                    requesting_assignment: {
+                        shift_name: 'Early Shift',
+                        shift_date: '2025-08-01',
+                        start_time: '06:00',
+                        end_time: '14:00'
+                    },
+                    target_assignment: null
+                },
+                {
+                    id: 5,
+                    status: 'pending',
+                    urgency_level: 'medium',
+                    reason: 'Holiday request',
+                    requested_at: '2025-07-29T11:20:00',
+                    expires_at: '2025-08-10T18:00:00',
+                    requesting_assignment: {
+                        shift_name: 'Regular Shift',
+                        shift_date: '2025-08-07',
+                        start_time: '10:00',
+                        end_time: '18:00'
+                    },
+                    target_assignment: {
+                        shift_name: 'Late Shift',
+                        shift_date: '2025-08-09',
+                        start_time: '18:00',
+                        end_time: '02:00'
+                    }
+                }
+            ];
+            
+            this.updateStats();
+        },
+        
+        // Update statistics
+        updateStats() {
+            this.stats.total_requests = this.swapRequests.length;
+            this.stats.pending_requests = this.swapRequests.filter(r => r.status === 'pending').length;
+            this.stats.approved_requests = this.swapRequests.filter(r => r.status === 'approved').length;
+            this.stats.expired_requests = this.swapRequests.filter(r => r.status === 'expired').length;
+        },
+        
+        // Filter requests
+        filterRequests() {
+            let filtered = [...this.swapRequests];
+            
+            // Status filter
+            if (this.filterStatus) {
+                filtered = filtered.filter(request => request.status === this.filterStatus);
+            }
+            
+            // Urgency filter
+            if (this.filterUrgency) {
+                filtered = filtered.filter(request => request.urgency_level === this.filterUrgency);
+            }
+            
+            // Date range filter
+            if (this.filterDateRange) {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+                
+                filtered = filtered.filter(request => {
+                    const requestDate = new Date(request.requested_at);
+                    
+                    switch (this.filterDateRange) {
+                        case 'today':
+                            return requestDate >= today;
+                        case 'week':
+                            return requestDate >= weekAgo;
+                        case 'month':
+                            return requestDate >= monthAgo;
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            // Apply sorting
+            filtered.sort((a, b) => {
+                let aVal = a[this.sortField];
+                let bVal = b[this.sortField];
+                
+                if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+                if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            this.filteredRequests = filtered;
+            this.currentPage = 1; // Reset to first page
+        },
+        
+        // Clear all filters
+        clearFilters() {
+            this.filterStatus = '';
+            this.filterUrgency = '';
+            this.filterDateRange = '';
+            this.filterRequests();
+        },
+        
+        // Sorting
+        sortBy(field) {
+            if (this.sortField === field) {
+                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sortField = field;
+                this.sortDirection = 'asc';
+            }
+            this.filterRequests();
+        },
+        
+        // Pagination
+        goToPage(page) {
+            this.currentPage = page;
+        },
+        
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+            }
+        },
+        
+        previousPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+        
+        // Permission checks
+        canApprove(request) {
+            return request.status === 'pending' && 
+                   ['tactisch', 'management', 'planner', 'admin'].includes(this.userRole);
+        },
+        
+        canCancel(request) {
+            return request.status === 'pending';
+        },
+        
+        // Actions
+        async approveRequest(request) {
+            if (!confirm('Are you sure you want to approve this swap request?')) return;
+            
+            // Update locally for demo
+            request.status = 'approved';
+            this.showNotification('Swap request approved successfully', 'success');
+            this.filterRequests();
+            this.updateStats();
+        },
+        
+        openDeclineModal(request) {
+            this.declineRequest = request;
+            this.declineReason = '';
+            this.showDeclineModal = true;
+        },
+        
+        closeDeclineModal() {
+            this.showDeclineModal = false;
+            this.declineRequest = null;
+            this.declineReason = '';
+        },
+        
+        async submitDecline() {
+            if (!this.declineReason.trim()) {
+                this.showNotification('Please provide a reason for rejecting', 'error');
+                return;
+            }
+            
+            // Update locally for demo
+            this.declineRequest.status = 'declined';
+            this.showNotification('Swap request rejected', 'info');
+            this.closeDeclineModal();
+            this.filterRequests();
+            this.updateStats();
+        },
+        
+        async cancelRequest(request) {
+            if (!confirm('Are you sure you want to cancel this swap request?')) return;
+            
+            // Update locally for demo
+            request.status = 'cancelled';
+            this.showNotification('Swap request cancelled', 'success');
+            this.filterRequests();
+            this.updateStats();
+        },
+        
+        // Modal functions
+        openNewRequestModal() {
+            this.showNewRequestModal = true;
+            this.setDefaultExpiry();
+        },
+        
+        closeNewRequestModal() {
+            this.showNewRequestModal = false;
+            this.resetNewRequestForm();
+        },
+        
+        resetNewRequestForm() {
+            this.newRequest = {
+                requesting_assignment_id: '',
+                target_assignment_id: '',
+                swap_type: 'open',
+                reason: '',
+                urgency_level: 'medium',
+                additional_notes: '',
+                expires_at: ''
+            };
+            this.setDefaultExpiry();
+        },
+        
+        setDefaultExpiry() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 7);
+            this.newRequest.expires_at = tomorrow.toISOString().slice(0, 16);
+        },
+        
+        initiateSwap(assignment) {
+            this.newRequest.requesting_assignment_id = assignment.id;
+            this.openNewRequestModal();
+        },
+        
+        async submitSwapRequest() {
+            this.isSubmitting = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                const newRequest = {
+                    id: this.swapRequests.length + 1,
+                    status: 'pending',
+                    urgency_level: this.newRequest.urgency_level,
+                    reason: this.newRequest.reason,
+                    requested_at: new Date().toISOString(),
+                    expires_at: this.newRequest.expires_at ? new Date(this.newRequest.expires_at).toISOString() : null,
+                    requesting_assignment: this.myAssignments.find(a => a.id == this.newRequest.requesting_assignment_id),
+                    target_assignment: this.newRequest.target_assignment_id ? 
+                        { shift_name: 'Target Shift', shift_date: '2025-08-10', start_time: '09:00', end_time: '17:00' } : null
+                };
+                
+                this.swapRequests.unshift(newRequest);
+                this.showNotification('Swap request created successfully', 'success');
+                this.closeNewRequestModal();
+                this.filterRequests();
+                this.updateStats();
+                this.isSubmitting = false;
+            }, 1000);
+        },
+        
+        viewRequestDetails(request) {
+            alert(`Request #${request.id}\nReason: ${request.reason}\nStatus: ${request.status}`);
+        },
+        
+        // Utility functions
+        isUrgent(request) {
+            return ['high', 'emergency'].includes(request.urgency_level);
+        },
+        
+        isExpiringSoon(request) {
+            if (!request.expires_at) return false;
+            const now = new Date();
+            const expiryDate = new Date(request.expires_at);
+            const hoursUntilExpiry = (expiryDate - now) / (1000 * 60 * 60);
+            return hoursUntilExpiry <= 24 && hoursUntilExpiry > 0;
+        },
+        
+        getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        },
+        
+        getTimeUntilExpiry(dateString) {
+            if (!dateString) return 'No expiry';
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((date - now) / 1000);
+            
+            if (diffInSeconds < 0) return 'Expired';
+            if (diffInSeconds < 60) return 'Expires soon';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m left`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h left`;
+            return `${Math.floor(diffInSeconds / 86400)}d left`;
+        },
+        
+        getRowClass(request) {
+            if (request.status === 'expired') return 'opacity-60';
+            if (this.isExpiringSoon(request)) return 'bg-yellow-50 border-l-4 border-yellow-400';
+            if (this.isUrgent(request)) return 'bg-red-50 border-l-4 border-red-400';
+            return '';
+        },
+        
+        formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        },
+        
+        formatDateTime(dateTimeString) {
+            return new Date(dateTimeString).toLocaleString();
+        },
+        
+        getStatusClass(status) {
+            const classes = {
+                'pending': 'bg-yellow-100 text-yellow-800',
+                'approved': 'bg-green-100 text-green-800',
+                'declined': 'bg-red-100 text-red-800',
+                'cancelled': 'bg-gray-100 text-gray-800',
+                'expired': 'bg-red-100 text-red-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        },
+        
+        getUrgencyClass(urgency) {
+            return `urgent-${urgency}`;
+        },
+        
+        showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 
+                type === 'info' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                'bg-green-100 text-green-800 border border-green-200'
+            }`;
+            notification.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        },
+        
+        getCsrfToken() {
+            return 'demo-token';
+        }
+    }
+}
+</script>
+{% endblock %}
+        filterDateRange: '',
+        
+        // Sorting
+        sortField: 'requested_at',
+        sortDirection: 'desc',
+        
+        // Pagination
+        currentPage: 1,
+        itemsPerPage: 10,
+        
+        // Modal state
+        showNewRequestModal: false,
+        showDeclineModal: false,
+        selectedRequest: null,
+        declineReason: '',
+        isSubmitting: false,
+        
+        // New request form
+        newRequest: {
+            requesting_assignment_id: '',
+            target_assignment_id: '',
+            swap_type: 'open',
+            reason: '',
+            urgency_level: 'medium',
+            additional_notes: '',
+            expires_at: ''
+        },
+        
+        // User permissions
+        userRole: 'operationeel', // Will be set from backend
+        
+        // Computed properties
+        get paginatedRequests() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            return this.filteredRequests.slice(start, end);
+        },
+        
+        get totalPages() {
+            return Math.ceil(this.filteredRequests.length / this.itemsPerPage);
+        },
+        
+        get pageNumbers() {
+            const pages = [];
+            const maxPages = 5;
+            let start = Math.max(1, this.currentPage - Math.floor(maxPages / 2));
+            let end = Math.min(this.totalPages, start + maxPages - 1);
+            
+            if (end - start + 1 < maxPages) {
+                start = Math.max(1, end - maxPages + 1);
+            }
+            
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+            return pages;
+        },
+        
         // Initialize
         init() {
             this.loadMyAssignments();
             this.loadSwapRequests();
             this.loadAvailableAssignments();
             this.setDefaultExpiry();
+            this.loadUserRole();
+            
+            // Watch for swap_type changes to clear target_assignment_id when switching to open
+            this.$watch('newRequest.swap_type', (value) => {
+                if (value === 'open') {
+                    this.newRequest.target_assignment_id = '';
+                }
+            });
+        },
+        
+        // Load user role for permissions
+        async loadUserRole() {
+            try {
+                const response = await fetch('/api/v1/user/profile/', {
+                    headers: {
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.userRole = data.role || 'operationeel';
+                }
+            } catch (error) {
+                console.log('Could not load user role, defaulting to operationeel');
+            }
         },
         
         // Load user's current assignments
@@ -356,7 +1247,7 @@ function swapRequestApp() {
         // Load swap requests
         async loadSwapRequests() {
             try {
-                const response = await fetch('/api/v1/swap-requests/simple/', {
+                const response = await fetch('/api/v1/swap-requests/', {
                     headers: {
                         'X-CSRFToken': this.getCsrfToken(),
                     },
@@ -364,13 +1255,20 @@ function swapRequestApp() {
                 
                 if (response.ok) {
                     const data = await response.json();
-                    this.swapRequests = data.results || [];
-                    this.filteredRequests = [...this.swapRequests];
+                    this.swapRequests = data.results || data || [];
+                    this.filterRequests(); // Apply filters after loading
+                    this.updateStats();
+                } else if (response.status === 401) {
+                    // User not authenticated, show empty state
+                    this.swapRequests = [];
+                    this.filteredRequests = [];
                     this.updateStats();
                 }
             } catch (error) {
                 console.error('Error loading swap requests:', error);
                 this.showNotification('Failed to load swap requests', 'error');
+                this.swapRequests = [];
+                this.filteredRequests = [];
             }
         },
         
@@ -402,11 +1300,320 @@ function swapRequestApp() {
         
         // Filter requests
         filterRequests() {
-            this.filteredRequests = this.swapRequests.filter(request => {
-                if (this.filterStatus && request.status !== this.filterStatus) return false;
-                if (this.filterUrgency && request.urgency_level !== this.filterUrgency) return false;
-                return true;
+            let filtered = [...this.swapRequests];
+            
+            // Status filter
+            if (this.filterStatus) {
+                filtered = filtered.filter(request => request.status === this.filterStatus);
+            }
+            
+            // Urgency filter
+            if (this.filterUrgency) {
+                filtered = filtered.filter(request => request.urgency_level === this.filterUrgency);
+            }
+            
+            // Date range filter
+            if (this.filterDateRange) {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                filtered = filtered.filter(request => {
+                    const requestDate = new Date(request.requested_at);
+                    
+                    switch (this.filterDateRange) {
+                        case 'today':
+                            return requestDate >= today;
+                        case 'week':
+                            const weekAgo = new Date(today);
+                            weekAgo.setDate(weekAgo.getDate() - 7);
+                            return requestDate >= weekAgo;
+                        case 'month':
+                            const monthAgo = new Date(today);
+                            monthAgo.setMonth(monthAgo.getMonth() - 1);
+                            return requestDate >= monthAgo;
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            // Apply sorting
+            filtered.sort((a, b) => {
+                let aVal = a[this.sortField];
+                let bVal = b[this.sortField];
+                
+                // Handle nested properties for assignment names
+                if (this.sortField.includes('.')) {
+                    const keys = this.sortField.split('.');
+                    keys.forEach(key => {
+                        aVal = aVal && aVal[key];
+                        bVal = bVal && bVal[key];
+                    });
+                }
+                
+                if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+                if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+                return 0;
             });
+            
+            this.filteredRequests = filtered;
+            this.currentPage = 1; // Reset to first page
+        },
+        
+        // Clear all filters
+        clearFilters() {
+            this.filterStatus = '';
+            this.filterUrgency = '';
+            this.filterDateRange = '';
+            this.filterRequests();
+        },
+        
+        // Sorting
+        sortBy(field) {
+            if (this.sortField === field) {
+                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sortField = field;
+                this.sortDirection = 'asc';
+            }
+            this.filterRequests();
+        },
+        
+        // Pagination
+        goToPage(page) {
+            this.currentPage = page;
+        },
+        
+        nextPage() {
+            if (this.currentPage < this.totalPages) {
+                this.currentPage++;
+            }
+        },
+        
+        previousPage() {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+            }
+        },
+        
+        // Permission checks
+        canApprove(request) {
+            return request.status === 'pending' && 
+                   ['tactisch', 'management', 'planner', 'admin'].includes(this.userRole);
+        },
+        
+        canCancel(request) {
+            return request.status === 'pending' && request.requesting_user === this.getCurrentUser();
+        },
+        
+        getCurrentUser() {
+            // This would typically be loaded from the backend
+            return 'current_user_id'; // Placeholder
+        },
+        
+        // Approval/Decline actions
+        async approveRequest(request) {
+            if (!confirm('Are you sure you want to approve this swap request?')) return;
+            
+            this.isSubmitting = true;
+            try {
+                const response = await fetch(`/api/v1/swap-requests/${request.id}/approve/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                });
+                
+                if (response.ok) {
+                    this.showNotification('Swap request approved successfully', 'success');
+                    this.loadSwapRequests();
+                } else {
+                    const error = await response.json();
+                    this.showNotification(error.error || 'Failed to approve request', 'error');
+                }
+            } catch (error) {
+                console.error('Error approving request:', error);
+                this.showNotification('Failed to approve request', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+        
+        async declineRequest(request) {
+            this.selectedRequest = request;
+            this.declineReason = '';
+            this.showDeclineModal = true;
+        },
+        
+        async submitDecline() {
+            if (!this.declineReason.trim()) {
+                this.showNotification('Please provide a reason for declining', 'error');
+                return;
+            }
+            
+            this.isSubmitting = true;
+            try {
+                const response = await fetch(`/api/v1/swap-requests/${this.selectedRequest.id}/reject/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                    body: JSON.stringify({ reason: this.declineReason })
+                });
+                
+                if (response.ok) {
+                    this.showNotification('Swap request declined', 'success');
+                    this.closeDeclineModal();
+                    this.loadSwapRequests();
+                } else {
+                    const error = await response.json();
+                    this.showNotification(error.error || 'Failed to decline request', 'error');
+                }
+            } catch (error) {
+                console.error('Error declining request:', error);
+                this.showNotification('Failed to decline request', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+        
+        closeDeclineModal() {
+            this.showDeclineModal = false;
+            this.selectedRequest = null;
+            this.declineReason = '';
+        },
+        
+        // Utility functions
+        // Approve request
+        async approveRequest(request) {
+            try {
+                const response = await fetch(`/api/v1/swap-requests/${request.id}/approve/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    }
+                });
+                
+                if (response.ok) {
+                    this.showNotification('Swap request approved successfully', 'success');
+                    this.loadSwapRequests();
+                } else {
+                    const error = await response.json();
+                    this.showNotification(error.error || 'Failed to approve request', 'error');
+                }
+            } catch (error) {
+                console.error('Error approving request:', error);
+                this.showNotification('Failed to approve request', 'error');
+            }
+        },
+        
+        // Decline functions
+        openDeclineModal(request) {
+            this.declineRequest = request;
+            this.declineReason = '';
+            this.showDeclineModal = true;
+        },
+        
+        closeDeclineModal() {
+            this.showDeclineModal = false;
+            this.declineRequest = null;
+            this.declineReason = '';
+        },
+        
+        async submitDecline() {
+            this.isSubmitting = true;
+            
+            try {
+                const response = await fetch(`/api/v1/swap-requests/${this.declineRequest.id}/reject/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                    body: JSON.stringify({ reason: this.declineReason })
+                });
+                
+                if (response.ok) {
+                    this.showNotification('Swap request rejected', 'info');
+                    this.closeDeclineModal();
+                    this.loadSwapRequests();
+                } else {
+                    const error = await response.json();
+                    this.showNotification(error.error || 'Failed to reject request', 'error');
+                }
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                this.showNotification('Failed to reject request', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+        
+        // Take over open request
+        async takeOverRequest(request) {
+            if (!confirm('Are you sure you want to take over this shift?')) return;
+            
+            try {
+                const response = await fetch(`/api/v1/swap-requests/${request.id}/take-over/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    }
+                });
+                
+                if (response.ok) {
+                    this.showNotification('You have successfully taken over this shift', 'success');
+                    this.loadSwapRequests();
+                } else {
+                    const error = await response.json();
+                    this.showNotification(error.error || 'Failed to take over shift', 'error');
+                }
+            } catch (error) {
+                console.error('Error taking over request:', error);
+                this.showNotification('Failed to take over request', 'error');
+            }
+        },
+        
+        isExpiringSoon(request) {
+            if (!request.expires_at) return false;
+            const now = new Date();
+            const expiryDate = new Date(request.expires_at);
+            const hoursUntilExpiry = (expiryDate - now) / (1000 * 60 * 60);
+            return hoursUntilExpiry <= 24 && hoursUntilExpiry > 0;
+        },
+        
+        getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        },
+        
+        getTimeUntilExpiry(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((date - now) / 1000);
+            
+            if (diffInSeconds < 0) return 'Expired';
+            if (diffInSeconds < 60) return 'Expires soon';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m left`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h left`;
+            return `${Math.floor(diffInSeconds / 86400)}d left`;
+        },
+        
+        getRowClass(request) {
+            if (request.status === 'expired') return 'opacity-60';
+            if (this.isExpiringSoon(request)) return 'bg-yellow-50 border-l-4 border-yellow-400';
+            if (this.isUrgent(request)) return 'bg-red-50 border-l-4 border-red-400';
+            return '';
         },
         
         // Modal functions
@@ -450,13 +1657,28 @@ function swapRequestApp() {
             this.isSubmitting = true;
             
             try {
+                // Prepare request data
+                const requestData = { ...this.newRequest };
+                
+                // Handle target_assignment_id for open requests
+                if (requestData.swap_type === 'open' || requestData.target_assignment_id === '') {
+                    requestData.target_assignment_id = null;
+                }
+                
+                // Convert datetime-local format to proper ISO format
+                if (requestData.expires_at) {
+                    // Convert from YYYY-MM-DDTHH:MM to YYYY-MM-DD HH:MM:SS
+                    const date = new Date(requestData.expires_at);
+                    requestData.expires_at = date.toISOString().slice(0, 19).replace('T', ' ');
+                }
+                
                 const response = await fetch('/api/v1/swap-requests/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': this.getCsrfToken(),
                     },
-                    body: JSON.stringify(this.newRequest)
+                    body: JSON.stringify(requestData)
                 });
                 
                 if (response.ok) {

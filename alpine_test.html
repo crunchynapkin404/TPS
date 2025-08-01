@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpine.js Test</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head>
+<body>
+    <div x-data="testData()" x-init="init()">
+        <div x-show="showModal">
+            <p>Modal is visible!</p>
+            <button @click="closeModal()">Close</button>
+        </div>
+        
+        <button @click="openModal()">Open Modal</button>
+        
+        <p x-text="message"></p>
+        
+        <select x-model="selectedUser">
+            <option value="">Select user...</option>
+            <template x-for="user in users" :key="user.id">
+                <option :value="user.id" x-text="user.name"></option>
+            </template>
+        </select>
+    </div>
+
+    <script>
+        function testData() {
+            console.log('Initializing testData...');
+            
+            try {
+                const data = {
+                    showModal: false,
+                    message: 'Test Alpine.js Component',
+                    selectedUser: '',
+                    users: [
+                        { id: 1, name: 'User 1' },
+                        { id: 2, name: 'User 2' }
+                    ],
+                    
+                    openModal() {
+                        console.log('Opening modal');
+                        this.showModal = true;
+                    },
+                    
+                    closeModal() {
+                        console.log('Closing modal');
+                        this.showModal = false;
+                    },
+                    
+                    init() {
+                        console.log('Test component initialized');
+                    }
+                };
+                
+                console.log('Test data created:', data);
+                return data;
+                
+            } catch (error) {
+                console.error('Error in testData:', error);
+                return {
+                    showModal: false,
+                    message: 'Error!',
+                    users: [],
+                    selectedUser: '',
+                    openModal() { console.log('fallback open'); },
+                    closeModal() { console.log('fallback close'); },
+                    init() { console.log('fallback init'); }
+                };
+            }
+        }
+        
+        window.testData = testData;
+        console.log('Test script loaded');
+    </script>
+</body>
+</html>

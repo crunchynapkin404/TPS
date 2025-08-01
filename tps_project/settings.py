@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'channels',
     
     # TPS Applications
     'apps.accounts',
@@ -63,6 +64,28 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'tps_project.wsgi.application'
+ASGI_APPLICATION = 'tps_project.asgi.application'
+
+# Channel Layers Configuration for WebSockets
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [(os.getenv('REDIS_HOST', 'localhost'), int(os.getenv('REDIS_PORT', '6379')))],
+        },
+    },
+}
+
+# Fallback to in-memory channel layer if Redis is not available
+try:
+    import redis
+    import channels_redis
+except ImportError:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 DATABASES = {
     'default': {

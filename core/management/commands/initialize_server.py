@@ -11,6 +11,7 @@ from apps.accounts.models import SkillCategory, Skill, UserSkill
 from apps.scheduling.models import ShiftCategory, ShiftTemplate, ShiftInstance, PlanningPeriod
 from apps.leave_management.models import LeaveType, LeaveBalance
 from apps.notifications.models import NotificationPreference
+from core.config import config_manager
 from datetime import date, datetime, timedelta
 import random
 
@@ -414,39 +415,48 @@ class Command(BaseCommand):
         """Create user accounts based on mode"""
         self.stdout.write('👤 Creating user accounts...')
         
+        # Get configuration
+        admin_config = config_manager.get_admin_config()
+        test_config = config_manager.get_test_config()
+        org_config = config_manager.get_organization_config()
+        
         # Always create admin user
         admin_user = None
-        if not User.objects.filter(username='admin').exists():
+        admin_username = admin_config['username']
+        if not User.objects.filter(username=admin_username).exists():
             admin_user = User.objects.create_superuser(
-                username='admin',
-                email='admin@tps.local',
-                password='admin123',
-                first_name='System',
-                last_name='Administrator'
+                username=admin_config['username'],
+                email=admin_config['email'],
+                password=admin_config['password'],
+                first_name=admin_config['first_name'],
+                last_name=admin_config['last_name']
             )
-            admin_user.employee_id = 'ADM001'
+            admin_user.employee_id = config_manager.generate_employee_id(1, 'ADM')
             admin_user.role = 'MANAGER'
-            admin_user.phone = '+31 20 1234567'
+            admin_user.phone = config_manager.generate_phone_number()
             admin_user.save()
-            self.stdout.write('  + Created admin user (admin/admin123)')
+            self.stdout.write(f'  + Created admin user ({admin_username}/[configured password])')
         else:
-            admin_user = User.objects.get(username='admin')
-        
+            admin_user = User.objects.get(username=admin_username)
+
         users = [admin_user] if admin_user else []
-        
+
         if self.is_production:
             # Create minimal production users
             production_users = [
-                ('planner', 'System', 'Planner', 'planner@tps.local', 'PLANNER', 'PLN001'),
-                ('manager', 'Department', 'Manager', 'manager@tps.local', 'MANAGER', 'MGR001'),
+                ('planner', 'System', 'Planner', 'PLANNER', config_manager.generate_employee_id(1, 'PLN')),
+                ('manager', 'Department', 'Manager', 'MANAGER', config_manager.generate_employee_id(1, 'MGR')),
             ]
             
-            for username, first_name, last_name, email, role, emp_id in production_users:
+            for username, first_name, last_name, role, emp_id in production_users:
                 if not User.objects.filter(username=username).exists():
+                    # Generate secure password for production
+                    secure_password = config_manager.generate_secure_password()
+                    
                     user = User.objects.create_user(
                         username=username,
-                        email=email,
-                        password='tps2024!',
+                        email=config_manager.generate_test_email(username),
+                        password=secure_password,
                         first_name=first_name,
                         last_name=last_name
                     )
@@ -455,39 +465,40 @@ class Command(BaseCommand):
                     user.is_staff = True if role in ['PLANNER', 'MANAGER'] else False
                     user.save()
                     users.append(user)
-                    self.stdout.write(f'  + Created {role.lower()} user: {username}')
+                    self.stdout.write(f'  + Created {role.lower()} user: {username} (password: {secure_password})')
         else:
-            # Create test users
-            test_users_data = [
-                ('planner1', 'Alice', 'Planner', 'PLANNER', 'PLN001'),
-                ('manager1', 'Bob', 'Manager', 'MANAGER', 'MGR001'),
-                ('user1', 'Charlie', 'Engineer', 'USER', 'ENG001'),
-                ('user2', 'Diana', 'Technician', 'USER', 'ENG002'),
-                ('user3', 'Edward', 'Analyst', 'USER', 'ENG003'),
-                ('user4', 'Fiona', 'Specialist', 'USER', 'ENG004'),
-                ('user5', 'George', 'Coordinator', 'USER', 'ENG005'),
-                ('user6', 'Helen', 'Administrator', 'USER', 'ENG006'),
-                ('user7', 'Ian', 'Developer', 'USER', 'ENG007'),
-                ('user8', 'Julia', 'Support', 'USER', 'ENG008'),
-            ]
-            
-            for username, first_name, last_name, role, emp_id in test_users_data:
-                if not User.objects.filter(username=username).exists():
-                    user = User.objects.create_user(
-                        username=username,
-                        email=f'{username}@tps.local',
-                        password='password123',
-                        first_name=first_name,
-                        last_name=last_name
-                    )
-                    user.employee_id = emp_id
-                    user.role = role
-                    user.phone = f'+31 6 {random.randint(10000000, 99999999)}'
-                    user.is_staff = True if role in ['PLANNER', 'MANAGER'] else False
-                    user.save()
-                    users.append(user)
-                    self.stdout.write(f'  + Created test user: {username} ({role})')
-        
+            # Create test users if enabled
+            if test_config['create_test_users']:
+                test_users_data = [
+                    ('planner1', 'Alice', 'Planner', 'PLANNER', config_manager.generate_employee_id(1, 'PLN')),
+                    ('manager1', 'Bob', 'Manager', 'MANAGER', config_manager.generate_employee_id(1, 'MGR')),
+                    ('user1', 'Charlie', 'Engineer', 'USER', config_manager.generate_employee_id(1)),
+                    ('user2', 'Diana', 'Technician', 'USER', config_manager.generate_employee_id(2)),
+                    ('user3', 'Edward', 'Analyst', 'USER', config_manager.generate_employee_id(3)),
+                    ('user4', 'Fiona', 'Specialist', 'USER', config_manager.generate_employee_id(4)),
+                    ('user5', 'George', 'Coordinator', 'USER', config_manager.generate_employee_id(5)),
+                    ('user6', 'Helen', 'Administrator', 'USER', config_manager.generate_employee_id(6)),
+                    ('user7', 'Ian', 'Developer', 'USER', config_manager.generate_employee_id(7)),
+                    ('user8', 'Julia', 'Support', 'USER', config_manager.generate_employee_id(8)),
+                ]
+                
+                for username, first_name, last_name, role, emp_id in test_users_data:
+                    if not User.objects.filter(username=username).exists():
+                        user = User.objects.create_user(
+                            username=username,
+                            email=config_manager.generate_test_email(username),
+                            password=test_config['test_password'],
+                            first_name=first_name,
+                            last_name=last_name
+                        )
+                        user.employee_id = emp_id
+                        user.role = role
+                        user.phone = config_manager.generate_phone_number()
+                        user.is_staff = True if role in ['PLANNER', 'MANAGER'] else False
+                        user.save()
+                        users.append(user)
+                        self.stdout.write(f'  + Created test user: {username} ({role})')
+
         self.stdout.write(f'  ✅ Created {len(users)} user accounts')
         return users
     
@@ -714,10 +725,13 @@ class Command(BaseCommand):
             self.stdout.write(f'{label}: {count}')
         
         self.stdout.write('\n📋 QUICK START GUIDE:')
-        self.stdout.write('1. Login as admin (admin/admin123) for full access')
-        if not self.is_production:
-            self.stdout.write('2. Test users: user1-8 (password: password123)')
-            self.stdout.write('3. Planner access: planner1 (password: password123)')
+        admin_config = config_manager.get_admin_config()
+        test_config = config_manager.get_test_config()
+        
+        self.stdout.write(f'1. Login as {admin_config["username"]} with configured password for full access')
+        if not self.is_production and test_config['create_test_users']:
+            self.stdout.write(f'2. Test users: user1-8 (password: {test_config["test_password"]})')
+            self.stdout.write(f'3. Planner access: planner1 (password: {test_config["test_password"]})')
         self.stdout.write('4. Navigate to /schedule/ to view the calendar')
         self.stdout.write('5. Visit /admin/ for administrative functions')
         

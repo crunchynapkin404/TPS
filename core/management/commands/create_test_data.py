@@ -8,6 +8,7 @@ from django.utils import timezone
 from apps.teams.models import Team, TeamRole, TeamMembership
 from apps.accounts.models import SkillCategory, Skill, UserSkill
 from apps.scheduling.models import ShiftCategory, ShiftTemplate, ShiftInstance, PlanningPeriod
+from core.config import config_manager
 from datetime import date, datetime, timedelta
 import random
 
@@ -34,6 +35,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Creating test data for TPS calendar...')
         
+        # Get configuration
+        admin_config = config_manager.get_admin_config()
+        test_config = config_manager.get_test_config()
+        org_config = config_manager.get_organization_config()
+        
         # Create skill categories and skills
         self.create_skills()
         
@@ -44,7 +50,7 @@ class Command(BaseCommand):
         teams = self.create_teams()
         
         # Create users
-        users = self.create_users(options['users'])
+        users = self.create_users(options['users'], admin_config, test_config, org_config)
         
         # Assign users to teams
         self.assign_users_to_teams(users, teams)
@@ -58,8 +64,8 @@ class Command(BaseCommand):
                 f'- {len(users)} users\n'
                 f'- {len(teams)} teams\n'
                 f'- {options["weeks"]} weeks of shift data\n'
-                f'- Admin user: admin/admin123\n'
-                f'- Test users: user1/password123, user2/password123, etc.'
+                f'- Admin user: {admin_config["username"]}/[password from config]\n'
+                f'- Test users: user1/[test password], user2/[test password], etc.'
             )
         )
     
@@ -185,55 +191,58 @@ class Command(BaseCommand):
         
         return teams
     
-    def create_users(self, num_users):
-        """Create test users"""
+    def create_users(self, num_users, admin_config, test_config, org_config):
+        """Create test users using configuration"""
         self.stdout.write(f'Creating {num_users} test users...')
         
         # Create superuser if not exists
-        if not User.objects.filter(username='admin').exists():
+        admin_username = admin_config['username']
+        if not User.objects.filter(username=admin_username).exists():
             admin = User.objects.create_superuser(
-                username='admin',
-                email='admin@example.com',
-                password='admin123',
-                first_name='Admin',
-                last_name='User'
+                username=admin_config['username'],
+                email=admin_config['email'],
+                password=admin_config['password'],
+                first_name=admin_config['first_name'],
+                last_name=admin_config['last_name']
             )
-            admin.employee_id = 'ADM001'
+            admin.employee_id = config_manager.generate_employee_id(1, 'ADM')
             admin.save()
         
         users = []
-        for i in range(1, num_users + 1):
-            username = f'user{i}'
-            employee_id = f'EMP{i:03d}'
-            if not User.objects.filter(username=username).exists() and not User.objects.filter(employee_id=employee_id).exists():
-                user = User.objects.create_user(
-                    username=username,
-                    email=f'user{i}@example.com',
-                    password='password123',
-                    first_name=f'User',
-                    last_name=f'{i:02d}'
-                )
-                user.employee_id = employee_id
-                user.phone = f'+31 6 {random.randint(10000000, 99999999)}'
-                user.emergency_contact = f'Emergency Contact {i}'
-                user.emergency_phone = f'+31 6 {random.randint(10000000, 99999999)}'
-                user.save()
-                users.append(user)
+        if test_config['create_test_users']:
+            for i in range(1, num_users + 1):
+                username = f'user{i}'
+                employee_id = config_manager.generate_employee_id(i)
                 
-                # Assign skills - simplified system
-                skills = list(Skill.objects.all())
-                # Give each user 1-2 skills randomly
-                num_skills = random.randint(1, 2)
-                for skill in random.sample(skills, min(num_skills, len(skills))):
-                    UserSkill.objects.get_or_create(
-                        user=user,
-                        skill=skill,
-                        defaults={
-                            'proficiency_level': 'basic',  # All basic level
-                            'is_certified': random.choice([True, False]),
-                            'certification_date': timezone.now() if random.choice([True, False]) else None
-                        }
+                if not User.objects.filter(username=username).exists() and not User.objects.filter(employee_id=employee_id).exists():
+                    user = User.objects.create_user(
+                        username=username,
+                        email=config_manager.generate_test_email(username),
+                        password=test_config['test_password'],
+                        first_name=f'User',
+                        last_name=f'{i:02d}'
                     )
+                    user.employee_id = employee_id
+                    user.phone = config_manager.generate_phone_number()
+                    user.emergency_contact = f'Emergency Contact {i}'
+                    user.emergency_phone = config_manager.generate_phone_number()
+                    user.save()
+                    users.append(user)
+                    
+                    # Assign skills - simplified system
+                    skills = list(Skill.objects.all())
+                    # Give each user 1-2 skills randomly
+                    num_skills = random.randint(1, 2)
+                    for skill in random.sample(skills, min(num_skills, len(skills))):
+                        UserSkill.objects.get_or_create(
+                            user=user,
+                            skill=skill,
+                            defaults={
+                                'proficiency_level': 'basic',  # All basic level
+                                'is_certified': random.choice([True, False]),
+                                'certification_date': timezone.now() if random.choice([True, False]) else None
+                            }
+                        )
         
         return users
     

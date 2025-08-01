@@ -8,6 +8,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
+from core.config import config_manager
 
 from apps.teams.models import Team, TeamMembership, TeamRole
 
@@ -21,12 +22,16 @@ class APIIntegrationTest(TestCase):
         """Create minimal test data for API tests"""
         self.client = APIClient()
         
+        # Get test configuration
+        test_config = config_manager.get_test_config()
+        org_config = config_manager.get_organization_config()
+        
         # Create admin user for API authentication
         self.admin_user = User.objects.create_user(
             username="admin",
-            email="admin@test.com",
-            password="testpass123",
-            employee_id="ADMIN001",
+            email=config_manager.generate_test_email("admin"),
+            password=test_config['test_password'],
+            employee_id=config_manager.generate_employee_id(1, 'ADM'),
             is_staff=True,
             is_superuser=True
         )
@@ -34,9 +39,9 @@ class APIIntegrationTest(TestCase):
         # Create regular user
         self.user = User.objects.create_user(
             username="testuser",
-            email="user@test.com", 
-            password="testpass123",
-            employee_id="USER001"
+            email=config_manager.generate_test_email("testuser"), 
+            password=test_config['test_password'],
+            employee_id=config_manager.generate_employee_id(1)
         )
         
         # Create team
@@ -103,8 +108,8 @@ class SystemHealthTest(TestCase):
         # Create a user
         user = User.objects.create_user(
             username="healthtest",
-            email="health@test.com",
-            employee_id="HEALTH001"
+            email=config_manager.generate_test_email("healthtest"),
+            employee_id=config_manager.generate_employee_id(999, "HEALTH")
         )
         
         # Verify user was created
@@ -119,8 +124,8 @@ class SystemHealthTest(TestCase):
         """Test user model has expected fields"""
         user = User.objects.create_user(
             username="fieldtest",
-            email="field@test.com",
-            employee_id="FIELD001"
+            email=config_manager.generate_test_email("fieldtest"),
+            employee_id=config_manager.generate_employee_id(999, "FIELD")
         )
         
         # Test required fields exist

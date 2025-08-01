@@ -6,7 +6,7 @@
 
 {% block content %}
 <!-- CLEAN DESKTOP DASHBOARD -->
-<div class="grid grid-rows-4 gap-5 w-full">
+<div class="grid grid-rows-4 gap-5 w-full" x-data="dashboardData()">
     <!-- Welcome Header -->
     <div class="mb-6">
         <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome back, {{ user.first_name|default:user.username }}! 👋</div>
@@ -15,39 +15,64 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-6 gap-4 xl:grid-cols-6 lg:grid-cols-3 lg:grid-rows-2 md:grid-cols-2 md:grid-rows-3 sm:grid-cols-1">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/40" onclick="window.location.href='/schedule/'">
-            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-clock"></i></div>
-            <div class="text-3xl font-bold mb-1" id="my-shifts-count">{{ my_upcoming_shifts.count }}</div>
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/40" @click="window.location.href='/schedule/'">
+            <div class="text-2xl mb-2 opacity-90">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-bold mb-1" x-text="stats.myShifts">{{ my_upcoming_shifts.count }}</div>
             <div class="text-sm opacity-90 font-medium">My Shifts</div>
         </div>
         
-        <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-amber-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/40" onclick="viewPendingApprovals()">
-            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-exclamation-circle"></i></div>
-            <div class="text-3xl font-bold mb-1" id="pending-approvals-count">{{ pending_approvals }}</div>
+        <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-amber-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/40" @click="showPendingApprovals()">
+            <div class="text-2xl mb-2 opacity-90">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.958-.833-2.728 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-bold mb-1" x-text="stats.pendingApprovals">{{ pending_approvals }}</div>
             <div class="text-sm opacity-90 font-medium">Pending</div>
         </div>
         
-        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/40" onclick="window.location.href='/teams/'">
-            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-users"></i></div>
-            <div class="text-3xl font-bold mb-1" id="active-members-count">{{ active_members }}</div>
+        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/40" @click="window.location.href='/teams/'">
+            <div class="text-2xl mb-2 opacity-90">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-bold mb-1" x-text="stats.activeMembers">{{ active_members }}</div>
             <div class="text-sm opacity-90 font-medium">Team Members</div>
         </div>
         
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-purple-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-purple-500/40" onclick="window.location.href='/assignments/'">
-            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-clipboard-list"></i></div>
-            <div class="text-3xl font-bold mb-1" id="monthly-assignments-count">{{ monthly_assignments }}</div>
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-purple-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-purple-500/40" @click="window.location.href='/assignments/'">
+            <div class="text-2xl mb-2 opacity-90">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-bold mb-1" x-text="stats.monthlyAssignments">{{ monthly_assignments }}</div>
             <div class="text-sm opacity-90 font-medium">This Month</div>
         </div>
         
         <div class="bg-gradient-to-br from-teal-500 to-teal-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-teal-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-500/40">
-            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-heartbeat"></i></div>
-            <div class="text-3xl font-bold mb-1" id="system-health-value">{{ system_health }}%</div>
+            <div class="text-2xl mb-2 opacity-90">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-bold mb-1" x-text="stats.systemHealth + '%'">{{ system_health }}%</div>
             <div class="text-sm opacity-90 font-medium">System Health</div>
         </div>
         
-        <div class="{% if fairness_score >= 90 %}bg-gradient-to-br from-emerald-500 to-emerald-600{% elif fairness_score >= 75 %}bg-gradient-to-br from-amber-500 to-amber-600{% else %}bg-gradient-to-br from-red-500 to-red-600{% endif %} text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg {% if fairness_score >= 90 %}shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40{% elif fairness_score >= 75 %}shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40{% else %}shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40{% endif %} hover:-translate-y-0.5" id="fairness-card">
-            <div class="text-2xl mb-2 opacity-90"><i class="fas fa-balance-scale"></i></div>
-            <div class="text-3xl font-bold mb-1" id="fairness-score-value">{{ fairness_score }}%</div>
+        <div class="text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg hover:-translate-y-0.5" 
+             :class="fairnessCardClasses">
+            <div class="text-2xl mb-2 opacity-90">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                </svg>
+            </div>
+            <div class="text-3xl font-bold mb-1" x-text="stats.fairnessScore + '%'">{{ fairness_score }}%</div>
             <div class="text-sm opacity-90 font-medium">Fairness</div>
         </div>
     </div>
@@ -88,40 +113,58 @@
         <!-- Quick Actions -->
         <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
             <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
                 Quick Actions
             </div>
             <div class="flex-1 p-5 overflow-y-auto">
-                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onclick="openPlanningWizard()">
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click="openPlanningWizard()">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400"><i class="fas fa-magic"></i></div>
+                        <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                            </svg>
+                        </div>
                         <div>
                             <div class="font-medium text-gray-900 dark:text-white">Generate Planning</div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">Auto-assign shifts</div>
                         </div>
                     </div>
                 </div>
-                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onclick="openQuickAssign()">
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click="openQuickAssign()">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400"><i class="fas fa-plus-circle"></i></div>
+                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
                         <div>
                             <div class="font-medium text-gray-900 dark:text-white">Quick Assign</div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">Manual assignment</div>
                         </div>
                     </div>
                 </div>
-                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onclick="viewPendingApprovals()">
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click="showPendingApprovals()">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400"><i class="fas fa-check-circle"></i></div>
+                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
                         <div>
                             <div class="font-medium text-gray-900 dark:text-white">Approve Requests</div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">Review pending</div>
                         </div>
                     </div>
                 </div>
-                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" onclick="exportSchedule()">
+                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click="exportSchedule()">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center text-orange-600 dark:text-orange-400"><i class="fas fa-download"></i></div>
+                        <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center text-orange-600 dark:text-orange-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
                         <div>
                             <div class="font-medium text-gray-900 dark:text-white">Export Schedule</div>
                             <div class="text-sm text-gray-600 dark:text-gray-400">Download files</div>
@@ -284,11 +327,15 @@
                                 <div class="text-gray-600 dark:text-gray-400 text-xs">{{ assignment.shift.template.name }} • {{ assignment.shift.start_datetime|date:"M d" }}</div>
                             </div>
                             <div class="flex space-x-1">
-                                <button class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors" onclick="approveAssignment('{{ assignment.assignment_id }}')">
-                                    <i class="fas fa-check"></i>
+                                <button class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors" @click="approveAssignment('{{ assignment.assignment_id }}')">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
                                 </button>
-                                <button class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors" onclick="declineAssignment('{{ assignment.assignment_id }}')">
-                                    <i class="fas fa-times"></i>
+                                <button class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors" @click="declineAssignment('{{ assignment.assignment_id }}')">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
                                 </button>
                             </div>
                         </div>
@@ -311,175 +358,205 @@
 
 {% block extra_js %}
 <script>
-// Quick Action Functions
-function openPlanningWizard() {
-    window.location.href = '/planning/';
-}
-
-function openQuickAssign() {
-    console.log('Opening quick assign...');
-}
-
-function viewPendingApprovals() {
-    console.log('Viewing pending approvals...');
-}
-
-function exportSchedule() {
-    console.log('Exporting schedule...');
-}
-
-// Assignment approval functions
-function approveAssignment(assignmentId) {
-    if (confirm('Are you sure you want to approve this assignment?')) {
-        fetch(`/api/v1/assignments/${assignmentId}/approve_assignment/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (response.ok) {
-                location.reload(); // Refresh to show updated data
+// Alpine.js Dashboard Data
+function dashboardData() {
+    return {
+        stats: {
+            myShifts: {{ my_upcoming_shifts.count }},
+            pendingApprovals: {{ pending_approvals }},
+            activeMembers: {{ active_members }},
+            monthlyAssignments: {{ monthly_assignments }},
+            systemHealth: {{ system_health }},
+            fairnessScore: {{ fairness_score }}
+        },
+        
+        // Computed property for fairness card classes
+        get fairnessCardClasses() {
+            const score = this.stats.fairnessScore;
+            if (score >= 90) {
+                return 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40';
+            } else if (score >= 75) {
+                return 'bg-gradient-to-br from-amber-500 to-amber-600 shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40';
             } else {
-                alert('Error approving assignment: ' + (data.error || 'Unknown error'));
+                return 'bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40';
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error approving assignment');
-        });
-    }
-}
+        },
+        
+        // Quick Action Functions converted to Alpine methods
+        openPlanningWizard() {
+            window.location.href = '/planning/';
+        },
 
-function declineAssignment(assignmentId) {
-    const reason = prompt('Please provide a reason for declining (optional):');
-    if (reason !== null) { // User didn't cancel
-        fetch(`/api/v1/assignments/${assignmentId}/reject_assignment/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                reason: reason || 'No reason provided'
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (response.ok) {
-                location.reload(); // Refresh to show updated data
-            } else {
-                alert('Error declining assignment: ' + (data.error || 'Unknown error'));
+        openQuickAssign() {
+            this.$dispatch('show-notification', { message: 'Quick assign functionality coming soon!', type: 'info' });
+        },
+
+        showPendingApprovals() {
+            this.$dispatch('show-notification', { message: 'Viewing pending approvals...', type: 'info' });
+        },
+
+        exportSchedule() {
+            this.$dispatch('show-notification', { message: 'Exporting schedule...', type: 'info' });
+        },
+
+        // Assignment approval functions with proper Alpine.js patterns
+        async approveAssignment(assignmentId) {
+            if (confirm('Are you sure you want to approve this assignment?')) {
+                try {
+                    const response = await fetch(`/api/v1/assignments/${assignmentId}/approve_assignment/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': this.getCsrfToken(),
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        this.$dispatch('show-notification', { message: 'Assignment approved successfully!', type: 'success' });
+                        // Update stats
+                        this.stats.pendingApprovals = Math.max(0, this.stats.pendingApprovals - 1);
+                        // Optionally reload page for full refresh
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        this.$dispatch('show-notification', { 
+                            message: 'Error approving assignment: ' + (data.error || 'Unknown error'), 
+                            type: 'error' 
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.$dispatch('show-notification', { message: 'Error approving assignment', type: 'error' });
+                }
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error declining assignment');
-        });
-    }
-}
+        },
 
-// Real-time dashboard updates
-function updateDashboardStats() {
-    fetch('/api/v1/dashboard/stats/')
-        .then(response => response.json())
-        .then(data => {
-            // Update stat cards
-            document.getElementById('my-shifts-count').textContent = data.my_upcoming_shifts;
-            document.getElementById('pending-approvals-count').textContent = data.pending_approvals;
-            document.getElementById('active-members-count').textContent = data.active_members;
-            document.getElementById('monthly-assignments-count').textContent = data.monthly_assignments;
-            document.getElementById('system-health-value').textContent = data.system_health + '%';
-            document.getElementById('fairness-score-value').textContent = data.fairness_score + '%';
+        async declineAssignment(assignmentId) {
+            const reason = prompt('Please provide a reason for declining (optional):');
+            if (reason !== null) { // User didn't cancel
+                try {
+                    const response = await fetch(`/api/v1/assignments/${assignmentId}/reject_assignment/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': this.getCsrfToken(),
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            reason: reason || 'No reason provided'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        this.$dispatch('show-notification', { message: 'Assignment declined successfully!', type: 'success' });
+                        // Update stats
+                        this.stats.pendingApprovals = Math.max(0, this.stats.pendingApprovals - 1);
+                        // Optionally reload page for full refresh
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        this.$dispatch('show-notification', { 
+                            message: 'Error declining assignment: ' + (data.error || 'Unknown error'), 
+                            type: 'error' 
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.$dispatch('show-notification', { message: 'Error declining assignment', type: 'error' });
+                }
+            }
+        },
+
+        // Helper function for CSRF token
+        getCsrfToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                   document.querySelector('meta[name="csrf-token"]')?.content || '';
+        },
+
+        // Real-time dashboard updates
+        async updateDashboardStats() {
+            try {
+                const response = await fetch('/api/v1/dashboard/stats/');
+                const data = await response.json();
+                
+                // Update stats reactively
+                this.stats = {
+                    myShifts: data.my_upcoming_shifts,
+                    pendingApprovals: data.pending_approvals,
+                    activeMembers: data.active_members,
+                    monthlyAssignments: data.monthly_assignments,
+                    systemHealth: data.system_health,
+                    fairnessScore: data.fairness_score
+                };
+            } catch (error) {
+                console.error('Error updating dashboard stats:', error);
+            }
+        },
+
+        // Initialize dashboard
+        init() {
+            // Update dashboard stats every 30 seconds
+            setInterval(() => this.updateDashboardStats(), 30000);
             
-            // Update fairness card color based on score
-            const fairnessCard = document.getElementById('fairness-card');
-            fairnessCard.className = fairnessCard.className.replace(/stat-card\s+(success|warning|danger)/, 
-                `stat-card ${data.fairness_score >= 90 ? 'success' : data.fairness_score >= 75 ? 'warning' : 'danger'}`);
-        })
-        .catch(error => console.error('Error updating dashboard stats:', error));
-}
-
-function updateRecentActivity() {
-    fetch('/api/v1/dashboard/activity/')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('recent-activity-list');
-            if (data.recent_activity && data.recent_activity.length > 0) {
-                container.innerHTML = data.recent_activity.map((activity, index) => {
-                    const colors = ['blue', 'green', 'yellow', 'purple'];
-                    const color = colors[index % colors.length];
-                    const statusColor = activity.status === 'confirmed' ? 'blue' : 
-                                      activity.status === 'completed' ? 'green' : 'yellow';
-                    
-                    const startDate = new Date(activity.start_time);
-                    const endDate = new Date(activity.end_time);
-                    
-                    return `
-                        <div class="list-item ${color}">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <div class="item-title">${activity.user_name} - ${activity.shift_name}</div>
-                                    <div class="item-subtitle">${startDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})} • ${startDate.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}-${endDate.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}</div>
-                                </div>
-                                <span class="item-status bg-${statusColor}-100 text-${statusColor}-800">${activity.status}</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } else {
-                container.innerHTML = `
-                    <div class="text-center text-gray-500 py-4">
-                        <i class="fas fa-inbox text-2xl mb-2"></i>
-                        <div>No recent activity</div>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => console.error('Error updating recent activity:', error));
-}
-
-// Real-time clock
-function updateClock() {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString();
-    const clockElement = document.getElementById('current-time');
-    if (clockElement) {
-        clockElement.textContent = timeString;
-    }
-}
-
-// CSRF token helper
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+            // Listen for custom notifications
+            this.$watch('$store.notifications', (notifications) => {
+                // Handle notifications if needed
+            });
         }
     }
-    return cookieValue;
 }
 
-// Initialize dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    // Update dashboard stats every 30 seconds
-    updateDashboardStats();
-    setInterval(updateDashboardStats, 30000);
-    
-    // Update recent activity every 60 seconds
-    updateRecentActivity();
-    setInterval(updateRecentActivity, 60000);
-    
-    // Update clock every second
-    setInterval(updateClock, 1000);
-    updateClock();
+// Global notification handler
+document.addEventListener('alpine:init', () => {
+    Alpine.store('notifications', {
+        items: [],
+        
+        add(notification) {
+            const id = Date.now();
+            this.items.push({ ...notification, id });
+            
+            // Auto-remove after delay
+            const delay = notification.type === 'error' ? 5000 : 3000;
+            setTimeout(() => this.remove(id), delay);
+        },
+        
+        remove(id) {
+            this.items = this.items.filter(item => item.id !== id);
+        }
+    });
+});
+
+// Custom event listener for notifications
+document.addEventListener('show-notification', (e) => {
+    Alpine.store('notifications').add(e.detail);
 });
 </script>
+
+<!-- Notification Area -->
+<div x-data="{ get notifications() { return $store.notifications.items } }" class="fixed top-4 right-4 z-50 space-y-2">
+    <template x-for="notification in notifications" :key="notification.id">
+        <div class="px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300 flex items-center gap-2 text-white"
+             :class="{
+                'bg-green-500': notification.type === 'success',
+                'bg-red-500': notification.type === 'error',
+                'bg-yellow-500': notification.type === 'warning',
+                'bg-blue-500': notification.type === 'info'
+             }"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="transform translate-x-full opacity-0"
+             x-transition:enter-end="transform translate-x-0 opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="transform translate-x-0 opacity-100"
+             x-transition:leave-end="transform translate-x-full opacity-0">
+            <span x-text="{
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️',
+                'info': 'ℹ️'
+            }[notification.type]"></span>
+            <span x-text="notification.message"></span>
+        </div>
+    </template>
+</div>
 {% endblock %}

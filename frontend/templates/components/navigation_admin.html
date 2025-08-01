@@ -1,8 +1,8 @@
 <!-- Admin Navigation - Full System Access -->
-<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 px-6 pb-4 shadow-2xl flex-1">
+<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 px-6 pb-4 shadow-2xl flex-1" x-data="{ userProfileMenuOpen: false, notifications: [] }">
     <!-- Logo/Brand -->
     <div class="flex h-20 shrink-0 items-center justify-between border-b border-red-700 dark:border-red-600 pb-4 pt-4">
-        <div class="sidebar-brand">
+        <div class="sidebar-brand" :class="sidebarCollapsed ? 'hidden' : ''">
             <h1 class="text-white text-xl font-bold flex items-center">
                 <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center mr-3 lg:mr-3">
                     <!-- Heroicon: shield-check (crown alternative) -->
@@ -15,29 +15,32 @@
             <p class="text-red-300 text-xs mt-1 sidebar-text">System Administrator</p>
         </div>
         <!-- Theme Toggle & Notifications -->
-        <div class="flex items-center gap-2 sidebar-text">
+        <div class="flex items-center gap-2" :class="sidebarCollapsed ? 'flex-col' : ''">
             <!-- Dark/Light Mode Toggle -->
-            <button data-theme-toggle 
+            <button @click="$root.darkMode = !$root.darkMode" 
                     class="text-red-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-700" 
                     title="Toggle Theme">
                 <!-- Sun/Moon icon -->
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg x-show="!$root.darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                <svg x-show="$root.darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                 </svg>
             </button>
             <!-- Notifications Bell -->
-            <button class="text-red-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-700 relative">
+            <button @click="notifications = []" class="text-red-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-700 relative">
                 <!-- Heroicon: bell -->
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5-5 5-5h-5m-6 0L9 7l5 5-5 5H4l5-5z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5-5v-5a3 3 0 00-6 0v5l-5 5h5a3 3 0 006 0z"></path>
                 </svg>
-                <span class="absolute -top-1 -right-1 bg-yellow-500 text-red-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">!</span>
+                <span x-show="notifications.length > 0" class="absolute -top-1 -right-1 bg-yellow-500 text-red-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" x-text="notifications.length"></span>
             </button>
         </div>
     </div>
 
     <!-- Team Switcher -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between" x-show="!sidebarCollapsed">
         <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
             System Overview
         </div>
@@ -49,92 +52,54 @@
             <!-- Dashboard -->
             <li>
                 <a href="{% url 'frontend:dashboard' %}" 
-                   class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                   class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                   :class="sidebarCollapsed ? 'justify-center' : ''">
                     <!-- Heroicon: view-grid -->
                     <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
                     </svg>
-                    <span class="sidebar-text">Admin Dashboard</span>
+                    <span x-show="!sidebarCollapsed" class="sidebar-text">Admin Dashboard</span>
                 </a>
             </li>
         </ul>
 
         <!-- System Management Section -->
         <div class="mt-8">
-            <div x-show="!$parent.sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
+            <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
                 System Management
             </div>
             <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li>
                     <a href="/admin/" 
                        class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                       :class="$parent.sidebarCollapsed ? 'justify-center' : ''">
+                       :class="sidebarCollapsed ? 'justify-center' : ''">
                         <!-- Heroicon: database -->
                         <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
                         </svg>
-                        <span x-show="!$parent.sidebarCollapsed" class="sidebar-text">Django Admin</span>
+                        <span x-show="!sidebarCollapsed" class="sidebar-text">Django Admin</span>
                     </a>
                 </li>
                 <li>
-                    <button @click="alert('System Settings - Coming Soon')" 
+                    <button @click="$dispatch('show-notification', { message: 'System Settings - Coming Soon', type: 'info' })" 
                             class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                            :class="$parent.sidebarCollapsed ? 'justify-center' : ''">
+                            :class="sidebarCollapsed ? 'justify-center' : ''">
                         <!-- Heroicon: adjustments -->
                         <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                         </svg>
-                        <span x-show="!$parent.sidebarCollapsed" class="sidebar-text">System Settings</span>
+                        <span x-show="!sidebarCollapsed" class="sidebar-text">System Settings</span>
                     </button>
                 </li>
                 <li>
-                    <button @click="alert('Audit Logs - Coming Soon')" 
+                    <button @click="$dispatch('show-notification', { message: 'Audit Logs - Coming Soon', type: 'info' })" 
                             class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                            :class="$parent.sidebarCollapsed ? 'justify-center' : ''">
+                            :class="sidebarCollapsed ? 'justify-center' : ''">
                         <!-- Heroicon: document-text -->
                         <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <span x-show="!$parent.sidebarCollapsed" class="sidebar-text">Audit Logs</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-
-        <!-- System Management Section -->
-        <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
-                System Management
-            </div>
-            <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li>
-                    <a href="/admin/" 
-                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <!-- Heroicon: database -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
-                        </svg>
-                        <span class="sidebar-text">Django Admin</span>
-                    </a>
-                </li>
-                <li>
-                    <button onclick="alert('System Settings - Coming Soon')" 
-                            class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <!-- Heroicon: adjustments -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
-                        </svg>
-                        <span class="sidebar-text">System Settings</span>
-                    </button>
-                </li>
-                <li>
-                    <button onclick="alert('Audit Logs - Coming Soon')" 
-                            class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <!-- Heroicon: document-text -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <span class="sidebar-text">Audit Logs</span>
+                        <span x-show="!sidebarCollapsed" class="sidebar-text">Audit Logs</span>
                     </button>
                 </li>
             </ul>
@@ -142,18 +107,19 @@
 
         <!-- User Management Section -->
         <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
+            <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
                 User Management
             </div>
             <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li>
                     <a href="/admin/accounts/user/" 
-                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                       :class="sidebarCollapsed ? 'justify-center' : ''">
                         <!-- Heroicon: user-group -->
                         <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                         </svg>
-                        <span class="sidebar-text">Manage Users</span>
+                        <span x-show="!sidebarCollapsed" class="sidebar-text">Manage Users</span>
                     </a>
                 </li>
             </ul>
@@ -161,18 +127,19 @@
 
         <!-- Team Management Section -->
         <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
+            <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
                 Team Management
             </div>
             <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li>
                     <a href="{% url 'frontend:teams' %}" 
-                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                       :class="sidebarCollapsed ? 'justify-center' : ''">
                         <!-- Heroicon: users -->
                         <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                         </svg>
-                        <span class="sidebar-text">All Teams</span>
+                        <span x-show="!sidebarCollapsed" class="sidebar-text">All Teams</span>
                     </a>
                 </li>
             </ul>
@@ -180,18 +147,19 @@
 
         <!-- Analytics Section -->
         <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
+            <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
                 Analytics & Reports
             </div>
             <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li>
                     <a href="{% url 'frontend:analytics' %}" 
-                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                       :class="sidebarCollapsed ? 'justify-center' : ''">
                         <!-- Heroicon: chart-bar -->
                         <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
-                        <span class="sidebar-text">System Analytics</span>
+                        <span x-show="!sidebarCollapsed" class="sidebar-text">System Analytics</span>
                     </a>
                 </li>
             </ul>
@@ -201,8 +169,9 @@
     <!-- User Profile Section -->
     <div class="border-t border-red-700 mt-auto pt-6">
         <div class="relative">
-            <button data-dropdown-toggle data-dropdown-target="#userProfileMenu"
-                    class="w-full flex items-center justify-between p-3 hover:bg-red-700 rounded-lg transition-colors">
+            <button @click="userProfileMenuOpen = !userProfileMenuOpen"
+                    class="w-full flex items-center justify-between p-3 hover:bg-red-700 rounded-lg transition-colors"
+                    :class="sidebarCollapsed ? 'justify-center' : ''">
                 <div class="flex items-center">
                     <div class="w-8 h-8 bg-red-700 rounded-full flex items-center justify-center mr-3">
                         <!-- Heroicon: user -->
@@ -210,19 +179,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                     </div>
-                    <div class="sidebar-text">
+                    <div x-show="!sidebarCollapsed" class="sidebar-text">
                         <div class="text-sm font-medium text-white">{{ user.get_full_name|default:user.username }}</div>
                         <div class="text-xs text-red-300">Administrator</div>
                     </div>
                 </div>
-                <svg class="w-4 h-4 text-red-300 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-red-300 transition-transform" :class="userProfileMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </button>
             
             <!-- User Menu -->
-            <div id="userProfileMenu" 
-                 class="hidden absolute bottom-full left-0 right-0 mb-2 bg-red-700 rounded-lg shadow-lg border border-red-600">
+            <div x-show="userProfileMenuOpen && !sidebarCollapsed" 
+                 @click.away="userProfileMenuOpen = false"
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 class="absolute bottom-full left-0 right-0 mb-2 bg-red-700 rounded-lg shadow-lg border border-red-600">
                 <div class="p-2">
                     <a href="{% url 'frontend:profile' %}" class="block px-4 py-2 text-sm hover:bg-red-600 rounded-lg text-red-100 hover:text-white">
                         <!-- Heroicon: cog -->

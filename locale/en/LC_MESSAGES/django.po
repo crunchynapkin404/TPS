@@ -1,0 +1,73 @@
+# TPS Team Planning System - English Translation
+# Copyright (C) 2024 TPS Team Planning System
+# This file is distributed under the same license as the TPS package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: TPS 1.4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-01 16:56+0200\n"
+"PO-Revision-Date: 2025-08-01 16:56+0200\n"
+"Last-Translator: TPS Team\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: frontend/templates/auth/login.html:15
+msgid "Sign in to your account"
+msgstr "Sign in to your account"
+
+#: frontend/templates/components/header.html:15
+msgid "Change Language"
+msgstr "Change Language"
+
+#: frontend/templates/components/header.html:58
+msgid "Toggle Theme"
+msgstr "Toggle Theme"
+
+#: frontend/templates/components/header.html:59
+msgid "Toggle theme"
+msgstr "Toggle theme"
+
+#: frontend/templates/components/header.html:72
+msgid "View notifications"
+msgstr "View notifications"
+
+#: frontend/templates/components/header.html:86
+msgid "Open user menu"
+msgstr "Open user menu"
+
+#: frontend/templates/components/header.html:115
+msgid "Profile"
+msgstr "Profile"
+
+#: frontend/templates/components/header.html:122
+msgid "Logout"
+msgstr "Logout"
+
+#: frontend/templates/components/navigation_user.html:19
+msgid "TPS User"
+msgstr "TPS User"
+
+#: frontend/templates/components/navigation_user.html:21
+msgid "Team Member"
+msgstr "Team Member"
+
+#: frontend/templates/components/navigation_user.html:81
+msgid "My Work"
+msgstr "My Work"
+
+#: frontend/templates/components/navigation_user.html:93
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: frontend/templates/components/navigation_user.html:105
+msgid "My Schedule"
+msgstr "My Schedule"
+
+#: frontend/templates/components/navigation_user.html:117
+msgid "My Assignments"
+msgstr "My Assignments"

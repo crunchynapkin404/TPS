@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -144,6 +145,12 @@ TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
 USE_L10N = True  # Enable localization
 USE_TZ = True
+
+# Language support for TPS - English and Dutch
+LANGUAGES = [
+    ('en', 'English'),
+    ('nl', 'Nederlands'),
+]
 
 # Custom locale directory
 LOCALE_PATHS = [

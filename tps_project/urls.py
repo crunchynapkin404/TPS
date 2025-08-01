@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.conf.urls.i18n import i18n_patterns
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from core.views import test_formats_view
@@ -31,6 +32,10 @@ def favicon_view(request):
     return redirect('/static/images/favicon.svg')
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),
+]
+
+urlpatterns += i18n_patterns(
     path('admin/', admin.site.urls),
     path('accounts/login/', accounts_login_redirect, name='accounts_login_redirect'),
     path('accounts/', include('apps.accounts.urls')),
@@ -39,7 +44,8 @@ urlpatterns = [
     path('leave/', include('apps.leave_management.urls')),
     path('test-formats/', test_formats_view, name='test_formats'),  # Test endpoint
     path('', include('frontend.urls')),
-]
+    prefix_default_language=True,
+)
 
 # Add static files handling for development
 if settings.DEBUG:

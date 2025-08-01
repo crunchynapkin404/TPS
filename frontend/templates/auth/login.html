@@ -102,7 +102,16 @@
                         Sign in
                     </button>
                 </div>
-            </form>
+                <!-- Sign In Link -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Don't have an account?
+                    <a href="{% url 'accounts:register' %}" class="font-medium text-blue-600 hover:text-blue-500">
+                        Register here
+                    </a>
+                </p>
+            </div>
+        </form>
         </div>
     </div>
 {% endblock %}

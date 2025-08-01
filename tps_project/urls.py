@@ -33,6 +33,7 @@ def favicon_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', accounts_login_redirect, name='accounts_login_redirect'),
+    path('accounts/', include('apps.accounts.urls')),
     path('favicon.ico', favicon_view, name='favicon'),
     path('api/', include('api.urls')),
     path('leave/', include('apps.leave_management.urls')),

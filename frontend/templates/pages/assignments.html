@@ -16,19 +16,19 @@
         <!-- Stats Grid -->
         <div class="grid grid-cols-4 gap-6 lg:grid-cols-2 sm:grid-cols-1">
             <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center">
-                <div class="text-3xl font-bold mb-2" x-text="stats.total_assignments || '--'"></div>
+                <div class="text-3xl font-bold mb-2" x-text="stats.total_assignments !== undefined ? stats.total_assignments : '--'"></div>
                 <div class="text-sm text-white/80">Total Assignments</div>
             </div>
             <div class="bg-emerald-500/20 backdrop-blur-sm rounded-lg p-6 text-center">
-                <div class="text-3xl font-bold mb-2" x-text="stats.confirmed_assignments || '--'"></div>
+                <div class="text-3xl font-bold mb-2" x-text="stats.confirmed_assignments !== undefined ? stats.confirmed_assignments : '--'"></div>
                 <div class="text-sm text-white/80">Confirmed</div>
             </div>
             <div class="bg-amber-500/20 backdrop-blur-sm rounded-lg p-6 text-center">
-                <div class="text-3xl font-bold mb-2" x-text="stats.pending_assignments || '--'"></div>
+                <div class="text-3xl font-bold mb-2" x-text="stats.pending_assignments !== undefined ? stats.pending_assignments : '--'"></div>
                 <div class="text-sm text-white/80">Pending</div>
             </div>
             <div class="bg-red-500/20 backdrop-blur-sm rounded-lg p-6 text-center">
-                <div class="text-3xl font-bold mb-2" x-text="stats.overdue_assignments || '--'"></div>
+                <div class="text-3xl font-bold mb-2" x-text="stats.overdue_assignments !== undefined ? stats.overdue_assignments : '--'"></div>
                 <div class="text-sm text-white/80">Overdue</div>
             </div>
         </div>

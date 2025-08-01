@@ -164,7 +164,7 @@ class DashboardView(BaseView):
         planning_periods = PlanningPeriod.objects.filter(
             teams__in=user_teams,
             start_date__gte=today,
-            is_published=False
+            status__in=['draft', 'planning', 'review', 'approved']  # Not yet published
         ).distinct()[:5]
         
         # Unassigned shifts

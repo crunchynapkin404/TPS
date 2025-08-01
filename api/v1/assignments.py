@@ -69,53 +69,64 @@ class AssignmentViewSet(viewsets.ModelViewSet):
             'user',
             'assigned_by'
         ).prefetch_related(
-            'assignmenthistory_set'
+            'history'
         )
         
-        # Filter by user
-        user_id = self.request.query_params.get('user_id')
-        if user_id:
-            queryset = queryset.filter(user_id=user_id)
+        # Only access query_params if it exists (DRF request)
+        if hasattr(self.request, 'query_params'):
+            # Filter by user
+            user_id = self.request.query_params.get('user_id')
+            if user_id:
+                queryset = queryset.filter(user_id=user_id)
+            
+            # Filter by team
+            team_id = self.request.query_params.get('team_id')
+            if team_id:
+                queryset = queryset.filter(shift__team_id=team_id)
+            
+            # Filter by status
+            status_filter = self.request.query_params.get('status')
+            if status_filter:
+                queryset = queryset.filter(status=status_filter)
+            
+            # Filter by shift type
+            shift_type = self.request.query_params.get('shift_type')
+            if shift_type:
+                queryset = queryset.filter(shift__template__category__name=shift_type)
+            
+            # Filter by date range
+            start_date = self.request.query_params.get('start_date')
+            end_date = self.request.query_params.get('end_date')
+            
+            if start_date:
+                try:
+                    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                    queryset = queryset.filter(shift__date__gte=start_date)
+                except ValueError:
+                    pass
+            
+            if end_date:
+                try:
+                    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+                    queryset = queryset.filter(shift__date__lte=end_date)
+                except ValueError:
+                    pass
+            
+            # Check for available_for_swap filter
+            available_for_swap = self.request.query_params.get('available_for_swap')
+            if available_for_swap == 'true':
+                # Return assignments that can be swapped
+                queryset = queryset.filter(
+                    status__in=['confirmed', 'pending_confirmation'],
+                    shift__date__gte=timezone.now().date()
+                )
+            
+            # Filter by upcoming assignments (default for list view)
+            if not any([user_id, team_id, start_date, end_date]) and self.action == 'list':
+                current_date = timezone.now().date()
+                queryset = queryset.filter(shift__date__gte=current_date)
         
-        # Filter by team
-        team_id = self.request.query_params.get('team_id')
-        if team_id:
-            queryset = queryset.filter(shift__team_id=team_id)
-        
-        # Filter by status
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-        
-        # Filter by shift type
-        shift_type = self.request.query_params.get('shift_type')
-        if shift_type:
-            queryset = queryset.filter(shift__template__category=shift_type)
-        
-        # Filter by date range
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        
-        if start_date:
-            try:
-                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-                queryset = queryset.filter(shift__date__gte=start_date)
-            except ValueError:
-                pass
-        
-        if end_date:
-            try:
-                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-                queryset = queryset.filter(shift__date__lte=end_date)
-            except ValueError:
-                pass
-        
-        # Filter by upcoming assignments (default for list view)
-        if not any([user_id, team_id, start_date, end_date]) and self.action == 'list':
-            current_date = timezone.now().date()
-            queryset = queryset.filter(shift__date__gte=current_date)
-        
-        return queryset.order_by('shift__date', 'shift__start_time')
+        return queryset.order_by('shift__date', 'shift__start_datetime')
     
     def create(self, request, *args, **kwargs):
         """Create a new assignment with validation"""
@@ -471,19 +482,21 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
             'approved_by'
         )
         
-        # Filter by status
-        status_filter = self.request.query_params.get('status')
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-        
-        # Filter by requesting user
-        user_id = self.request.query_params.get('user_id')
-        if user_id:
-            queryset = queryset.filter(
-                Q(requesting_assignment__user_id=user_id) |
-                Q(target_assignment__user_id=user_id) |
-                Q(requesting_user_id=user_id)
-            )
+        # Only access query_params if it exists (DRF request)
+        if hasattr(self.request, 'query_params'):
+            # Filter by status
+            status_filter = self.request.query_params.get('status')
+            if status_filter:
+                queryset = queryset.filter(status=status_filter)
+            
+            # Filter by requesting user
+            user_id = self.request.query_params.get('user_id')
+            if user_id:
+                queryset = queryset.filter(
+                    Q(requesting_assignment__user_id=user_id) |
+                    Q(target_assignment__user_id=user_id) |
+                    Q(requesting_user_id=user_id)
+                )
         
         return queryset.order_by('-requested_at')
     

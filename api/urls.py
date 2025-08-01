@@ -61,9 +61,6 @@ urlpatterns = [
     # Router-generated URLs
     path('v1/', include(router.urls)),
     
-    # Temporary assignments endpoint fix (bypassing the 500 error)
-    path('v1/assignments/', lambda request: JsonResponse({'success': True, 'count': 0, 'results': []}), name='assignments-list-temp'),
-    
     # Planning API endpoints
     path('v1/planning/', PlanningAPIView.as_view(), name='planning-api'),
     path('v1/planning/generate/', generate_planning, name='planning-generate'),

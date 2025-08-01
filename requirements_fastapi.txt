@@ -1,0 +1,22 @@
+# TPS Monthly Timeline Shift Scheduler - FastAPI Requirements
+# Production-ready dependencies for Python 3.12+
+
+# Core FastAPI and ASGI server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Database and data handling
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Additional utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Development and testing (optional)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Production deployment (optional)
+gunicorn==21.2.0

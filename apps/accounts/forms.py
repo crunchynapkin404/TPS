@@ -60,8 +60,9 @@ class UserRegistrationForm(UserCreationForm):
     # Team Role selection (restricted to Operationeel and Tactisch)
     team_role = forms.ModelChoiceField(
         queryset=TeamRole.objects.filter(name__in=['operationeel', 'tactisch']),
-        label='Team Role',
-        empty_label="Select your team role",
+        label='Position in Team',
+        empty_label="Select your position in the team",
+        help_text='This determines your position within your selected team. Your system role will be automatically set to User.',
         widget=forms.Select(attrs={
             'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
         })
@@ -98,9 +99,9 @@ class UserRegistrationForm(UserCreationForm):
         self.fields['team_role'].required = True
     
     def save(self, commit=True):
-        """Save user with role set to USER (Engineer) by default"""
+        """Save user with system role automatically set to USER"""
         user = super().save(commit=False)
-        user.role = 'USER'  # Always Engineer as specified
+        user.role = 'USER'  # System role automatically set to USER for all new registrations
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.email = self.cleaned_data['email']
@@ -108,12 +109,12 @@ class UserRegistrationForm(UserCreationForm):
         if commit:
             user.save()
             
-            # Create team membership
+            # Create team membership with the selected team position
             from apps.teams.models import TeamMembership
             TeamMembership.objects.create(
                 user=user,
                 team=self.cleaned_data['team'],
-                role=self.cleaned_data['team_role'],
+                role=self.cleaned_data['team_role'],  # This is the team position (operationeel/tactisch)
                 is_primary_team=True
             )
             

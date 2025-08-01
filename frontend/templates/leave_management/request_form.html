@@ -27,53 +27,67 @@
 {% block content %}
 <div class="p-6 h-full overflow-y-auto">
     <!-- Header -->
-    <div class="mb-8">
+    <header class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">New Leave Request</h1>
-                <p class="text-gray-600 dark:text-gray-400 mt-1">Submit a request for time off</p>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    {% trans "New Leave Request" %}
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">
+                    {% trans "Submit a request for time off" %}
+                </p>
             </div>
             <div class="flex space-x-3">
-                <a href="{% url 'leave_management:overview' %}" class="btn btn-secondary">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'leave_management:overview' %}" 
+                   class="btn btn-secondary"
+                   aria-label="{% trans 'Return to leave management overview' %}">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    Back to Overview
+                    {% trans "Back to Overview" %}
                 </a>
             </div>
         </div>
-    </div>
+    </header>
 
-    <form method="post" class="max-w-4xl">
-        {% csrf_token %}
-        
-        <!-- Basic Information -->
-        <div class="form-section">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Leave Details</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="field-group">
-                    <label for="{{ form.leave_type.id_for_label }}" class="field-label">
-                        Leave Type <span class="text-red-500">*</span>
-                    </label>
-                    {{ form.leave_type }}
-                    {% if form.leave_type.errors %}
-                        <div class="field-error">{{ form.leave_type.errors.0 }}</div>
-                    {% endif %}
-                    <div class="field-help">Select the type of leave you're requesting</div>
-                </div>
+    <main>
+        <form method="post" class="max-w-4xl" novalidate 
+              aria-labelledby="form-title" 
+              x-data="leaveRequestForm()"
+              @submit="handleSubmit">
+            {% csrf_token %}
+            
+            <h2 id="form-title" class="sr-only">{% trans "Leave Request Form" %}</h2>
+            
+            <!-- Basic Information -->
+            <fieldset class="form-section">
+                <legend class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    {% trans "Leave Details" %}
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="field-group">
+                        <label for="{{ form.leave_type.id_for_label }}" class="field-label">
+                            {% trans "Leave Type" %} <span class="text-red-500" aria-label="{% trans 'required' %}">*</span>
+                        </label>
+                        {{ form.leave_type }}
+                        {% if form.leave_type.errors %}
+                            <div class="field-error" role="alert" id="leave-type-error">{{ form.leave_type.errors.0 }}</div>
+                        {% endif %}
+                        <div class="field-help">{% trans "Select the type of leave you're requesting" %}</div>
+                    </div>
 
-                <div class="field-group">
-                    <label for="{{ form.request_type.id_for_label }}" class="field-label">
-                        Request Type <span class="text-red-500">*</span>
-                    </label>
-                    {{ form.request_type }}
-                    {% if form.request_type.errors %}
-                        <div class="field-error">{{ form.request_type.errors.0 }}</div>
-                    {% endif %}
-                    <div class="field-help">Full day, partial day, or hourly leave</div>
+                    <div class="field-group">
+                        <label for="{{ form.request_type.id_for_label }}" class="field-label">
+                            {% trans "Request Type" %} <span class="text-red-500" aria-label="{% trans 'required' %}">*</span>
+                        </label>
+                        {{ form.request_type }}
+                        {% if form.request_type.errors %}
+                            <div class="field-error" role="alert" id="request-type-error">{{ form.request_type.errors.0 }}</div>
+                        {% endif %}
+                        <div class="field-help">{% trans "Full day, partial day, or hourly leave" %}</div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </fieldset>
 
         <!-- Dates and Times -->
         <div class="form-section">

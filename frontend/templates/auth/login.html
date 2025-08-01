@@ -43,7 +43,7 @@
 
                 <div>
                     <label for="id_username" class="block text-sm font-medium text-gray-700">
-                        Username
+                        {% trans "Username" %}
                     </label>
                     <div class="mt-1">
                         <input id="id_username" 
@@ -61,7 +61,7 @@
 
                 <div>
                     <label for="id_password" class="block text-sm font-medium text-gray-700">
-                        Password
+                        {% trans "Password" %}
                     </label>
                     <div class="mt-1">
                         <input id="id_password" 
@@ -83,13 +83,13 @@
                                type="checkbox" 
                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                         <label for="remember_me" class="ml-2 block text-sm text-gray-900">
-                            Remember me
+                            {% trans "Remember me" %}
                         </label>
                     </div>
 
                     <div class="text-sm">
                         <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
-                            Forgot your password?
+                            {% trans "Forgot your password?" %}
                         </a>
                     </div>
                 </div>
@@ -100,15 +100,15 @@
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                         </svg>
-                        Sign in
+                        {% trans "Sign in" %}
                     </button>
                 </div>
                 <!-- Sign In Link -->
             <div class="text-center">
                 <p class="text-sm text-gray-600">
-                    Don't have an account?
+                    {% trans "Don't have an account?" %}
                     <a href="{% url 'accounts:register' %}" class="font-medium text-blue-600 hover:text-blue-500">
-                        Register here
+                        {% trans "Register here" %}
                     </a>
                 </p>
             </div>

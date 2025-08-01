@@ -8,8 +8,8 @@
     {% load static %}
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
     
-    <!-- Alpine.js CDN -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <!-- Alpine.js Local -->
+    <script defer src="{% static 'js/alpine.min.js' %}"></script>
     
     <!-- Alpine.js Global Store Initialization -->
     <script>
@@ -61,7 +61,7 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden" x-data="{ sidebarCollapsed: false, darkMode: localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) }" x-init="$watch('darkMode', val => { localStorage.setItem('theme', val ? 'dark' : 'light'); document.documentElement.classList.toggle('dark', val) })" :class="{ 'dark': darkMode }">
+<body class="h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden" x-data="{ sidebarCollapsed: false }" x-init="document.documentElement.classList.toggle('dark', $store.theme.dark)">
     {% if user.is_authenticated %}
         <div class="flex h-screen w-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
             <!-- Sidebar with Alpine.js toggle functionality -->

@@ -60,25 +60,32 @@ class Team(models.Model):
     
     def get_active_members(self):
         """Get all active team members - CACHED for performance"""
-        from core.services.cache_service import CacheService
-        
-        cache_key = f"team_active_members_{self.id}"
-        cached_members = CacheService.get_user_teams(self.id)  # Reuse cache mechanism
-        
-        if cached_members is not None:
-            return cached_members
-        
-        # Query with optimization
-        active_members = self.memberships.filter(
-            is_active=True,
-            user__is_active_employee=True
-        ).select_related('user').prefetch_related('user__user_skills__skill')
-        
-        # Cache the result (convert to list to avoid lazy evaluation issues)
-        members_list = list(active_members)
-        CacheService.set_user_teams(self.id, members_list)
-        
-        return active_members
+        try:
+            from core.services.cache_service import CacheService
+            
+            cache_key = f"team_active_members_{self.id}"
+            cached_members = CacheService.get_user_teams(self.id)  # Reuse cache mechanism
+            
+            if cached_members is not None:
+                return cached_members
+            
+            # Query with optimization
+            active_members = self.memberships.filter(
+                is_active=True,
+                user__is_active_employee=True
+            ).select_related('user').prefetch_related('user__user_skills__skill')
+            
+            # Cache the result (convert to list to avoid lazy evaluation issues)
+            members_list = list(active_members)
+            CacheService.set_user_teams(self.id, members_list)
+            
+            return active_members
+        except ImportError:
+            # Fallback without caching
+            return self.memberships.filter(
+                is_active=True,
+                user__is_active_employee=True
+            ).select_related('user').prefetch_related('user__user_skills__skill')
     
     def get_member_count(self):
         """Get count of active members - OPTIMIZED"""

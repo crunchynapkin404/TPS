@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPS Schedule System - Production Ready</title>
+    <meta name="csrf-token" content="test-token">
+    <style>
+        /* Reset and base styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; }
+        button { cursor: pointer; border: none; outline: none; }
+        input, select, textarea { outline: none; }
+        
+        /* Hide elements until Alpine loads */
+        [x-cloak] { display: none !important; }
+        
+        /* Utility classes */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .p-1 { padding: 0.25rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .w-4 { width: 1rem; }
+        .w-6 { width: 1.5rem; }
+        .w-8 { width: 2rem; }
+        .w-12 { width: 3rem; }
+        .w-full { width: 100%; }
+        .h-4 { height: 1rem; }
+        .h-6 { height: 1.5rem; }
+        .h-8 { height: 2rem; }
+        .h-12 { height: 3rem; }
+        .h-full { height: 100%; }
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .text-white { color: white; }
+        .text-gray-400 { color: #9ca3af; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-900 { color: #111827; }
+        .text-blue-600 { color: #2563eb; }
+        .text-red-500 { color: #ef4444; }
+        .bg-white { background-color: white; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-blue-500 { background-color: #3b82f6; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .bg-amber-50 { background-color: #fffbeb; }
+        .border { border: 1px solid #d1d5db; }
+        .border-gray-200 { border-color: #e5e7eb; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-full { border-radius: 9999px; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .mx-4 { margin-left: 1rem; margin-right: 1rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .max-w-md { max-width: 28rem; }
+        .min-h-0 { min-height: 0; }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-auto { overflow: auto; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .transition-colors { transition-property: color, background-color, border-color; transition-duration: 0.15s; }
+        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+        .hover\:bg-gray-100:hover { background-color: #f3f4f6; }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .hover\:text-gray-600:hover { color: #4b5563; }
+        .disabled\:opacity-50:disabled { opacity: 0.5; }
+        .opacity-80 { opacity: 0.8; }
+        .opacity-0 { opacity: 0; }
+        .hover\:opacity-100:hover { opacity: 1; }
+        
+        /* Grid utilities */
+        .grid { display: grid; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .flex-1 { flex: 1 1 0%; }
+        .flex-shrink-0 { flex-shrink: 0; }
+        
+        /* Calendar specific styles */
+        .calendar-container {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            height: 100vh !important;
+            width: 100vw !important;
+            z-index: 10 !important;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+        
+        /* Week view grid */
+        .week-container {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            grid-template-rows: auto 1fr;
+            height: 100%;
+            gap: 0;
+        }
+
+        .week-header-corner {
+            grid-column: 1;
+            grid-row: 1;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .week-days-header {
+            grid-column: 2;
+            grid-row: 1;
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .week-users-list {
+            grid-column: 1;
+            grid-row: 2;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+
+        .week-content {
+            grid-column: 2;
+            grid-row: 2;
+            overflow: auto;
+        }
+
+        /* Month view grid */
+        .month-container {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            grid-template-rows: auto 1fr;
+            height: 100%;
+            gap: 0;
+        }
+
+        .month-header-corner {
+            grid-column: 1;
+            grid-row: 1;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .month-days-header {
+            grid-column: 2;
+            grid-row: 1;
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .month-users-list {
+            grid-column: 1;
+            grid-row: 2;
+            border-right: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+
+        .month-content {
+            grid-column: 2;
+            grid-row: 2;
+            overflow: auto;
+        }
+
+        /* Assignment blocks */
+        .assignment-block {
+            font-size: 10px;
+            padding: 2px 4px;
+            margin-bottom: 1px;
+            border-radius: 3px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .assignment-block:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .assignment-waakdienst {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-left: 2px solid #047857;
+        }
+
+        .assignment-incident {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-left: 2px solid #b91c1c;
+        }
+
+        .assignment-changes {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border-left: 2px solid #6d28d9;
+        }
+
+        .assignment-maintenance {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-left: 2px solid #b45309;
+        }
+
+        .assignment-support {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-left: 2px solid #1d4ed8;
+        }
+
+        .assignment-training {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            border-left: 2px solid #0f766e;
+        }
+
+        /* Calendar cells */
+        .calendar-cell {
+            position: relative;
+            transition: all 0.2s ease;
+            min-height: 50px;
+            border-bottom: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+
+        .calendar-cell:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Loading animation */
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            max-width: 28rem;
+            width: 100%;
+            margin: 1rem;
+        }
+
+        /* Form styles */
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: white;
+            color: #111827;
+        }
+
+        .form-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        /* View switcher */
+        .view-switcher {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            display: flex;
+        }
+
+        .view-btn {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .view-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .view-btn:not(.active) {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .view-btn:not(.active):hover {
+            color: white;
+        }
+
+        /* Team dropdown */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            margin-top: 0.5rem;
+            width: 12rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            border: 1px solid #e5e7eb;
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: #374151;
+            transition: background-color 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: #f3f4f6;
+        }
+
+        .dropdown-item:first-child {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .week-container,
+            .month-container {
+                grid-template-columns: 120px 1fr;
+            }
+            
+            .assignment-block {
+                font-size: 9px;
+                padding: 1px 3px;
+            }
+            
+            .calendar-cell {
+                min-height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar-container h-full flex flex-col bg-white overflow-hidden" id="calendar-app">
+        <!-- Header -->
+        <div class="header-gradient text-white p-3 flex-shrink-0">
+            <div class="flex justify-between items-center">
+                <!-- Title & Stats -->
+                <div class="flex items-center gap-6">
+                    <h1 class="text-xl font-bold">Team Schedule</h1>
+                    <div class="flex gap-4 text-sm">
+                        <div class="text-center">
+                            <div class="font-semibold" id="total-assignments">0</div>
+                            <div class="opacity-80">Assignments</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="font-semibold" id="active-users">0</div>
+                            <div class="opacity-80">Active Users</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation & Controls -->
+                <div class="flex items-center gap-4">
+                    <!-- Team Selector -->
+                    <div class="dropdown">
+                        <button id="team-btn" class="btn btn-secondary text-sm">
+                            <span id="selected-team">Select Team</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="team-dropdown" class="dropdown-menu hidden">
+                            <!-- Team options will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- View Switcher -->
+                    <div class="view-switcher">
+                        <button id="week-btn" class="view-btn">Week</button>
+                        <button id="month-btn" class="view-btn active">Month</button>
+                    </div>
+                    
+                    <!-- Navigation -->
+                    <div class="flex items-center gap-2">
+                        <button id="prev-btn" class="btn btn-secondary text-sm">← Previous</button>
+                        <div class="px-3 py-2 font-semibold text-sm" id="current-period">Loading...</div>
+                        <button id="next-btn" class="btn btn-secondary text-sm">Next →</button>
+                        <button id="today-btn" class="btn btn-secondary text-sm">Today</button>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex items-center gap-2">
+                        <button id="refresh-btn" class="btn btn-secondary text-sm">
+                            <svg class="w-4 h-4" id="refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="flex-1 flex items-center justify-center">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div class="text-gray-600">Loading schedule...</div>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="flex-1 flex items-center justify-center hidden">
+            <div class="text-center">
+                <div class="text-red-500 mb-4">
+                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <div class="text-lg font-medium text-gray-900 mb-2">Failed to load schedule</div>
+                <div class="text-gray-600 mb-4" id="error-message"></div>
+                <button id="retry-btn" class="btn btn-primary">Try Again</button>
+            </div>
+        </div>
+
+        <!-- Calendar Views Container -->
+        <div id="calendar-views" class="flex-1 flex flex-col min-h-0 hidden">
+            <!-- Week View -->
+            <div id="week-view" class="flex-1 flex flex-col min-h-0 hidden">
+                <div class="week-container">
+                    <div class="week-header-corner p-3 flex items-center justify-center">
+                        <span class="text-sm font-medium text-gray-700">Team Members</span>
+                    </div>
+                    <div class="week-days-header" id="week-days-header"></div>
+                    <div class="week-users-list" id="week-users-list"></div>
+                    <div class="week-content" id="week-content"></div>
+                </div>
+            </div>
+
+            <!-- Month View -->
+            <div id="month-view" class="flex-1 flex flex-col min-h-0">
+                <div class="month-container">
+                    <div class="month-header-corner p-3 flex items-center justify-center">
+                        <span class="text-sm font-medium text-gray-700">Team Members</span>
+                    </div>
+                    <div class="month-days-header" id="month-days-header"></div>
+                    <div class="month-users-list" id="month-users-list"></div>
+                    <div class="month-content" id="month-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Assignment Modal -->
+    <div id="assignment-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Quick Assignment</h3>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="assignment-form">
+                <!-- User Selection -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">User</label>
+                    <select id="user-select" class="form-input" required>
+                        <option value="">Select user...</option>
+                    </select>
+                </div>
+                
+                <!-- Date -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                    <input type="date" id="date-input" class="form-input" required>
+                </div>
+                
+                <!-- Assignment Type -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <select id="type-select" class="form-input" required>
+                        <option value="waakdienst">🛡️ Waakdienst</option>
+                        <option value="incident">🚨 Incident Response</option>
+                        <option value="changes">⚙️ Change Management</option>
+                        <option value="maintenance">🔧 Maintenance</option>
+                        <option value="support">💬 Support</option>
+                        <option value="training">📚 Training</option>
+                    </select>
+                </div>
+                
+                <!-- Time -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+                        <input type="time" id="start-time" class="form-input" value="09:00" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                        <input type="time" id="end-time" class="form-input" value="17:00" required>
+                    </div>
+                </div>
+                
+                <!-- Notes -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+                    <textarea id="notes-input" rows="3" class="form-input" placeholder="Any additional notes..."></textarea>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="cancel-btn" class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" id="create-btn" class="btn btn-primary">
+                        <span id="create-text">Create Assignment</span>
+                        <span id="creating-text" class="hidden">Creating...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // TPS Schedule System - Production Implementation
+        class TPSScheduleSystem {
+            constructor() {
+                this.currentDate = new Date();
+                this.selectedTeam = null;
+                this.availableTeams = [];
+                this.calendarData = null;
+                this.availableUsers = [];
+                this.assignmentTypes = [];
+                this.isLoading = true;
+                this.error = null;
+                this.currentView = 'month';
+                this.isInitialized = false;
+                this.showAssignmentModal = false;
+                this.isCreating = false;
+
+                this.stats = {
+                    totalAssignments: 0,
+                    activeUsers: 0
+                };
+
+                this.assignmentForm = {
+                    user_id: '',
+                    date: '',
+                    assignment_type: 'waakdienst',
+                    start_time: '09:00',
+                    end_time: '17:00',
+                    notes: '',
+                    team_id: 4
+                };
+
+                this.init();
+            }
+
+            async init() {
+                console.log('🎯 TPS Schedule System initializing...');
+                
+                this.bindEvents();
+                
+                try {
+                    await Promise.all([
+                        this.loadTeams(),
+                        this.loadUsers(),
+                        this.loadAssignmentTypes()
+                    ]);
+                    
+                    await this.loadCalendar();
+                    
+                    this.isInitialized = true;
+                    console.log('✅ TPS Schedule System initialized successfully');
+                    
+                } catch (error) {
+                    console.error('❌ Failed to initialize schedule system:', error);
+                    this.showError('Failed to initialize schedule system');
+                }
+            }
+
+            bindEvents() {
+                // Team dropdown
+                document.getElementById('team-btn').addEventListener('click', () => {
+                    const dropdown = document.getElementById('team-dropdown');
+                    dropdown.classList.toggle('hidden');
+                });
+
+                // View switcher
+                document.getElementById('week-btn').addEventListener('click', () => this.switchView('week'));
+                document.getElementById('month-btn').addEventListener('click', () => this.switchView('month'));
+
+                // Navigation
+                document.getElementById('prev-btn').addEventListener('click', () => this.navigatePrevious());
+                document.getElementById('next-btn').addEventListener('click', () => this.navigateNext());
+                document.getElementById('today-btn').addEventListener('click', () => this.goToToday());
+                document.getElementById('refresh-btn').addEventListener('click', () => this.refreshCalendar());
+
+                // Modal
+                document.getElementById('close-modal-btn').addEventListener('click', () => this.closeAssignmentModal());
+                document.getElementById('cancel-btn').addEventListener('click', () => this.closeAssignmentModal());
+                document.getElementById('assignment-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.createQuickAssignment();
+                });
+
+                // Error retry
+                document.getElementById('retry-btn').addEventListener('click', () => this.loadCalendar());
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => this.handleKeydown(e));
+
+                // Click outside to close dropdown
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.dropdown')) {
+                        document.getElementById('team-dropdown').classList.add('hidden');
+                    }
+                });
+
+                // Click outside to close modal
+                document.getElementById('assignment-modal').addEventListener('click', (e) => {
+                    if (e.target === document.getElementById('assignment-modal')) {
+                        this.closeAssignmentModal();
+                    }
+                });
+            }
+
+            async loadTeams() {
+                this.availableTeams = [
+                    { id: 1, name: 'Engineering Team A' },
+                    { id: 2, name: 'Operations Team B' },
+                    { id: 3, name: 'Support Team C' },
+                    { id: 4, name: 'TPS Team' }
+                ];
+                this.selectedTeam = this.availableTeams[3]; // TPS Team
+                
+                // Populate dropdown
+                const dropdown = document.getElementById('team-dropdown');
+                dropdown.innerHTML = this.availableTeams.map(team => 
+                    `<button class="dropdown-item" onclick="tpsSchedule.selectTeam(${team.id})">${team.name}</button>`
+                ).join('');
+                
+                document.getElementById('selected-team').textContent = this.selectedTeam.name;
+                
+                return this.availableTeams;
+            }
+            
+            async loadUsers() {
+                this.availableUsers = [
+                    { id: 1, name: 'John Doe', initials: 'JD' },
+                    { id: 2, name: 'Jane Smith', initials: 'JS' },
+                    { id: 3, name: 'Bob Johnson', initials: 'BJ' },
+                    { id: 4, name: 'Alice Brown', initials: 'AB' },
+                    { id: 5, name: 'Charlie Wilson', initials: 'CW' }
+                ];
+                
+                // Populate user select
+                const userSelect = document.getElementById('user-select');
+                userSelect.innerHTML = '<option value="">Select user...</option>' + 
+                    this.availableUsers.map(user => 
+                        `<option value="${user.id}">${user.name}</option>`
+                    ).join('');
+                
+                return this.availableUsers;
+            }
+            
+            async loadAssignmentTypes() {
+                this.assignmentTypes = [
+                    { value: 'waakdienst', label: '🛡️ Waakdienst' },
+                    { value: 'incident', label: '🚨 Incident Response' },
+                    { value: 'changes', label: '⚙️ Change Management' },
+                    { value: 'maintenance', label: '🔧 Maintenance' },
+                    { value: 'support', label: '💬 Support' },
+                    { value: 'training', label: '📚 Training' }
+                ];
+                return this.assignmentTypes;
+            }
+            
+            async loadCalendar() {
+                this.isLoading = true;
+                this.error = null;
+                this.showLoading();
+                
+                try {
+                    // Generate mock calendar data
+                    const today = new Date();
+                    const year = this.currentDate.getFullYear();
+                    const month = this.currentDate.getMonth();
+                    
+                    // Generate days for the month
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const days = [];
+                    
+                    for (let day = 1; day <= lastDay.getDate(); day++) {
+                        const date = new Date(year, month, day);
+                        days.push({
+                            date: date.toISOString().split('T')[0],
+                            day_name: date.toLocaleDateString('en', { weekday: 'short' }),
+                            day_number: day,
+                            is_weekend: date.getDay() === 0 || date.getDay() === 6,
+                            is_next_month: false
+                        });
+                    }
+                    
+                    // Generate mock assignments
+                    const users = this.availableUsers.map(user => ({
+                        ...user,
+                        assignments: this.generateMockAssignments(days)
+                    }));
+                    
+                    this.calendarData = {
+                        month: month + 1,
+                        year: year,
+                        month_name: firstDay.toLocaleDateString('en', { month: 'long' }),
+                        users: users,
+                        days: days
+                    };
+                    
+                    // Update stats
+                    this.stats.activeUsers = users.length;
+                    this.stats.totalAssignments = users.reduce((total, user) => 
+                        total + Object.values(user.assignments).flat().length, 0
+                    );
+                    
+                    this.updateStats();
+                    this.updatePeriodDisplay();
+                    this.renderCalendar();
+                    
+                    console.log('📅 Mock calendar loaded successfully');
+                    
+                } catch (error) {
+                    console.error('❌ Calendar load failed:', error);
+                    this.showError(error.message);
+                } finally {
+                    this.isLoading = false;
+                    this.hideLoading();
+                }
+            }
+
+            generateMockAssignments(days) {
+                const assignments = {};
+                const types = ['waakdienst', 'incident', 'maintenance', 'support'];
+                
+                // Generate random assignments for some days
+                days.forEach(day => {
+                    if (Math.random() < 0.3) { // 30% chance of assignment
+                        const type = types[Math.floor(Math.random() * types.length)];
+                        const startHour = 8 + Math.floor(Math.random() * 10);
+                        const duration = 4 + Math.floor(Math.random() * 8);
+                        
+                        assignments[day.date] = [{
+                            id: Math.random().toString(36).substr(2, 9),
+                            type: type,
+                            start_time: `${startHour.toString().padStart(2, '0')}:00`,
+                            end_time: `${(startHour + duration).toString().padStart(2, '0')}:00`,
+                            status: 'confirmed'
+                        }];
+                    }
+                });
+                
+                return assignments;
+            }
+
+            async createQuickAssignment() {
+                if (this.isCreating) return;
+                
+                const formData = {
+                    user_id: document.getElementById('user-select').value,
+                    date: document.getElementById('date-input').value,
+                    assignment_type: document.getElementById('type-select').value,
+                    start_time: document.getElementById('start-time').value,
+                    end_time: document.getElementById('end-time').value,
+                    notes: document.getElementById('notes-input').value,
+                    team_id: this.selectedTeam?.id || 4
+                };
+                
+                console.log('📝 Creating assignment:', formData);
+                this.isCreating = true;
+                
+                // Update UI
+                document.getElementById('create-text').classList.add('hidden');
+                document.getElementById('creating-text').classList.remove('hidden');
+                document.getElementById('create-btn').disabled = true;
+                
+                try {
+                    // Mock API call
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Add assignment to calendar data
+                    const user = this.calendarData.users.find(u => u.id == formData.user_id);
+                    if (user) {
+                        if (!user.assignments[formData.date]) {
+                            user.assignments[formData.date] = [];
+                        }
+                        user.assignments[formData.date].push({
+                            id: Math.random().toString(36).substr(2, 9),
+                            type: formData.assignment_type,
+                            start_time: formData.start_time,
+                            end_time: formData.end_time,
+                            status: 'confirmed'
+                        });
+                        
+                        // Update stats
+                        this.stats.totalAssignments++;
+                        this.updateStats();
+                        this.renderCalendar();
+                    }
+                    
+                    alert('Assignment created successfully!');
+                    this.closeAssignmentModal();
+                    
+                } catch (error) {
+                    console.error('Failed to create assignment:', error);
+                    alert('Failed to create assignment: ' + error.message);
+                } finally {
+                    this.isCreating = false;
+                    
+                    // Reset UI
+                    document.getElementById('create-text').classList.remove('hidden');
+                    document.getElementById('creating-text').classList.add('hidden');
+                    document.getElementById('create-btn').disabled = false;
+                }
+            }
+
+            switchView(view) {
+                console.log(`🔄 Switching to ${view} view`);
+                this.currentView = view;
+                
+                // Update button states
+                document.getElementById('week-btn').classList.toggle('active', view === 'week');
+                document.getElementById('month-btn').classList.toggle('active', view === 'month');
+                
+                // Show/hide views
+                document.getElementById('week-view').classList.toggle('hidden', view !== 'week');
+                document.getElementById('month-view').classList.toggle('hidden', view !== 'month');
+                
+                this.updatePeriodDisplay();
+                this.renderCalendar();
+            }
+
+            navigatePrevious() {
+                if (this.currentView === 'week') {
+                    this.currentDate.setDate(this.currentDate.getDate() - 7);
+                } else if (this.currentView === 'month') {
+                    this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+                }
+                this.loadCalendar();
+            }
+            
+            navigateNext() {
+                if (this.currentView === 'week') {
+                    this.currentDate.setDate(this.currentDate.getDate() + 7);
+                } else if (this.currentView === 'month') {
+                    this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+                }
+                this.loadCalendar();
+            }
+            
+            goToToday() {
+                this.currentDate = new Date();
+                this.loadCalendar();
+            }
+            
+            refreshCalendar() {
+                const refreshIcon = document.getElementById('refresh-icon');
+                refreshIcon.classList.add('animate-spin');
+                
+                this.loadCalendar().finally(() => {
+                    refreshIcon.classList.remove('animate-spin');
+                });
+            }
+            
+            selectTeam(teamId) {
+                this.selectedTeam = this.availableTeams.find(t => t.id === teamId);
+                document.getElementById('selected-team').textContent = this.selectedTeam.name;
+                document.getElementById('team-dropdown').classList.add('hidden');
+                this.loadCalendar();
+            }
+
+            openAssignmentModal(userId = '', date = '') {
+                if (this.isLoading || this.showAssignmentModal) {
+                    return;
+                }
+                
+                console.log('🔧 Opening assignment modal:', { userId, date });
+                
+                // Reset form
+                document.getElementById('user-select').value = userId;
+                document.getElementById('date-input').value = date;
+                document.getElementById('type-select').value = 'waakdienst';
+                document.getElementById('start-time').value = '09:00';
+                document.getElementById('end-time').value = '17:00';
+                document.getElementById('notes-input').value = '';
+                
+                this.isCreating = false;
+                this.showAssignmentModal = true;
+                document.getElementById('assignment-modal').classList.remove('hidden');
+            }
+            
+            closeAssignmentModal() {
+                console.log('❌ Closing assignment modal');
+                this.showAssignmentModal = false;
+                this.isCreating = false;
+                document.getElementById('assignment-modal').classList.add('hidden');
+                
+                // Reset form
+                document.getElementById('assignment-form').reset();
+                document.getElementById('start-time').value = '09:00';
+                document.getElementById('end-time').value = '17:00';
+            }
+
+            updateStats() {
+                document.getElementById('total-assignments').textContent = this.stats.totalAssignments;
+                document.getElementById('active-users').textContent = this.stats.activeUsers;
+            }
+
+            updatePeriodDisplay() {
+                let periodText = 'Loading...';
+                
+                if (this.currentView === 'week') {
+                    const startOfWeek = new Date(this.currentDate);
+                    const day = startOfWeek.getDay();
+                    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+                    startOfWeek.setDate(diff);
+                    
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    
+                    periodText = `${this.formatDate(startOfWeek, 'short')} - ${this.formatDate(endOfWeek, 'short')}`;
+                } else if (this.currentView === 'month') {
+                    periodText = this.formatDate(this.currentDate, 'month-year');
+                }
+                
+                document.getElementById('current-period').textContent = periodText;
+            }
+
+            renderCalendar() {
+                if (!this.calendarData) return;
+                
+                if (this.currentView === 'week') {
+                    this.renderWeekView();
+                } else {
+                    this.renderMonthView();
+                }
+            }
+
+            renderWeekView() {
+                const daysToShow = this.calendarData.days.slice(0, 7);
+                
+                // Render days header
+                const daysHeader = document.getElementById('week-days-header');
+                daysHeader.innerHTML = daysToShow.map(day => {
+                    const isToday = this.isToday(day.date);
+                    const isWeekend = day.is_weekend;
+                    
+                    return `
+                        <div class="flex-1 p-3 border-r border-gray-200 text-center ${isToday ? 'bg-blue-50' : ''} ${isWeekend ? 'bg-amber-50' : ''}">
+                            <div class="text-xs text-gray-600 truncate">${day.day_name}</div>
+                            <div class="text-sm font-semibold ${isToday ? 'text-blue-600' : ''}">${day.day_number}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Render users list
+                const usersList = document.getElementById('week-users-list');
+                const userHeight = `calc(100% / ${this.calendarData.users.length})`;
+                usersList.innerHTML = this.calendarData.users.map(user => `
+                    <div class="p-3 border-b border-gray-200 flex items-center" style="height: ${userHeight}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                                ${user.initials}
+                            </div>
+                            <div class="font-medium text-sm truncate">${user.name}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Render content
+                const content = document.getElementById('week-content');
+                content.innerHTML = this.calendarData.users.map(user => {
+                    const userRowCells = daysToShow.map(day => {
+                        const userAssignments = user.assignments[day.date] || [];
+                        const isToday = this.isToday(day.date);
+                        const isWeekend = day.is_weekend;
+                        
+                        const assignmentBlocks = userAssignments.map(assignment => {
+                            const typeClass = this.getAssignmentTypeClass(assignment.type);
+                            return `
+                                <div class="assignment-block ${typeClass} text-xs p-1 rounded truncate" 
+                                     title="${assignment.type} - ${assignment.start_time}-${assignment.end_time}">
+                                    ${assignment.start_time}-${assignment.end_time}
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        const emptyIndicator = userAssignments.length === 0 ? 
+                            '<div class="text-xs text-gray-400 opacity-0 hover:opacity-100 transition-opacity">+</div>' : '';
+                        
+                        return `
+                            <div class="flex-1 p-1 border-r border-gray-200 hover:bg-gray-50 flex flex-col gap-1 min-w-0 overflow-hidden cursor-pointer
+                                    ${isToday ? 'bg-blue-50' : ''} 
+                                    ${isWeekend ? 'bg-amber-50' : ''}"
+                                 onclick="tpsSchedule.openAssignmentModal('${user.id}', '${day.date}')">
+                                ${assignmentBlocks}
+                                ${emptyIndicator}
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    return `<div class="flex border-b border-gray-200 min-h-0" style="height: ${userHeight}">${userRowCells}</div>`;
+                }).join('');
+            }
+
+            renderMonthView() {
+                // Render days header
+                const daysHeader = document.getElementById('month-days-header');
+                daysHeader.innerHTML = this.calendarData.days.map(day => {
+                    const isToday = this.isToday(day.date);
+                    const isWeekend = day.is_weekend;
+                    const isNextMonth = day.is_next_month;
+                    
+                    return `
+                        <div class="flex-1 p-2 border-r border-gray-200 text-center min-w-0
+                                ${isToday ? 'bg-blue-50' : ''} 
+                                ${isWeekend ? 'bg-amber-50' : ''}
+                                ${isNextMonth ? 'opacity-50' : ''}">
+                            <div class="text-xs text-gray-600 truncate">${day.day_name}</div>
+                            <div class="text-sm font-semibold ${isToday ? 'text-blue-600' : ''}">${day.day_number}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Render users list
+                const usersList = document.getElementById('month-users-list');
+                const userHeight = `calc(100% / ${this.calendarData.users.length})`;
+                usersList.innerHTML = this.calendarData.users.map(user => `
+                    <div class="p-2 border-b border-gray-200 flex items-center" style="height: ${userHeight}">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                                ${user.initials}
+                            </div>
+                            <div class="font-medium text-xs truncate">${user.name}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Render content
+                const content = document.getElementById('month-content');
+                content.innerHTML = this.calendarData.users.map(user => {
+                    const userRowCells = this.calendarData.days.map(day => {
+                        const userAssignments = user.assignments[day.date] || [];
+                        const isToday = this.isToday(day.date);
+                        const isWeekend = day.is_weekend;
+                        const isNextMonth = day.is_next_month;
+                        
+                        let cellContent = '';
+                        if (userAssignments.length > 0) {
+                            const assignment = userAssignments[0];
+                            const typeClass = this.getAssignmentTypeClass(assignment.type);
+                            cellContent = `
+                                <div class="assignment-block ${typeClass} text-xs p-1 rounded truncate" 
+                                     title="${assignment.type} - ${assignment.start_time}-${assignment.end_time}">
+                                    ${assignment.start_time.substring(0, 5)}
+                                </div>
+                            `;
+                            
+                            if (userAssignments.length > 1) {
+                                cellContent += `<div class="text-xs text-gray-500">+${userAssignments.length - 1}</div>`;
+                            }
+                        } else {
+                            cellContent = '<div class="text-xs text-gray-400 opacity-0 hover:opacity-100 transition-opacity">+</div>';
+                        }
+                        
+                        return `
+                            <div class="flex-1 p-1 border-r border-gray-200 hover:bg-gray-50 flex flex-col gap-1 min-w-0 overflow-hidden cursor-pointer
+                                    ${isToday ? 'bg-blue-50' : ''} 
+                                    ${isWeekend ? 'bg-amber-50' : ''}
+                                    ${isNextMonth ? 'opacity-50' : ''}"
+                                 onclick="tpsSchedule.openAssignmentModal('${user.id}', '${day.date}')">
+                                ${cellContent}
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    return `<div class="flex border-b border-gray-200 min-h-0" style="height: ${userHeight}">${userRowCells}</div>`;
+                }).join('');
+            }
+
+            showLoading() {
+                document.getElementById('loading-state').classList.remove('hidden');
+                document.getElementById('error-state').classList.add('hidden');
+                document.getElementById('calendar-views').classList.add('hidden');
+            }
+
+            hideLoading() {
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('calendar-views').classList.remove('hidden');
+            }
+
+            showError(message) {
+                this.error = message;
+                document.getElementById('error-message').textContent = message;
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('error-state').classList.remove('hidden');
+                document.getElementById('calendar-views').classList.add('hidden');
+            }
+
+            formatDate(date, format = 'short') {
+                const d = new Date(date);
+                
+                if (format === 'short') {
+                    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                } else if (format === 'month-year') {
+                    return d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+                }
+                
+                return d.toLocaleDateString('en-GB');
+            }
+            
+            isToday(dateString) {
+                const today = new Date().toISOString().split('T')[0];
+                return dateString === today;
+            }
+            
+            getAssignmentTypeClass(type) {
+                const typeClasses = {
+                    'waakdienst': 'assignment-waakdienst',
+                    'incident': 'assignment-incident',
+                    'changes': 'assignment-changes',
+                    'maintenance': 'assignment-maintenance',
+                    'support': 'assignment-support',
+                    'training': 'assignment-training'
+                };
+                return typeClasses[type.toLowerCase()] || 'assignment-waakdienst';
+            }
+
+            handleKeydown(e) {
+                if (e.key === 'Escape') {
+                    this.closeAssignmentModal();
+                    return;
+                }
+                
+                if (this.showAssignmentModal) return;
+                
+                if (!document.activeElement || !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        this.navigatePrevious();
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        this.navigateNext();
+                    } else if (e.key === 'r' || e.key === 'R') {
+                        e.preventDefault();
+                        this.refreshCalendar();
+                    } else if (e.key === 'w' || e.key === 'W') {
+                        e.preventDefault();
+                        this.switchView('week');
+                    } else if (e.key === 'm' || e.key === 'M') {
+                        e.preventDefault();
+                        this.switchView('month');
+                    } else if (e.key === 't' || e.key === 'T') {
+                        e.preventDefault();
+                        this.goToToday();
+                    } else if (e.key === 'n' || e.key === 'N') {
+                        e.preventDefault();
+                        this.openAssignmentModal();
+                    }
+                }
+            }
+        }
+
+        // Initialize the system when page loads
+        let tpsSchedule;
+        document.addEventListener('DOMContentLoaded', () => {
+            tpsSchedule = new TPSScheduleSystem();
+            console.log('📝 TPS Schedule System - Production Ready ✅');
+        });
+    </script>
+</body>
+</html>

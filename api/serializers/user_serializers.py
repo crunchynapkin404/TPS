@@ -28,7 +28,8 @@ class SkillSerializer(serializers.ModelSerializer):
         model = Skill
         fields = [
             'id', 'name', 'description', 'category', 'category_id',
-            'required_certifications', 'expiry_period_months', 'is_active'
+            'minimum_level_required', 'requires_certification', 
+            'certification_validity_months', 'is_active'
         ]
 
 
@@ -37,12 +38,13 @@ class UserSkillSerializer(serializers.ModelSerializer):
     
     skill = SkillSerializer(read_only=True)
     skill_id = serializers.IntegerField(write_only=True)
+    user_id = serializers.IntegerField(write_only=True, required=False)
     
     class Meta:
         model = UserSkill
         fields = [
-            'id', 'skill', 'skill_id', 'proficiency_level', 
-            'certified_date', 'expiry_date', 'notes'
+            'id', 'skill', 'skill_id', 'user_id', 'proficiency_level', 
+            'is_certified', 'certification_date', 'certification_expiry', 'notes'
         ]
 
 
@@ -86,7 +88,7 @@ class UserPreferencesSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     """Main user serializer with full profile information"""
     
-    skills = UserSkillSerializer(source='userskill_set', many=True, read_only=True)
+    skills = UserSkillSerializer(source='user_skills', many=True, read_only=True)
     statistics = UserStatisticsSerializer(read_only=True)
     preferences = UserPreferencesSerializer(source='shift_preferences', read_only=True)
     full_name = serializers.SerializerMethodField()
@@ -95,15 +97,13 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name', 'full_name',
-            'employee_id', 'department', 'role', 'hire_date', 'location',
-            'phone_number', 'emergency_contact_name', 'emergency_contact_phone',
+            'employee_id', 'role', 'phone', 'emergency_contact', 'emergency_phone',
             'is_active', 'skills', 'statistics', 'preferences',
-            'ytd_hours_worked', 'ytd_weeks_waakdienst', 'ytd_weeks_incident',
-            'last_waakdienst_date', 'last_incident_date', 'performance_rating'
+            'ytd_hours_logged', 'ytd_waakdienst_weeks', 'ytd_incident_weeks'
         ]
         read_only_fields = [
-            'id', 'username', 'ytd_hours_worked', 'ytd_weeks_waakdienst',
-            'ytd_weeks_incident', 'last_waakdienst_date', 'last_incident_date'
+            'id', 'username', 'ytd_hours_logged', 'ytd_waakdienst_weeks',
+            'ytd_incident_weeks'
         ]
     
     def get_full_name(self, obj):
@@ -120,8 +120,8 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'full_name', 'employee_id', 'department',
-            'role', 'is_active', 'primary_skills', 'ytd_hours_worked'
+            'id', 'username', 'full_name', 'employee_id', 'role', 
+            'is_active', 'primary_skills', 'ytd_hours_logged'
         ]
     
     def get_full_name(self, obj):
@@ -131,8 +131,8 @@ class UserListSerializer(serializers.ModelSerializer):
     def get_primary_skills(self, obj):
         """Return list of primary skills for user"""
         return list(
-            obj.userskill_set.filter(
-                proficiency_level__gte=3  # Proficient or above
+            obj.user_skills.filter(
+                proficiency_level__in=['advanced', 'expert']
             ).values_list('skill__name', flat=True)[:5]
         )
 
@@ -147,9 +147,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'username', 'email', 'first_name', 'last_name', 'password',
-            'password_confirm', 'employee_id', 'department', 'role',
-            'hire_date', 'location', 'phone_number', 'emergency_contact_name',
-            'emergency_contact_phone'
+            'password_confirm', 'employee_id', 'role', 
+            'phone', 'emergency_contact', 'emergency_phone'
         ]
     
     def validate(self, data):
@@ -181,9 +180,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'email', 'first_name', 'last_name', 'department', 'location',
-            'phone_number', 'emergency_contact_name', 'emergency_contact_phone',
-            'shift_preferences'
+            'email', 'first_name', 'last_name', 
+            'phone', 'emergency_contact', 'emergency_phone'
         ]
 
 

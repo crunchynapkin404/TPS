@@ -9,6 +9,10 @@ from rest_framework.routers import DefaultRouter
 from api.v1.users import UserViewSet
 from api.v1.teams import TeamViewSet
 from api.v1.assignments import AssignmentViewSet, SwapRequestViewSet
+from api.simple_endpoints import (
+    simple_assignments_list, simple_swap_requests_list, 
+    simple_available_assignments, SimpleSwapRequestCreate
+)
 from api.v1.planning import (
     PlanningAPIView, PlanningPreviewAPIView, PlanningStatusAPIView,
     PlanningValidationAPIView, PlanningApplyAPIView
@@ -51,6 +55,7 @@ router.register(r'swap-requests', SwapRequestViewSet)
 
 # Define URL patterns
 urlpatterns = [
+
     # Teams API fallback endpoints (MUST come before router)
     path('v1/teams/overview/', lambda request: JsonResponse({
         'success': True,
@@ -149,6 +154,12 @@ urlpatterns = [
     path('v1/assignments/quick-create/', quick_create_assignment, name='assignment-quick-create'),
     path('v1/assignments/types/', assignment_types, name='assignment-types'),
     path('v1/assignments/validate-slot/', validate_assignment_slot, name='assignment-validate-slot'),
+     
+    # Simple endpoints for testing (temporary)
+    path('v1/assignments/simple/', simple_assignments_list, name='simple-assignments-list'),
+    path('v1/swap-requests/simple/', simple_swap_requests_list, name='simple-swap-requests-list'),
+    path('v1/assignments/available/simple/', simple_available_assignments, name='simple-available-assignments'),
+    path('v1/swap-requests/create/simple/', SimpleSwapRequestCreate.as_view(), name='simple-swap-request-create'),
     
     # Assignments Management API endpoints - must come BEFORE router to override ViewSet routes
     path('v1/assignments/overview/', assignments_overview, name='assignments-overview'),
@@ -158,9 +169,6 @@ urlpatterns = [
     
     # Router-generated URLs
     path('v1/', include(router.urls)),
-    
-    # Temporary assignments endpoint fix (bypassing the 500 error)
-    path('v1/assignments/', lambda request: JsonResponse({'success': True, 'count': 0, 'results': []}), name='assignments-list-temp'),
     
     # Planning API endpoints
     path('v1/planning/', PlanningAPIView.as_view(), name='planning-api'),

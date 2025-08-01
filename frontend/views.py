@@ -493,3 +493,36 @@ class LoginView(DjangoLoginView):
 class LogoutView(DjangoLogoutView):
     """Logout view with proper POST security"""
     next_page = reverse_lazy('frontend:login')
+
+
+class ShiftSwapRequestView(BaseView):
+    """Shift swap request page for users"""
+    template_name = 'pages/shift_swap_request.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'page_title': 'Shift Swap Requests',
+            'active_nav': 'swap_requests',
+        })
+        return context
+
+
+class ShiftSwapApprovalView(BaseView):
+    """Shift swap approval page for managers"""
+    template_name = 'pages/shift_swap_approval.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Check if user has manager permissions
+        if user.role not in ['MANAGER', 'ADMIN']:
+            # Could redirect or show limited view
+            pass
+            
+        context.update({
+            'page_title': 'Shift Swap Approvals',
+            'active_nav': 'swap_approvals',
+        })
+        return context

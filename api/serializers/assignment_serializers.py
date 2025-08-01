@@ -123,21 +123,24 @@ class AssignmentHistorySerializer(serializers.ModelSerializer):
 class SwapRequestSerializer(serializers.ModelSerializer):
     """Serializer for shift swap requests"""
     
-    from_assignment = AssignmentListSerializer(read_only=True)
-    from_assignment_id = serializers.IntegerField(write_only=True)
-    to_assignment = AssignmentListSerializer(read_only=True)
-    to_assignment_id = serializers.IntegerField(write_only=True)
-    requested_by = serializers.StringRelatedField(read_only=True)
+    requesting_assignment = AssignmentListSerializer(read_only=True)
+    requesting_assignment_id = serializers.IntegerField(write_only=True)
+    target_assignment = AssignmentListSerializer(read_only=True)
+    target_assignment_id = serializers.IntegerField(write_only=True, required=False, allow_null=True)
+    requesting_user = serializers.StringRelatedField(read_only=True)
+    target_user = serializers.StringRelatedField(read_only=True)
     approved_by = serializers.StringRelatedField(read_only=True)
     
     class Meta:
         model = SwapRequest
         fields = [
-            'id', 'from_assignment', 'from_assignment_id', 'to_assignment',
-            'to_assignment_id', 'reason', 'status', 'requested_by',
-            'requested_at', 'approved_by', 'approved_at', 'rejection_reason'
+            'id', 'request_id', 'requesting_user', 'requesting_assignment', 'requesting_assignment_id',
+            'target_user', 'target_assignment', 'target_assignment_id', 'status', 'swap_type',
+            'reason', 'urgency_level', 'requested_at', 'expires_at', 'resolved_at',
+            'target_user_approved', 'manager_approved', 'approved_by', 
+            'additional_notes', 'resolution_notes'
         ]
-        read_only_fields = ['requested_at', 'approved_at']
+        read_only_fields = ['request_id', 'requested_at', 'resolved_at']
 
 
 class BulkAssignmentSerializer(serializers.Serializer):

@@ -90,3 +90,9 @@ coverage.xml
 cookies.txt
 *.tmp
 *.temp
+
+# Security files
+security_audit_report.json
+*.pem
+*.key
+*.crt

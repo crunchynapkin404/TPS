@@ -121,8 +121,6 @@
                 <ul role="list" class="-mx-2 space-y-1">
                     <!-- Executive Analytics -->
                     <li>
-                    <!-- Executive Analytics -->
-                    <li>
                         <a href="{% url 'frontend:analytics' %}" 
                            class="{% if active_nav == 'analytics' %}bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg{% else %}text-role hover:text-white hover:bg-role-hover{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            title="Analytics Overview">
@@ -131,7 +129,9 @@
                             </svg>
                             <span class="sidebar-text">Analytics</span>
                         </a>
-                    </li>                    <!-- Reports -->
+                    </li>
+                    
+                    <!-- Reports -->
                     <li>
                         <a href="#" onclick="alert('Advanced Reports feature coming soon!')" 
                            class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200 cursor-pointer"

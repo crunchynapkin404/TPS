@@ -1,5 +1,7 @@
 <!-- Admin Navigation - Comprehensive System Access with All Features -->
-<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 px-6 pb-4 shadow-2xl flex-1" x-data="{ userProfileMenuOpen: false, notifications: [], systemStats: { totalUsers: 156, activeTeams: 24, pendingRequests: 8, systemHealth: 'excellent' } }">
+<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 px-                        <button @click="$dispatch('show-notification', { message: 'Department Management - Coming Soon', type: 'info' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">b-4 shadow-2xl flex-1" x-data="{ userProfileMenuOpen: false, notifications: [], systemStats: { totalUsers: 156, activeTeams: 24, pendingRequests: 8, systemHealth: 'excellent' } }">
     <!-- Logo/Brand -->
     <div class="flex h-20 shrink-0 items-center justify-between border-b border-red-700 dark:border-red-600 pb-4 pt-4">
         <div class="sidebar-brand" :class="sidebarCollapsed ? 'hidden' : ''">
@@ -304,8 +306,8 @@
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Swap Approvals</span>
                         </a>
                     </li>
-                    <li>>
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                </ul>
+            </li>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Shift Swaps</span>

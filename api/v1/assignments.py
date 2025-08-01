@@ -463,11 +463,11 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Filter swap requests based on user permissions"""
         queryset = SwapRequest.objects.select_related(
-            'from_assignment__shift__template',
-            'from_assignment__user',
-            'to_assignment__shift__template',
-            'to_assignment__user',
-            'requested_by',
+            'requesting_assignment__shift__template',
+            'requesting_assignment__user',
+            'target_assignment__shift__template',
+            'target_assignment__user',
+            'requesting_user',
             'approved_by'
         )
         
@@ -480,9 +480,9 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
         user_id = self.request.query_params.get('user_id')
         if user_id:
             queryset = queryset.filter(
-                Q(from_assignment__user_id=user_id) |
-                Q(to_assignment__user_id=user_id) |
-                Q(requested_by_id=user_id)
+                Q(requesting_assignment__user_id=user_id) |
+                Q(target_assignment__user_id=user_id) |
+                Q(requesting_user_id=user_id)
             )
         
         return queryset.order_by('-requested_at')
@@ -492,28 +492,30 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
         """Approve a swap request"""
         swap_request = self.get_object()
         
-        if swap_request.status != 'PENDING':
+        if swap_request.status != 'pending':
             return Response(
                 {'error': 'Swap request is not pending'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         # Perform the swap
-        from_assignment = swap_request.from_assignment
-        to_assignment = swap_request.to_assignment
+        requesting_assignment = swap_request.requesting_assignment
+        target_assignment = swap_request.target_assignment
         
-        # Swap the users
-        temp_user = from_assignment.user
-        from_assignment.user = to_assignment.user
-        to_assignment.user = temp_user
-        
-        from_assignment.save()
-        to_assignment.save()
+        if target_assignment:
+            # Swap the users for direct swaps
+            temp_user = requesting_assignment.user
+            requesting_assignment.user = target_assignment.user
+            target_assignment.user = temp_user
+            
+            requesting_assignment.save()
+            target_assignment.save()
         
         # Update swap request
-        swap_request.status = 'APPROVED'
+        swap_request.status = 'approved'
         swap_request.approved_by = request.user
-        swap_request.approved_at = timezone.now()
+        swap_request.resolved_at = timezone.now()
+        swap_request.manager_approved = True
         swap_request.save()
         
         return Response({'message': 'Swap request approved successfully'})
@@ -524,17 +526,17 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
         swap_request = self.get_object()
         reason = request.data.get('reason', 'No reason provided')
         
-        if swap_request.status != 'PENDING':
+        if swap_request.status != 'pending':
             return Response(
                 {'error': 'Swap request is not pending'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         # Update swap request
-        swap_request.status = 'REJECTED'
+        swap_request.status = 'declined'
         swap_request.approved_by = request.user
-        swap_request.approved_at = timezone.now()
-        swap_request.rejection_reason = reason
+        swap_request.resolved_at = timezone.now()
+        swap_request.resolution_notes = reason
         swap_request.save()
         
         return Response({'message': 'Swap request rejected'})
@@ -550,10 +552,7 @@ def assignments_overview(request):
         current_date = timezone.now().date()
         
         # Base queryset for user's assignments
-        user_assignments = Assignment.objects.filter(
-            Q(shift_instance__team_member__user=user) |
-            Q(shift_instance__team_member__team__leaders=user)
-        ).distinct()
+        user_assignments = Assignment.objects.filter(user=user).distinct()
         
         # Calculate statistics
         total_assignments = user_assignments.count()
@@ -564,14 +563,14 @@ def assignments_overview(request):
             status__in=['pending', 'tentative']
         ).count()
         overdue_assignments = user_assignments.filter(
-            shift_instance__date__lt=current_date,
-            status='pending'
+            shift__date__lt=current_date,
+            status='pending_confirmation'
         ).count()
         
         # Additional metrics
         upcoming_assignments = user_assignments.filter(
-            shift_instance__date__gte=current_date,
-            shift_instance__date__lte=current_date + timedelta(days=7)
+            shift__date__gte=current_date,
+            shift__date__lte=current_date + timedelta(days=7)
         ).count()
         
         overview_data = {

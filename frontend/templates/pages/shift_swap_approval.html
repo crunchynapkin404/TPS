@@ -1,0 +1,602 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+.approval-card {
+    @apply bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-300;
+}
+
+.approval-pending {
+    @apply border-l-4 border-l-yellow-500;
+}
+
+.approval-approved {
+    @apply border-l-4 border-l-green-500;
+}
+
+.approval-declined {
+    @apply border-l-4 border-l-red-500;
+}
+
+.urgency-indicator {
+    @apply w-3 h-3 rounded-full;
+}
+
+.urgency-emergency {
+    @apply bg-red-500 animate-pulse;
+}
+
+.urgency-high {
+    @apply bg-orange-500;
+}
+
+.urgency-medium {
+    @apply bg-yellow-500;
+}
+
+.urgency-low {
+    @apply bg-green-500;
+}
+
+.assignment-preview {
+    @apply bg-gray-50 border border-gray-200 rounded-lg p-4;
+}
+
+.decision-buttons {
+    @apply flex space-x-2;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div x-data="swapApprovalApp()" class="max-w-7xl mx-auto p-6">
+    <!-- Page Header -->
+    <div class="bg-gradient-to-br from-purple-600 to-indigo-700 text-white rounded-2xl p-8 mb-8">
+        <h1 class="text-4xl font-bold mb-2">Shift Swap Approvals</h1>
+        <p class="text-xl text-white/90 mb-6">Review and approve shift swap requests from your team</p>
+        
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-5 gap-4 lg:grid-cols-3 sm:grid-cols-2">
+            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold mb-1" x-text="stats.total_requests">--</div>
+                <div class="text-sm text-white/80">Total Requests</div>
+            </div>
+            <div class="bg-yellow-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold mb-1" x-text="stats.pending_requests">--</div>
+                <div class="text-sm text-white/80">Pending</div>
+            </div>
+            <div class="bg-green-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold mb-1" x-text="stats.approved_requests">--</div>
+                <div class="text-sm text-white/80">Approved</div>
+            </div>
+            <div class="bg-red-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold mb-1" x-text="stats.declined_requests">--</div>
+                <div class="text-sm text-white/80">Declined</div>
+            </div>
+            <div class="bg-orange-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold mb-1" x-text="stats.urgent_requests">--</div>
+                <div class="text-sm text-white/80">Urgent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter and Actions Bar -->
+    <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
+        <div class="flex items-center space-x-4">
+            <select x-model="filterStatus" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="">All Status</option>
+                <option value="pending">Pending Approval</option>
+                <option value="approved">Approved</option>
+                <option value="declined">Declined</option>
+                <option value="expired">Expired</option>
+            </select>
+            
+            <select x-model="filterUrgency" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="">All Urgency</option>
+                <option value="emergency">Emergency</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            
+            <select x-model="filterTeam" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="">All Teams</option>
+                <template x-for="team in teams" :key="team.id">
+                    <option :value="team.id" x-text="team.name"></option>
+                </template>
+            </select>
+        </div>
+        
+        <div class="flex space-x-3">
+            <button @click="refreshData()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
+                <i class="fas fa-sync-alt"></i>
+                <span>Refresh</span>
+            </button>
+            
+            <button @click="exportReport()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                <i class="fas fa-download"></i>
+                <span>Export Report</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Actions for Pending -->
+    <div x-show="pendingRequests.length > 0" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                <span class="font-medium text-yellow-800" x-text="`${pendingRequests.length} requests awaiting approval`"></span>
+            </div>
+            <div class="flex space-x-2">
+                <button @click="bulkApprove()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                    Bulk Approve
+                </button>
+                <button @click="bulkDecline()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                    Bulk Decline
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swap Requests List -->
+    <div class="space-y-6">
+        <template x-for="request in filteredRequests" :key="request.id">
+            <div class="approval-card p-6" :class="getCardClass(request.status)">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div :class="getUrgencyIndicatorClass(request.urgency_level)" class="urgency-indicator"></div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                Swap Request #<span x-text="request.id"></span>
+                            </h3>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span>From: <strong x-text="request.requesting_user"></strong></span>
+                                <span>•</span>
+                                <span x-text="formatDateTime(request.requested_at)"></span>
+                                <span x-show="request.expires_at">•</span>
+                                <span x-show="request.expires_at" class="text-red-600">
+                                    Expires: <span x-text="formatDateTime(request.expires_at)"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <span :class="getStatusClass(request.status)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.status"></span>
+                        <span :class="getUrgencyClass(request.urgency_level)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.urgency_level"></span>
+                    </div>
+                </div>
+                
+                <!-- Request Details -->
+                <div class="mb-4">
+                    <h4 class="font-medium text-gray-900 mb-2">Reason for Swap:</h4>
+                    <p class="text-gray-700 bg-gray-50 p-3 rounded-lg" x-text="request.reason"></p>
+                    <div x-show="request.additional_notes" class="mt-2">
+                        <h5 class="font-medium text-gray-900 mb-1">Additional Notes:</h5>
+                        <p class="text-gray-600 text-sm" x-text="request.additional_notes"></p>
+                    </div>
+                </div>
+                
+                <!-- Assignment Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- Giving Up Assignment -->
+                    <div class="assignment-preview border-l-4 border-l-red-400">
+                        <h4 class="font-medium text-red-800 mb-2 flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Giving Up
+                        </h4>
+                        <div class="space-y-1 text-sm">
+                            <div class="font-medium" x-text="request.requesting_assignment.shift_name"></div>
+                            <div class="text-gray-600" x-text="formatDate(request.requesting_assignment.shift_date)"></div>
+                            <div class="text-gray-600" x-text="`${request.requesting_assignment.start_time} - ${request.requesting_assignment.end_time}`"></div>
+                            <div class="text-gray-600" x-text="request.requesting_assignment.location || 'Standard Location'"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Taking Assignment -->
+                    <div class="assignment-preview border-l-4 border-l-green-400">
+                        <h4 class="font-medium text-green-800 mb-2 flex items-center">
+                            <i class="fas fa-arrow-right mr-2"></i>
+                            <span x-show="request.target_assignment">Taking Over</span>
+                            <span x-show="!request.target_assignment">Open Request</span>
+                        </h4>
+                        <div x-show="request.target_assignment" class="space-y-1 text-sm">
+                            <div class="font-medium" x-text="request.target_assignment?.shift_name"></div>
+                            <div class="text-gray-600" x-text="request.target_assignment ? formatDate(request.target_assignment.shift_date) : ''"></div>
+                            <div class="text-gray-600" x-text="request.target_assignment ? `${request.target_assignment.start_time} - ${request.target_assignment.end_time}` : ''"></div>
+                            <div class="text-gray-600" x-text="request.target_assignment?.location || 'Standard Location'"></div>
+                            <div class="font-medium text-gray-700">With: <span x-text="request.target_user"></span></div>
+                        </div>
+                        <div x-show="!request.target_assignment" class="text-sm text-gray-600">
+                            <div class="italic">Anyone from the team can take this shift</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Impact Analysis -->
+                <div x-show="request.status === 'pending'" class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="font-medium text-blue-900 mb-2">Impact Analysis</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium">Coverage Impact:</span>
+                            <span x-text="getCoverageImpact(request)" class="ml-2"></span>
+                        </div>
+                        <div>
+                            <span class="font-medium">Team Balance:</span>
+                            <span x-text="getTeamBalance(request)" class="ml-2"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Approval Status and Actions -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div class="flex items-center space-x-4 text-sm">
+                        <div x-show="request.target_user_approved !== null" class="flex items-center space-x-1">
+                            <span class="font-medium">Target User:</span>
+                            <span :class="request.target_user_approved ? 'text-green-600' : 'text-red-600'">
+                                <i :class="request.target_user_approved ? 'fas fa-check' : 'fas fa-times'"></i>
+                                <span x-text="request.target_user_approved ? 'Approved' : 'Declined'"></span>
+                            </span>
+                        </div>
+                        
+                        <div x-show="request.approved_by" class="flex items-center space-x-1">
+                            <span class="font-medium">Approved by:</span>
+                            <span x-text="request.approved_by"></span>
+                            <span class="text-gray-500" x-text="formatDateTime(request.resolved_at)"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div x-show="request.status === 'pending'" class="decision-buttons">
+                        <button @click="approveRequest(request)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-1">
+                            <i class="fas fa-check"></i>
+                            <span>Approve</span>
+                        </button>
+                        <button @click="openDeclineModal(request)" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-1">
+                            <i class="fas fa-times"></i>
+                            <span>Decline</span>
+                        </button>
+                        <button @click="viewDetails(request)" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-1">
+                            <i class="fas fa-eye"></i>
+                            <span>Details</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Resolved Status -->
+                    <div x-show="request.status !== 'pending'" class="text-sm text-gray-600">
+                        <span x-text="`${request.status.charAt(0).toUpperCase() + request.status.slice(1)} on ${formatDate(request.resolved_at)}`"></span>
+                        <div x-show="request.resolution_notes" class="text-xs text-gray-500 mt-1">
+                            <span x-text="request.resolution_notes"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        
+        <!-- Empty State -->
+        <div x-show="filteredRequests.length === 0" class="text-center py-12">
+            <i class="fas fa-exchange-alt text-4xl text-gray-400 mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No swap requests found</h3>
+            <p class="text-gray-600">No swap requests match your current filters.</p>
+        </div>
+    </div>
+
+    <!-- Decline Modal -->
+    <div x-show="showDeclineModal" @click.away="closeDeclineModal()" x-transition class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Decline Swap Request</h2>
+                <button @click="closeDeclineModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form @submit.prevent="submitDecline()">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason for declining:</label>
+                    <textarea x-model="declineReason" required rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please provide a reason for declining this request..."></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button type="button" @click="closeDeclineModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">Decline Request</span>
+                        <span x-show="isSubmitting">Declining...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div x-show="$store.notifications.items.length > 0" class="fixed top-4 right-4 space-y-2 z-50">
+        <template x-for="notification in $store.notifications.items" :key="notification.id">
+            <div :class="`p-4 rounded-lg shadow-lg ${notification.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`">
+                <div class="flex justify-between items-center">
+                    <span x-text="notification.message"></span>
+                    <button @click="$store.notifications.remove(notification.id)" class="ml-2 text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+function swapApprovalApp() {
+    return {
+        // Data
+        swapRequests: [],
+        filteredRequests: [],
+        teams: [],
+        stats: {
+            total_requests: 0,
+            pending_requests: 0,
+            approved_requests: 0,
+            declined_requests: 0,
+            urgent_requests: 0
+        },
+        
+        // Filters
+        filterStatus: '',
+        filterUrgency: '',
+        filterTeam: '',
+        
+        // Modal state
+        showDeclineModal: false,
+        selectedRequest: null,
+        declineReason: '',
+        isSubmitting: false,
+        
+        // Computed
+        get pendingRequests() {
+            return this.swapRequests.filter(r => r.status === 'pending');
+        },
+        
+        // Initialize
+        init() {
+            this.loadSwapRequests();
+            this.loadTeams();
+        },
+        
+        // Load swap requests
+        async loadSwapRequests() {
+            try {
+                const response = await fetch('/api/v1/swap-requests/', {
+                    headers: {
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.swapRequests = data.results || [];
+                    this.filteredRequests = [...this.swapRequests];
+                    this.updateStats();
+                }
+            } catch (error) {
+                console.error('Error loading swap requests:', error);
+                this.showNotification('Failed to load swap requests', 'error');
+            }
+        },
+        
+        // Load teams
+        async loadTeams() {
+            try {
+                const response = await fetch('/api/v1/teams/', {
+                    headers: {
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.teams = data.results || [];
+                }
+            } catch (error) {
+                console.error('Error loading teams:', error);
+            }
+        },
+        
+        // Update statistics
+        updateStats() {
+            this.stats.total_requests = this.swapRequests.length;
+            this.stats.pending_requests = this.swapRequests.filter(r => r.status === 'pending').length;
+            this.stats.approved_requests = this.swapRequests.filter(r => r.status === 'approved').length;
+            this.stats.declined_requests = this.swapRequests.filter(r => r.status === 'declined').length;
+            this.stats.urgent_requests = this.swapRequests.filter(r => ['emergency', 'high'].includes(r.urgency_level)).length;
+        },
+        
+        // Filter requests
+        filterRequests() {
+            this.filteredRequests = this.swapRequests.filter(request => {
+                if (this.filterStatus && request.status !== this.filterStatus) return false;
+                if (this.filterUrgency && request.urgency_level !== this.filterUrgency) return false;
+                if (this.filterTeam && request.team_id !== parseInt(this.filterTeam)) return false;
+                return true;
+            });
+        },
+        
+        // Approve request
+        async approveRequest(request) {
+            if (!confirm('Are you sure you want to approve this swap request?')) return;
+            
+            try {
+                const response = await fetch(`/api/v1/swap-requests/${request.id}/approve/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                });
+                
+                if (response.ok) {
+                    this.showNotification('Swap request approved successfully', 'success');
+                    this.loadSwapRequests();
+                } else {
+                    const error = await response.json();
+                    this.showNotification(error.error || 'Failed to approve request', 'error');
+                }
+            } catch (error) {
+                console.error('Error approving request:', error);
+                this.showNotification('Failed to approve request', 'error');
+            }
+        },
+        
+        // Open decline modal
+        openDeclineModal(request) {
+            this.selectedRequest = request;
+            this.declineReason = '';
+            this.showDeclineModal = true;
+        },
+        
+        // Close decline modal
+        closeDeclineModal() {
+            this.showDeclineModal = false;
+            this.selectedRequest = null;
+            this.declineReason = '';
+        },
+        
+        // Submit decline
+        async submitDecline() {
+            this.isSubmitting = true;
+            
+            try {
+                const response = await fetch(`/api/v1/swap-requests/${this.selectedRequest.id}/reject/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                    body: JSON.stringify({ reason: this.declineReason })
+                });
+                
+                if (response.ok) {
+                    this.showNotification('Swap request declined', 'success');
+                    this.closeDeclineModal();
+                    this.loadSwapRequests();
+                } else {
+                    const error = await response.json();
+                    this.showNotification(error.error || 'Failed to decline request', 'error');
+                }
+            } catch (error) {
+                console.error('Error declining request:', error);
+                this.showNotification('Failed to decline request', 'error');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+        
+        // Bulk operations
+        async bulkApprove() {
+            const pendingIds = this.pendingRequests.map(r => r.id);
+            if (pendingIds.length === 0) return;
+            
+            if (!confirm(`Are you sure you want to approve ${pendingIds.length} pending requests?`)) return;
+            
+            // TODO: Implement bulk approval API endpoint
+            this.showNotification('Bulk approval not yet implemented', 'error');
+        },
+        
+        async bulkDecline() {
+            const pendingIds = this.pendingRequests.map(r => r.id);
+            if (pendingIds.length === 0) return;
+            
+            const reason = prompt('Please provide a reason for declining all pending requests:');
+            if (!reason) return;
+            
+            // TODO: Implement bulk decline API endpoint
+            this.showNotification('Bulk decline not yet implemented', 'error');
+        },
+        
+        // View details
+        viewDetails(request) {
+            // TODO: Implement detailed view modal
+            console.log('View details for request:', request);
+        },
+        
+        // Export report
+        exportReport() {
+            // TODO: Implement export functionality
+            this.showNotification('Export functionality coming soon', 'info');
+        },
+        
+        // Refresh data
+        refreshData() {
+            this.loadSwapRequests();
+            this.loadTeams();
+        },
+        
+        // Analysis functions
+        getCoverageImpact(request) {
+            // Simple analysis - could be enhanced with real data
+            if (request.urgency_level === 'emergency') return 'High Impact';
+            if (request.target_assignment) return 'Neutral';
+            return 'Coverage Gap';
+        },
+        
+        getTeamBalance(request) {
+            // Simple analysis - could be enhanced with real data
+            return 'Acceptable';
+        },
+        
+        // Utility functions
+        formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        },
+        
+        formatDateTime(dateTimeString) {
+            return new Date(dateTimeString).toLocaleString();
+        },
+        
+        getCardClass(status) {
+            return `approval-${status}`;
+        },
+        
+        getStatusClass(status) {
+            const classes = {
+                'pending': 'bg-yellow-100 text-yellow-800',
+                'approved': 'bg-green-100 text-green-800',
+                'declined': 'bg-red-100 text-red-800',
+                'cancelled': 'bg-gray-100 text-gray-800',
+                'expired': 'bg-red-100 text-red-800'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        },
+        
+        getUrgencyClass(urgency) {
+            const classes = {
+                'emergency': 'bg-red-100 text-red-800',
+                'high': 'bg-orange-100 text-orange-800',
+                'medium': 'bg-yellow-100 text-yellow-800',
+                'low': 'bg-green-100 text-green-800'
+            };
+            return classes[urgency] || 'bg-gray-100 text-gray-800';
+        },
+        
+        getUrgencyIndicatorClass(urgency) {
+            return `urgency-${urgency}`;
+        },
+        
+        showNotification(message, type = 'success') {
+            this.$store.notifications.add({ message, type });
+        },
+        
+        getCsrfToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return decodeURIComponent(value);
+                }
+            }
+            return '';
+        }
+    }
+}
+</script>
+{% endblock %}

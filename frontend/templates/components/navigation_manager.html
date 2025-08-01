@@ -189,6 +189,26 @@
                 </ul>
             </li>
             
+            <!-- Approvals Section -->
+            <li>
+                <div class="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider mb-3 sidebar-text">
+                    Approvals
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <!-- Shift Swap Approvals -->
+                    <li>
+                        <a href="{% url 'frontend:swap_approvals' %}" 
+                           class="{% if active_nav == 'swap_approvals' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Shift Swap Approvals">
+                            <svg class="w-5 h-5 {% if active_nav == 'swap_approvals' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="sidebar-text">Swap Approvals</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
             <!-- System Administration Section -->
             <li>
                 <div class="text-xs font-semibold leading-6 text-gray-400 uppercase tracking-wider mb-3 sidebar-text">

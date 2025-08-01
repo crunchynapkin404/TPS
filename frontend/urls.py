@@ -16,6 +16,10 @@ urlpatterns = [
     path('login/', views.LoginView.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     
+    # Shift Swap Pages
+    path('swap-requests/', views.ShiftSwapRequestView.as_view(), name='swap_requests'),
+    path('swap-approvals/', views.ShiftSwapApprovalView.as_view(), name='swap_approvals'),
+    
     # TODO: Additional Enhanced URLs to be added later
     # These will be implemented as we create the corresponding views:
     # - Planning wizard (/planning/wizard/)

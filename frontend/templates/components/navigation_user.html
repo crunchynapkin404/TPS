@@ -137,13 +137,13 @@
                     
                     <!-- Shift Swaps -->
                     <li>
-                        <a href="#" onclick="alert('Shift Swaps feature coming soon!')" 
-                           class="text-gray-300 hover:text-white hover:bg-gray-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200 cursor-pointer"
-                           title="Shift Swaps (Coming Soon)">
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <a href="{% url 'frontend:swap_requests' %}" 
+                           class="{% if active_nav == 'swap_requests' %}bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Shift Swaps">
+                            <svg class="w-5 h-5 {% if active_nav == 'swap_requests' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                             </svg>
-                            <span class="sidebar-text">Shift Swaps <small>(Soon)</small></span>
+                            <span class="sidebar-text">Shift Swaps</span>
                         </a>
                     </li>
                 </ul>

@@ -20,9 +20,6 @@
     <!-- Preload critical resources -->
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" as="script">
     
-    <!-- Alpine.js CDN -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    
     <!-- Global configuration -->
     <script>
         // Set up global variables for scripts
@@ -43,8 +40,11 @@
         };
     </script>
     
-    <!-- Base JavaScript -->
-    <script src="{% static 'js/base.js' %}" defer></script>
+    <!-- Base JavaScript - Load before Alpine.js to initialize stores -->
+    <script src="{% static 'js/base.js' %}"></script>
+    
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     
     <!-- Additional Meta Tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,7 +56,7 @@
 </head>
 <body class="h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden" 
       x-data="{ sidebarCollapsed: false }" 
-      x-init="document.documentElement.classList.toggle('dark', $store.theme.dark)">
+      x-init="$nextTick(() => { if ($store.theme) { document.documentElement.classList.toggle('dark', $store.theme.dark); } })">
     
     <!-- Skip to main content link for accessibility -->
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-blue-600 text-white px-4 py-2 rounded-md z-50 focus:z-50">

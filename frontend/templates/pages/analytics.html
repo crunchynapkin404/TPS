@@ -79,17 +79,17 @@
         </div>
 
         <!-- Planning Efficiency -->
-        <div class="bg-surface shadow rounded-lg p-6">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
-                        <i class="fas fa-cogs text-yellow-600"></i>
+                    <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-md flex items-center justify-center">
+                        <i class="fas fa-cogs text-yellow-600 dark:text-yellow-400"></i>
                     </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-content-secondary truncate">Planning Efficiency</dt>
-                        <dd class="text-lg font-medium text-content-primary" id="planning-efficiency">Loading...</dd>
+                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Planning Efficiency</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-gray-100" id="planning-efficiency">Loading...</dd>
                     </dl>
                 </div>
             </div>
@@ -98,10 +98,10 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Fairness Distribution Chart -->
-        <div class="bg-surface shadow rounded-lg p-6">
+        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-content-primary">Fairness Distribution</h3>
-                <select class="form-input py-1 pl-3 pr-8 text-sm" id="fairness-period">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Fairness Distribution</h3>
+                <select class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-1 pl-3 pr-8 text-sm text-gray-900 dark:text-gray-100" id="fairness-period">
                     <option value="month">This Month</option>
                     <option value="quarter">This Quarter</option>
                     <option value="year">This Year</option>
@@ -109,10 +109,10 @@
             </div>
             
             <!-- Chart Area -->
-            <div class="h-64 bg-surface-secondary rounded-lg flex items-center justify-center border-2 border-dashed border-border-secondary" id="fairness-chart">
+            <div class="h-64 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600" id="fairness-chart">
                 <div class="text-center">
-                    <i class="fas fa-chart-pie text-2xl text-content-tertiary mb-2"></i>
-                    <div class="text-content-secondary">Loading fairness data...</div>
+                    <i class="fas fa-chart-pie text-2xl text-gray-400 dark:text-gray-500 mb-2"></i>
+                    <div class="text-gray-600 dark:text-gray-400">Loading fairness data...</div>
                 </div>
             </div>
             

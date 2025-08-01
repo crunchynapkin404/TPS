@@ -96,9 +96,9 @@
         <!-- Desktop Content Area -->
         <div class="w-full flex pt-24">
             <!-- Left Sidebar - My Assignments -->
-            <div class="desktop-sidebar bg-gray-50 border-r border-gray-200 flex flex-col">
-                <div class="p-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-3">My Assignments</h2>
+            <div class="desktop-sidebar bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">My Assignments</h2>
                     <button @click="openNewRequestModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors text-sm">
                         <i class="fas fa-plus"></i>
                         <span>New Request</span>
@@ -127,7 +127,7 @@
                                 </div>
                             </div>
                             
-                            <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-2 py-1.5 rounded-lg hover:bg-blue-50 font-medium text-xs transition-colors">
+                            <button @click="initiateSwap(assignment)" class="w-full bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 px-2 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 font-medium text-xs transition-colors">
                                 Request Swap
                             </button>
                         </div>
@@ -138,10 +138,10 @@
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col overflow-hidden min-w-0">
                 <!-- Compact Filters Bar -->
-                <div class="bg-white border-b border-gray-200 px-6 py-3">
+                <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3">
                     <div class="flex items-center justify-between mb-3">
-                        <h2 class="text-xl font-semibold text-gray-900">All Swap Requests</h2>
-                        <div class="text-sm text-gray-600">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">All Swap Requests</h2>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">
                             <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
                         </div>
                     </div>
@@ -149,8 +149,8 @@
                     <!-- Desktop Inline Filters -->
                     <div class="flex items-center space-x-4">
                         <div class="flex items-center space-x-2">
-                            <label class="text-sm font-medium text-gray-700">Status:</label>
-                            <select x-model="filterStatus" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Status:</label>
+                            <select x-model="filterStatus" @change="filterRequests()" class="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">All</option>
                                 <option value="pending">Pending</option>
                                 <option value="approved">Approved</option>
@@ -181,24 +181,24 @@
                             </select>
                         </div>
                         
-                        <button @click="clearFilters()" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50">
+                        <button @click="clearFilters()" class="px-3 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
                             <i class="fas fa-times mr-1"></i>Clear
                         </button>
                     </div>
                 </div>
 
                 <!-- Desktop Table -->
-                <div class="flex-1 overflow-auto bg-white">
+                <div class="flex-1 overflow-auto bg-white dark:bg-gray-800">
                     <table class="min-w-full">
-                        <thead class="bg-gray-50 sticky top-0 z-10">
+                        <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-16" @click="sortBy('id')">
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 w-16" @click="sortBy('id')">
                                     <div class="flex items-center space-x-1">
                                         <span>ID</span>
                                         <i class="fas fa-sort text-gray-400"></i>
                                     </div>
                                 </th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-24" @click="sortBy('status')">
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 w-24" @click="sortBy('status')">
                                     <div class="flex items-center space-x-1">
                                         <span>Status</span>
                                         <i class="fas fa-sort text-gray-400"></i>
@@ -328,17 +328,17 @@
                         </div>
                         
                         <div class="flex items-center space-x-1">
-                            <button @click="previousPage()" :disabled="currentPage === 1" class="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                            <button @click="previousPage()" :disabled="currentPage === 1" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700">
                                 Previous
                             </button>
                             
                             <template x-for="page in pageNumbers" :key="page">
-                                <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-2 py-1 border border-gray-300 rounded text-sm">
+                                <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm">
                                     <span x-text="page"></span>
                                 </button>
                             </template>
                             
-                            <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                            <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700">
                                 Next
                             </button>
                         </div>
@@ -515,7 +515,7 @@
                         </select>
                     </div>
                     
-                    <button @click="clearFilters()" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50">
+                    <button @click="clearFilters()" class="px-3 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
                         <i class="fas fa-times mr-1"></i>Clear
                     </button>
                 </div>
@@ -524,38 +524,38 @@
         <!-- Desktop Table View -->
         <div class="hidden lg:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('id')">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" @click="sortBy('id')">
                             <div class="flex items-center space-x-1">
                                 <span>Request ID</span>
-                                <i class="fas fa-sort text-gray-400"></i>
+                                <i class="fas fa-sort text-gray-400 dark:text-gray-300"></i>
                             </div>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('status')">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" @click="sortBy('status')">
                             <div class="flex items-center space-x-1">
                                 <span>Status</span>
-                                <i class="fas fa-sort text-gray-400"></i>
+                                <i class="fas fa-sort text-gray-400 dark:text-gray-300"></i>
                             </div>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giving Up</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taking Over</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('urgency_level')">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Giving Up</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Taking Over</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" @click="sortBy('urgency_level')">
                             <div class="flex items-center space-x-1">
                                 <span>Urgency</span>
-                                <i class="fas fa-sort text-gray-400"></i>
+                                <i class="fas fa-sort text-gray-400 dark:text-gray-300"></i>
                             </div>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('requested_at')">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" @click="sortBy('requested_at')">
                             <div class="flex items-center space-x-1">
                                 <span>Requested</span>
-                                <i class="fas fa-sort text-gray-400"></i>
+                                <i class="fas fa-sort text-gray-400 dark:text-gray-300"></i>
                             </div>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('expires_at')">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" @click="sortBy('expires_at')">
                             <div class="flex items-center space-x-1">
                                 <span>Expires</span>
-                                <i class="fas fa-sort text-gray-400"></i>
+                                <i class="fas fa-sort text-gray-400 dark:text-gray-300"></i>
                             </div>
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -563,7 +563,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <template x-for="request in paginatedRequests" :key="request.id">
-                        <tr class="hover:bg-gray-50" :class="getRowClass(request)">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700" :class="getRowClass(request)">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="text-sm font-medium text-gray-900" x-text="`#${request.id}`"></div>
@@ -734,17 +734,17 @@
                     </div>
                     
                     <div class="flex items-center space-x-1">
-                        <button @click="previousPage()" :disabled="currentPage === 1" class="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                        <button @click="previousPage()" :disabled="currentPage === 1" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700">
                             Previous
                         </button>
                         
                         <template x-for="page in pageNumbers" :key="page">
-                            <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-2 py-1 border border-gray-300 rounded text-sm">
+                            <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm">
                                 <span x-text="page"></span>
                             </button>
                         </template>
                         
-                        <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                        <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700">
                             Next
                         </button>
                     </div>
@@ -866,7 +866,7 @@
                     </div>
                     
                     <div class="flex items-end">
-                        <button @click="clearFilters()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <button @click="clearFilters()" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                             <i class="fas fa-times mr-1"></i>
                             Clear Filters
                         </button>
@@ -1020,14 +1020,14 @@
                 
                 <!-- Swap Type -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Swap Type</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Swap Type</label>
                     <div class="flex space-x-4">
-                        <label class="flex items-center">
-                            <input type="radio" x-model="newRequest.swap_type" value="open" class="mr-2">
+                        <label class="flex items-center text-gray-900 dark:text-gray-100">
+                            <input type="radio" x-model="newRequest.swap_type" value="open" class="mr-2 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
                             <span>Open Request (Anyone can take)</span>
                         </label>
-                        <label class="flex items-center">
-                            <input type="radio" x-model="newRequest.swap_type" value="direct" class="mr-2">
+                        <label class="flex items-center text-gray-900 dark:text-gray-100">
+                            <input type="radio" x-model="newRequest.swap_type" value="direct" class="mr-2 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
                             <span>Direct Swap</span>
                         </label>
                     </div>
@@ -1035,8 +1035,8 @@
                 
                 <!-- Target Assignment (for direct swaps) -->
                 <div x-show="newRequest.swap_type === 'direct'" class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Assignment to Take Over</label>
-                    <select x-model="newRequest.target_assignment_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assignment to Take Over</label>
+                    <select x-model="newRequest.target_assignment_id" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Select assignment to take over</option>
                         <template x-for="assignment in availableAssignments" :key="assignment.id">
                             <option :value="assignment.id" x-text="`${assignment.shift_name} - ${assignment.user_name} - ${formatDate(assignment.shift_date)} (${assignment.start_time} - ${assignment.end_time})`"></option>
@@ -1046,14 +1046,14 @@
                 
                 <!-- Reason -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Swap *</label>
-                    <textarea x-model="newRequest.reason" required rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Please explain why you need this swap..."></textarea>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for Swap *</label>
+                    <textarea x-model="newRequest.reason" required rows="3" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Please explain why you need this swap..."></textarea>
                 </div>
                 
                 <!-- Urgency Level -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
-                    <select x-model="newRequest.urgency_level" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Urgency Level</label>
+                    <select x-model="newRequest.urgency_level" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="low">Low - Can wait</option>
                         <option value="medium">Medium - Preferred timing</option>
                         <option value="high">High - Important</option>
@@ -1063,20 +1063,20 @@
                 
                 <!-- Expiry Date -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Request Expires</label>
-                    <input type="datetime-local" x-model="newRequest.expires_at" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <p class="text-sm text-gray-500 mt-1">Leave empty for no expiry</p>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Request Expires</label>
+                    <input type="datetime-local" x-model="newRequest.expires_at" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Leave empty for no expiry</p>
                 </div>
                 
                 <!-- Additional Notes -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
-                    <textarea x-model="newRequest.additional_notes" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Any additional information..."></textarea>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Additional Notes</label>
+                    <textarea x-model="newRequest.additional_notes" rows="2" class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Any additional information..."></textarea>
                 </div>
                 
                 <!-- Submit Buttons -->
                 <div class="flex justify-end space-x-3">
-                    <button type="button" @click="closeNewRequestModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    <button type="button" @click="closeNewRequestModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" :disabled="isSubmitting">

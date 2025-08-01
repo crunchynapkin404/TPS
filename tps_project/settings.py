@@ -321,6 +321,11 @@ cors_config = get_cors_settings()
 globals().update(security_config)
 globals().update(cors_config)
 
+# Apply logging configuration
+if ENVIRONMENT == 'production':
+    from .logging_config import LOGGING
+    globals()['LOGGING'] = LOGGING
+
 # Security logging
 import logging
 logger = logging.getLogger('tps.security')

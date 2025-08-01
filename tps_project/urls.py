@@ -23,6 +23,7 @@ from django.shortcuts import redirect
 from django.http import HttpResponse
 from core.views import test_formats_view
 from django.views.i18n import set_language
+from core.health import health_check, readiness_check, liveness_check, metrics_endpoint
 
 def accounts_login_redirect(request):
     """Redirect /accounts/login/ to /login/"""
@@ -41,6 +42,13 @@ urlpatterns = [
     path('leave/', include('apps.leave_management.urls')),
     path('test-formats/', test_formats_view, name='test_formats'),  # Test endpoint
     path('set_language/', set_language, name='set_language'),  # Language switching
+    
+    # Health check endpoints for production monitoring
+    path('health/', health_check, name='health_check'),
+    path('health/ready/', readiness_check, name='readiness_check'),
+    path('health/live/', liveness_check, name='liveness_check'),
+    path('metrics/', metrics_endpoint, name='metrics'),
+    
     path('', include('frontend.urls')),
 ]
 

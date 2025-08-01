@@ -96,3 +96,19 @@ security_audit_report.json
 *.pem
 *.key
 *.crt
+
+# Demo and test files (prevent accumulation)
+*_demo.html
+*_test.html
+*_standalone.html
+demo.html
+test_*.html
+results.html
+Error.txt
+*.error
+*.debug
+
+# Temporary files
+temp_*.env
+*.tmp.*
+*_old.*

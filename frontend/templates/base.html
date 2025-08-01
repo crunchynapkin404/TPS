@@ -1,57 +1,49 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="{% get_current_language %}" class="h-full">
 <head>
     <meta charset="utf-8">
     <title>{% block title %}{{ page_title|default:"TPS Team Planning System V1.4" }}{% endblock %}</title>
     
+    <!-- Essential Meta Tags -->
+    <meta name="description" content="{% block meta_description %}TPS Team Planning System - Streamline your team scheduling and management{% endblock %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1f2937">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <!-- Tailwind CSS -->
     {% load static %}
+    {% load i18n %}
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" as="script">
     
     <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     
-    <!-- Alpine.js Global Store Initialization -->
+    <!-- Global configuration -->
     <script>
-        document.addEventListener('alpine:init', () => {
-            // Global notification store
-            Alpine.store('notifications', {
-                items: [],
-                
-                add(notification) {
-                    const id = Date.now();
-                    this.items.push({ ...notification, id });
-                    
-                    // Auto-remove after delay
-                    const delay = notification.type === 'error' ? 5000 : 3000;
-                    setTimeout(() => this.remove(id), delay);
-                },
-                
-                remove(id) {
-                    this.items = this.items.filter(item => item.id !== id);
-                }
-            });
-            
-            // Global theme store
-            Alpine.store('theme', {
-                dark: localStorage.getItem('theme') === 'dark' || 
-                     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches),
-                     
-                toggle() {
-                    this.dark = !this.dark;
-                    localStorage.setItem('theme', this.dark ? 'dark' : 'light');
-                    document.documentElement.classList.toggle('dark', this.dark);
-                }
-            });
-        });
-
-        // Custom event listener for global notifications
-        document.addEventListener('show-notification', (e) => {
-            if (window.Alpine && Alpine.store('notifications')) {
-                Alpine.store('notifications').add(e.detail);
-            }
-        });
+        // Set up global variables for scripts
+        window.translations = {
+            skipToContent: '{% trans "Skip to main content" %}',
+            expandSidebar: '{% trans "Expand sidebar" %}',
+            collapseSidebar: '{% trans "Collapse sidebar" %}',
+            quickAssignSoon: '{% trans "Quick assign functionality coming soon!" %}',
+            viewingPending: '{% trans "Viewing pending approvals..." %}',
+            exportingSchedule: '{% trans "Exporting schedule..." %}',
+            confirmApprove: '{% trans "Are you sure you want to approve this assignment?" %}',
+            approving: '{% trans "Approving..." %}',
+            assignmentApproved: '{% trans "Assignment approved successfully!" %}',
+            declineReason: '{% trans "Please provide a reason for declining (optional):" %}',
+            declining: '{% trans "Declining..." %}',
+            assignmentDeclined: '{% trans "Assignment declined successfully!" %}',
+            noReasonProvided: '{% trans "No reason provided" %}'
+        };
     </script>
+    
+    <!-- Base JavaScript -->
+    <script src="{% static 'js/base.js' %}" defer></script>
     
     <!-- Additional Meta Tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,19 +53,31 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden" x-data="{ sidebarCollapsed: false }" x-init="document.documentElement.classList.toggle('dark', $store.theme.dark)">
+<body class="h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden" 
+      x-data="{ sidebarCollapsed: false }" 
+      x-init="document.documentElement.classList.toggle('dark', $store.theme.dark)">
+    
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-blue-600 text-white px-4 py-2 rounded-md z-50 focus:z-50">
+        {% trans "Skip to main content" %}
+    </a>
+    
     {% if user.is_authenticated %}
         <div class="flex h-screen w-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
             <!-- Sidebar with Alpine.js toggle functionality -->
-            <div class="flex-shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-visible z-40 flex flex-col bg-gray-800 dark:bg-gray-900" 
-                 :class="sidebarCollapsed ? 'w-16' : 'w-72 lg:w-80'"
-                 id="sidebar">
+            <aside class="flex-shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-visible z-40 flex flex-col bg-gray-800 dark:bg-gray-900" 
+                   :class="sidebarCollapsed ? 'w-16' : 'w-72 lg:w-80'"
+                   id="sidebar"
+                   role="navigation"
+                   aria-label="{% trans 'Main navigation' %}">
+                
                 <!-- Desktop Toggle Button -->
                 <button @click="sidebarCollapsed = !sidebarCollapsed"
                         class="absolute bottom-15 -right-4 w-8 h-8 bg-gray-700 dark:bg-gray-800 border-2 border-gray-600 dark:border-gray-700 rounded-full text-gray-50 cursor-pointer flex items-center justify-center z-50 transition-all duration-300 ease-in-out shadow-lg hover:bg-gray-600 dark:hover:bg-gray-700 hover:scale-110 hover:border-gray-500 dark:hover:border-gray-600 hover:shadow-xl active:scale-95" 
-                        title="Toggle Sidebar">
+                        :title="sidebarCollapsed ? '{% trans "Expand sidebar" %}' : '{% trans "Collapse sidebar" %}'"
+                        :aria-label="sidebarCollapsed ? '{% trans "Expand sidebar" %}' : '{% trans "Collapse sidebar" %}'">
                     <!-- Heroicon: chevron-left/right -->
-                    <svg class="w-4 h-4 transition-transform duration-300" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 transition-transform duration-300" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>
@@ -88,40 +92,47 @@
                 {% else %}
                     {% include 'components/navigation_user.html' %}
                 {% endif %}
-            </div>
+            </aside>
             
             <!-- Main Content Area -->
             <div class="flex-1 min-w-0 h-full transition-all duration-300 ease-in-out bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50 overflow-hidden">
                 <!-- Header with language switch -->
-                {% include 'components/header.html' %}
-                <div class="h-full w-full overflow-hidden">
+                <header role="banner">
+                    {% include 'components/header.html' %}
+                </header>
+                
+                <main id="main-content" class="h-full w-full overflow-hidden" role="main" tabindex="-1">
                     {% block content %}{% endblock %}
-                </div>
+                </main>
             </div>
         </div>
     {% else %}
         <!-- Not authenticated - redirect to login -->
-        <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <main class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900" role="main">
             <div class="max-w-md w-full space-y-8">
-                <div class="text-center">
-                    <h2 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
-                        Authentication Required
-                    </h2>
+                <section class="text-center">
+                    <h1 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
+                        {% trans "Authentication Required" %}
+                    </h1>
                     <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Please log in to access the Team Planning System
+                        {% trans "Please log in to access the Team Planning System" %}
                     </p>
-                    <a href="{% url 'frontend:login' %}" class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                        Go to Login
+                    <a href="{% url 'frontend:login' %}" 
+                       class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        {% trans "Go to Login" %}
                     </a>
-                </div>
+                </section>
             </div>
-        </div>
+        </main>
     {% endif %}
 
     <!-- JavaScript -->
-    <!-- Global notification system -->
+    <!-- Global notification system with accessibility -->
     <div x-data="{ get notifications() { return $store.notifications?.items || [] } }" 
-         class="fixed top-4 right-4 z-50 space-y-2">
+         class="fixed top-4 right-4 z-50 space-y-2"
+         role="region"
+         aria-label="{% trans 'Notifications' %}"
+         aria-live="polite">
         <template x-for="notification in notifications" :key="notification.id">
             <div class="px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300 flex items-center gap-2 text-white max-w-sm"
                  :class="{
@@ -130,6 +141,8 @@
                     'bg-yellow-500': notification.type === 'warning',
                     'bg-blue-500': notification.type === 'info'
                  }"
+                 :aria-label="notification.type + ': ' + notification.message"
+                 role="alert"
                  x-transition:enter="transition ease-out duration-300"
                  x-transition:enter-start="transform translate-x-full opacity-0"
                  x-transition:enter-end="transform translate-x-0 opacity-100"
@@ -141,8 +154,15 @@
                     'error': '❌',
                     'warning': '⚠️',
                     'info': 'ℹ️'
-                }[notification.type]"></span>
+                }[notification.type]" aria-hidden="true"></span>
                 <span x-text="notification.message" class="text-sm"></span>
+                <button @click="$store.notifications.remove(notification.id)"
+                        class="ml-2 text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 rounded"
+                        :aria-label="'{% trans "Close notification" %}: ' + notification.message">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
         </template>
     </div>

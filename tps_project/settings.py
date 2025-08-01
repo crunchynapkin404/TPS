@@ -5,23 +5,43 @@ Enhanced settings with custom User model and TPS apps
 
 from pathlib import Path
 import os
+import sys
 from dotenv import load_dotenv
+from .security_settings import (
+    validate_security_settings, get_security_settings, get_cors_settings,
+    SECURITY_MIDDLEWARE, generate_secure_secret_key
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
 load_dotenv(BASE_DIR / '.env')
 
+# Environment type
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'production')
+
+# Validate security settings
+security_issues = validate_security_settings()
+if security_issues:
+    print("🔒 SECURITY AUDIT FINDINGS:")
+    for issue in security_issues:
+        print(f"   {issue}")
+    print()
+
 # SECURITY: Ensure SECRET_KEY is set from environment
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-for-testing-only')
-if not os.getenv('SECRET_KEY'):
-    print("WARNING: Using default SECRET_KEY. Please set SECRET_KEY in your .env file!")
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if ENVIRONMENT == 'production':
+        print("CRITICAL: SECRET_KEY must be set in production environment!")
+        sys.exit(1)
+    else:
+        # Generate a secure key for development if not set
+        SECRET_KEY = generate_secure_secret_key()
+        print(f"⚠️  Generated temporary SECRET_KEY for development. Add this to your .env file:")
+        print(f"SECRET_KEY={SECRET_KEY}")
 
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]').split(',')
-
-# Environment type
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'production')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -32,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'channels',
+    'corsheaders',  # Add CORS headers support
     
     # TPS Applications
     'apps.accounts',
@@ -45,6 +66,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Language switching support
     'django.middleware.common.CommonMiddleware',
@@ -214,6 +236,21 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour'
+    },
     # Consistent date/time formatting for API
     'DATE_FORMAT': '%d/%m/%Y',  # DD/MM/YYYY
     'DATETIME_FORMAT': '%d/%m/%Y %H:%M',  # DD/MM/YYYY HH:MM (24-hour)
@@ -275,3 +312,27 @@ if DEBUG and False:  # Temporarily disabled for clean UI
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
     INTERNAL_IPS = ['127.0.0.1', 'localhost']
+
+# Apply security settings
+security_config = get_security_settings()
+cors_config = get_cors_settings()
+
+# Apply security settings to Django configuration
+globals().update(security_config)
+globals().update(cors_config)
+
+# Security logging
+import logging
+logger = logging.getLogger('tps.security')
+
+# Log security configuration on startup
+if not DEBUG:
+    logger.info(f"TPS Security: Environment={ENVIRONMENT}, HTTPS={'Enabled' if globals().get('SECURE_SSL_REDIRECT') else 'Disabled'}")
+    if cors_config.get('CORS_ALLOW_ALL_ORIGINS'):
+        logger.warning("TPS Security: CORS allows all origins - ensure this is intended for development only")
+
+# Add django-cors-headers to requirements if not present
+try:
+    import corsheaders
+except ImportError:
+    logger.warning("TPS Security: django-cors-headers not installed. Run: pip install django-cors-headers")

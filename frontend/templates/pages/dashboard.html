@@ -6,24 +6,37 @@
 
 {% block content %}
 <!-- CLEAN DESKTOP DASHBOARD -->
-<div class="grid grid-rows-4 gap-5 w-full" x-data="dashboardData()">
+<div class="grid grid-rows-4 gap-5 w-full p-6" x-data="dashboardData()">
     <!-- Welcome Header -->
-    <div class="mb-6">
-        <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome back, {{ user.first_name|default:user.username }}! 👋</div>
-        <div class="text-lg text-gray-600 dark:text-gray-300">Here's what's happening with your team today</div>
-    </div>
+    <header class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            {% trans "Welcome back" %}, {{ user.first_name|default:user.username }}! 👋
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300">
+            {% trans "Here's what's happening with your team today" %}
+        </p>
+    </header>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-6 gap-4 xl:grid-cols-6 lg:grid-cols-3 lg:grid-rows-2 md:grid-cols-2 md:grid-rows-3 sm:grid-cols-1">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/40" @click="window.location.href='/schedule/'">
-            <div class="text-2xl mb-2 opacity-90">
+    <section class="grid grid-cols-6 gap-4 xl:grid-cols-6 lg:grid-cols-3 lg:grid-rows-2 md:grid-cols-2 md:grid-rows-3 sm:grid-cols-1" 
+             aria-labelledby="stats-heading">
+        <h2 id="stats-heading" class="sr-only">{% trans "Dashboard Statistics" %}</h2>
+        
+        <article class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/40 focus-within:ring-2 focus-within:ring-blue-300" 
+                 @click="window.location.href='/schedule/'"
+                 tabindex="0"
+                 role="button"
+                 aria-label="{% trans 'View my shifts' %}: {{ my_upcoming_shifts.count }} {% trans 'shifts' %}"
+                 @keydown.enter="window.location.href='/schedule/'"
+                 @keydown.space.prevent="window.location.href='/schedule/'">
+            <div class="text-2xl mb-2 opacity-90" aria-hidden="true">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
             <div class="text-3xl font-bold mb-1" x-text="stats.myShifts">{{ my_upcoming_shifts.count }}</div>
-            <div class="text-sm opacity-90 font-medium">My Shifts</div>
-        </div>
+            <div class="text-sm opacity-90 font-medium">{% trans "My Shifts" %}</div>
+        </article>
         
         <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-amber-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/40" @click="showPendingApprovals()">
             <div class="text-2xl mb-2 opacity-90">
@@ -357,206 +370,17 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Dashboard JavaScript -->
+<script src="{% static 'js/dashboard.js' %}" defer></script>
 <script>
-// Alpine.js Dashboard Data
-function dashboardData() {
-    return {
-        stats: {
-            myShifts: {{ my_upcoming_shifts.count }},
-            pendingApprovals: {{ pending_approvals }},
-            activeMembers: {{ active_members }},
-            monthlyAssignments: {{ monthly_assignments }},
-            systemHealth: {{ system_health }},
-            fairnessScore: {{ fairness_score }}
-        },
-        
-        // Computed property for fairness card classes
-        get fairnessCardClasses() {
-            const score = this.stats.fairnessScore;
-            if (score >= 90) {
-                return 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40';
-            } else if (score >= 75) {
-                return 'bg-gradient-to-br from-amber-500 to-amber-600 shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40';
-            } else {
-                return 'bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40';
-            }
-        },
-        
-        // Quick Action Functions converted to Alpine methods
-        openPlanningWizard() {
-            window.location.href = '/planning/';
-        },
-
-        openQuickAssign() {
-            this.$dispatch('show-notification', { message: 'Quick assign functionality coming soon!', type: 'info' });
-        },
-
-        showPendingApprovals() {
-            this.$dispatch('show-notification', { message: 'Viewing pending approvals...', type: 'info' });
-        },
-
-        exportSchedule() {
-            this.$dispatch('show-notification', { message: 'Exporting schedule...', type: 'info' });
-        },
-
-        // Assignment approval functions with proper Alpine.js patterns
-        async approveAssignment(assignmentId) {
-            if (confirm('Are you sure you want to approve this assignment?')) {
-                try {
-                    const response = await fetch(`/api/v1/assignments/${assignmentId}/approve_assignment/`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': this.getCsrfToken(),
-                            'Content-Type': 'application/json',
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        this.$dispatch('show-notification', { message: 'Assignment approved successfully!', type: 'success' });
-                        // Update stats
-                        this.stats.pendingApprovals = Math.max(0, this.stats.pendingApprovals - 1);
-                        // Optionally reload page for full refresh
-                        setTimeout(() => location.reload(), 1500);
-                    } else {
-                        this.$dispatch('show-notification', { 
-                            message: 'Error approving assignment: ' + (data.error || 'Unknown error'), 
-                            type: 'error' 
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    this.$dispatch('show-notification', { message: 'Error approving assignment', type: 'error' });
-                }
-            }
-        },
-
-        async declineAssignment(assignmentId) {
-            const reason = prompt('Please provide a reason for declining (optional):');
-            if (reason !== null) { // User didn't cancel
-                try {
-                    const response = await fetch(`/api/v1/assignments/${assignmentId}/reject_assignment/`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': this.getCsrfToken(),
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            reason: reason || 'No reason provided'
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        this.$dispatch('show-notification', { message: 'Assignment declined successfully!', type: 'success' });
-                        // Update stats
-                        this.stats.pendingApprovals = Math.max(0, this.stats.pendingApprovals - 1);
-                        // Optionally reload page for full refresh
-                        setTimeout(() => location.reload(), 1500);
-                    } else {
-                        this.$dispatch('show-notification', { 
-                            message: 'Error declining assignment: ' + (data.error || 'Unknown error'), 
-                            type: 'error' 
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    this.$dispatch('show-notification', { message: 'Error declining assignment', type: 'error' });
-                }
-            }
-        },
-
-        // Helper function for CSRF token
-        getCsrfToken() {
-            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                   document.querySelector('meta[name="csrf-token"]')?.content || '';
-        },
-
-        // Real-time dashboard updates
-        async updateDashboardStats() {
-            try {
-                const response = await fetch('/api/v1/dashboard/stats/');
-                const data = await response.json();
-                
-                // Update stats reactively
-                this.stats = {
-                    myShifts: data.my_upcoming_shifts,
-                    pendingApprovals: data.pending_approvals,
-                    activeMembers: data.active_members,
-                    monthlyAssignments: data.monthly_assignments,
-                    systemHealth: data.system_health,
-                    fairnessScore: data.fairness_score
-                };
-            } catch (error) {
-                console.error('Error updating dashboard stats:', error);
-            }
-        },
-
-        // Initialize dashboard
-        init() {
-            // Update dashboard stats every 30 seconds
-            setInterval(() => this.updateDashboardStats(), 30000);
-            
-            // Listen for custom notifications
-            this.$watch('$store.notifications', (notifications) => {
-                // Handle notifications if needed
-            });
-        }
-    }
-}
-
-// Global notification handler
-document.addEventListener('alpine:init', () => {
-    Alpine.store('notifications', {
-        items: [],
-        
-        add(notification) {
-            const id = Date.now();
-            this.items.push({ ...notification, id });
-            
-            // Auto-remove after delay
-            const delay = notification.type === 'error' ? 5000 : 3000;
-            setTimeout(() => this.remove(id), delay);
-        },
-        
-        remove(id) {
-            this.items = this.items.filter(item => item.id !== id);
-        }
-    });
-});
-
-// Custom event listener for notifications
-document.addEventListener('show-notification', (e) => {
-    Alpine.store('notifications').add(e.detail);
-});
+    // Set dashboard stats for JavaScript
+    window.dashboardStats = {
+        myShifts: {{ my_upcoming_shifts.count }},
+        pendingApprovals: {{ pending_approvals }},
+        activeMembers: {{ active_members }},
+        monthlyAssignments: {{ monthly_assignments }},
+        systemHealth: {{ system_health }},
+        fairnessScore: {{ fairness_score }}
+    };
 </script>
-
-<!-- Notification Area -->
-<div x-data="{ get notifications() { return $store.notifications.items } }" class="fixed top-4 right-4 z-50 space-y-2">
-    <template x-for="notification in notifications" :key="notification.id">
-        <div class="px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300 flex items-center gap-2 text-white"
-             :class="{
-                'bg-green-500': notification.type === 'success',
-                'bg-red-500': notification.type === 'error',
-                'bg-yellow-500': notification.type === 'warning',
-                'bg-blue-500': notification.type === 'info'
-             }"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="transform translate-x-full opacity-0"
-             x-transition:enter-end="transform translate-x-0 opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="transform translate-x-0 opacity-100"
-             x-transition:leave-end="transform translate-x-full opacity-0">
-            <span x-text="{
-                'success': '✅',
-                'error': '❌',
-                'warning': '⚠️',
-                'info': 'ℹ️'
-            }[notification.type]"></span>
-            <span x-text="notification.message"></span>
-        </div>
-    </template>
-</div>
 {% endblock %}

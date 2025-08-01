@@ -102,6 +102,31 @@ class ScheduleView(BaseView):
         return context
 
 
+class ScheduleTimelineView(BaseView):
+    """Schedule timeline page with monthly timeline view"""
+    template_name = 'pages/schedule_timeline.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get current date
+        today = timezone.now().date()
+        
+        # Get user's teams for filtering
+        user = self.request.user
+        user_teams = Team.objects.filter(
+            Q(memberships__user=user) | Q(team_leader=user)
+        ).distinct()
+        
+        context.update({
+            'page_title': 'Schedule Timeline',
+            'active_nav': 'schedule_timeline',
+            'current_date': today,
+            'user_teams': user_teams,
+        })
+        return context
+
+
 
 
 class AssignmentsView(BaseView):

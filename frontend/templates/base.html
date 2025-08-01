@@ -1,5 +1,8 @@
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="{% get_current_language %}" class="h-full">
+<html lang="{{ LANGUAGE_CODE }}" class="h-full">
 <head>
     <meta charset="utf-8">
     <title>{% block title %}{{ page_title|default:"TPS Team Planning System V1.4" }}{% endblock %}</title>
@@ -12,8 +15,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <!-- Tailwind CSS -->
-    {% load static %}
-    {% load i18n %}
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
     
     <!-- Preload critical resources -->

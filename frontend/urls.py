@@ -9,6 +9,7 @@ urlpatterns = [
     path('teams/', views.TeamsView.as_view(), name='teams'),
     path('teams/<int:team_id>/', views.TeamDetailView.as_view(), name='team_detail'),
     path('schedule/', views.ScheduleView.as_view(), name='schedule'),
+    path('schedule-timeline/', views.ScheduleTimelineView.as_view(), name='schedule_timeline'),
     path('assignments/', views.AssignmentsView.as_view(), name='assignments'),
     path('planning/', views.PlanningView.as_view(), name='planning'),
     path('analytics/', views.AnalyticsView.as_view(), name='analytics'),

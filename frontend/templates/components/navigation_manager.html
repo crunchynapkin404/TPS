@@ -104,6 +104,18 @@
                         </a>
                     </li>
                     
+                    <!-- Schedule Timeline -->
+                    <li>
+                        <a href="{% url 'frontend:schedule_timeline' %}" 
+                           class="{% if active_nav == 'schedule_timeline' %}bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg{% else %}text-role hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Schedule Timeline">
+                            <svg class="w-5 h-5 {% if active_nav == 'schedule_timeline' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            <span class="sidebar-text">Timeline View</span>
+                        </a>
+                    </li>
+                    
                     <!-- Assignments -->
                     <li>
                         <a href="{% url 'frontend:assignments' %}" 

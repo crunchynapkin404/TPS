@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Schedule Timeline{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Critical CSS for perfect pixel alignment */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+/* Hide elements until Alpine loads */
+[x-cloak] { display: none !important; }
+
+/* Perfect grid layout - CRITICAL ALIGNMENT */
+.schedule-container {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 60px 1fr;
+    grid-template-columns: 200px 1fr;
+    grid-template-areas: 
+        "header-corner header-days"
+        "sidebar-users schedule-grid";
+}
+
+.header-corner {
+    grid-area: header-corner;
+    background: #1f2937;
+    border-right: 1px solid #374151;
+    border-bottom: 1px solid #374151;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-days {
+    grid-area: header-days;
+    background: #1f2937;
+    border-bottom: 1px solid #374151;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: grid;
+    overflow-x: auto;
+}
+
+.sidebar-users {
+    grid-area: sidebar-users;
+    background: #f9fafb;
+    border-right: 1px solid #e5e7eb;
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    overflow-y: auto;
+}
+
+.schedule-grid {
+    grid-area: schedule-grid;
+    background: #fff;
+    overflow: auto;
+    display: grid;
+}
+
+/* Timeline shifts styling */
+.shift-block {
+    position: absolute;
+    border-radius: 6px;
+    border: 1px solid;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20px;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.shift-block:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+
+/* Shift type colors */
+.shift-morning {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border-color: #d97706;
+}
+
+.shift-afternoon {
+    background: linear-gradient(135deg, #34d399, #10b981);
+    border-color: #059669;
+}
+
+.shift-evening {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    border-color: #2563eb;
+}
+
+.shift-night {
+    background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+    border-color: #7c3aed;
+}
+
+/* User row styling */
+.user-row {
+    height: 40px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: #f9fafb;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.user-row:hover {
+    background: #f3f4f6;
+}
+
+/* Day column styling */
+.day-header {
+    height: 60px;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    min-width: 120px;
+}
+
+.day-header.weekend {
+    background: #dc2626 !important;
+}
+
+.day-column {
+    border-right: 1px solid #e5e7eb;
+    position: relative;
+    min-width: 120px;
+}
+
+/* Navigation controls */
+.nav-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 50;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-button:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.nav-button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .schedule-container {
+        grid-template-columns: 120px 1fr;
+    }
+    
+    .day-header {
+        min-width: 80px;
+        font-size: 12px;
+    }
+    
+    .day-column {
+        min-width: 80px;
+    }
+    
+    .user-row {
+        padding: 0 8px;
+        font-size: 12px;
+    }
+    
+    .shift-block {
+        font-size: 10px;
+        padding: 1px 4px;
+    }
+    
+    .nav-controls {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+    }
+}
+
+/* Loading animation */
+.loading-spinner {
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid #3b82f6;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Timeline hour markers */
+.hour-marker {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #e5e7eb;
+    font-size: 10px;
+    color: #6b7280;
+    padding-left: 4px;
+    background: rgba(249, 250, 251, 0.8);
+}
+
+/* Current time indicator */
+.current-time-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 2px solid #ef4444;
+    z-index: 15;
+}
+
+.current-time-dot {
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div x-data="scheduleTimelineApp()" x-init="init()" class="h-full w-full overflow-hidden" x-cloak>
+    <!-- Navigation Controls -->
+    <div class="nav-controls">
+        <button @click="previousMonth()" class="nav-button" :disabled="loading">
+            <i class="fas fa-chevron-left"></i>
+            <span x-text="loading ? '' : 'Previous'"></span>
+        </button>
+        
+        <div class="flex flex-col items-center text-sm font-semibold text-gray-700">
+            <span x-text="currentMonth"></span>
+            <span x-text="currentYear" class="text-xs text-gray-500"></span>
+        </div>
+        
+        <button @click="nextMonth()" class="nav-button" :disabled="loading">
+            <span x-text="loading ? '' : 'Next'"></span>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <button @click="goToToday()" class="nav-button bg-green-500 hover:bg-green-600" :disabled="loading">
+            <i class="fas fa-calendar-day"></i>
+            <span>Today</span>
+        </button>
+        
+        <div x-show="loading" class="loading-spinner"></div>
+    </div>
+
+    <!-- Schedule Container -->
+    <div class="schedule-container">
+        <!-- Header corner with month info -->
+        <div class="header-corner">
+            <div class="text-white text-center">
+                <div class="text-sm font-bold" x-text="currentMonth"></div>
+                <div class="text-xs opacity-75" x-text="currentYear"></div>
+            </div>
+        </div>
+
+        <!-- Days header -->
+        <div class="header-days" :style="`grid-template-columns: repeat(${daysInMonth}, 120px)`">
+            <template x-for="day in monthDays" :key="day.date">
+                <div class="day-header" 
+                     :class="{ 'weekend': day.isWeekend }"
+                     :style="day.isWeekend ? 'background: #dc2626' : 'background: #1f2937'">
+                    <div class="text-lg font-bold" x-text="day.day"></div>
+                    <div class="text-xs opacity-75" x-text="day.dayName"></div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Users sidebar -->
+        <div class="sidebar-users">
+            <template x-for="user in users" :key="user.id">
+                <div class="user-row" x-text="user.name"></div>
+            </template>
+        </div>
+
+        <!-- Schedule grid -->
+        <div class="schedule-grid" 
+             :style="`grid-template-columns: repeat(${daysInMonth}, 120px); grid-template-rows: repeat(${users.length}, 40px);`">
+            
+            <!-- Day columns with hour markers -->
+            <template x-for="(day, dayIndex) in monthDays" :key="day.date">
+                <div class="day-column" :style="`grid-row: 1 / -1; grid-column: ${dayIndex + 1};`">
+                    <!-- Hour markers for reference -->
+                    <div class="hour-marker" style="top: 8px;">6AM</div>
+                    <div class="hour-marker" style="top: 16px;">12PM</div>
+                    <div class="hour-marker" style="top: 24px;">6PM</div>
+                    <div class="hour-marker" style="top: 32px;">12AM</div>
+                    
+                    <!-- Current time indicator (only for today) -->
+                    <div x-show="day.isToday" class="current-time-line" :style="`top: ${getCurrentTimePosition()}px;`">
+                        <div class="current-time-dot"></div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Shift blocks -->
+            <template x-for="shift in shifts" :key="shift.id">
+                <div class="shift-block"
+                     :class="`shift-${shift.type}`"
+                     :style="getShiftPosition(shift)"
+                     @click="editShift(shift)"
+                     :title="`${shift.title} - ${shift.startTime} to ${shift.endTime}`">
+                    <span x-text="shift.title"></span>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Shift editing modal (placeholder) -->
+    <div x-show="editingShift" 
+         x-transition
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+         @click.away="cancelEdit()">
+        <div class="bg-white rounded-lg p-6 w-96" @click.stop>
+            <h3 class="text-lg font-bold mb-4">Edit Shift</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Title</label>
+                    <input type="text" x-model="editingShift.title" class="w-full border rounded px-3 py-2">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Start Time</label>
+                        <input type="time" x-model="editingShift.startTime" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">End Time</label>
+                        <input type="time" x-model="editingShift.endTime" class="w-full border rounded px-3 py-2">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Type</label>
+                    <select x-model="editingShift.type" class="w-full border rounded px-3 py-2">
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="evening">Evening</option>
+                        <option value="night">Night</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button @click="cancelEdit()" class="px-4 py-2 border rounded hover:bg-gray-50">Cancel</button>
+                <button @click="saveShift()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function scheduleTimelineApp() {
+    return {
+        // Current date navigation
+        currentDate: new Date(),
+        currentMonth: '',
+        currentYear: '',
+        monthDays: [],
+        daysInMonth: 0,
+        loading: false,
+        
+        // Data
+        users: [],
+        shifts: [],
+        editingShift: null,
+        
+        // Initialize the app
+        init() {
+            this.loadUsers();
+            this.updateCalendar();
+            this.loadShifts();
+        },
+        
+        // Load sample users
+        loadUsers() {
+            this.users = [
+                { id: 1, name: 'Alice Johnson' },
+                { id: 2, name: 'Bob Smith' },
+                { id: 3, name: 'Carol Davis' },
+                { id: 4, name: 'David Wilson' },
+                { id: 5, name: 'Emma Brown' },
+                { id: 6, name: 'Frank Miller' },
+                { id: 7, name: 'Grace Lee' },
+                { id: 8, name: 'Henry Taylor' },
+                { id: 9, name: 'Ivy Chen' },
+                { id: 10, name: 'Jack Davis' }
+            ];
+        },
+        
+        // Update calendar for current month
+        updateCalendar() {
+            const year = this.currentDate.getFullYear();
+            const month = this.currentDate.getMonth();
+            
+            this.currentMonth = this.currentDate.toLocaleDateString('en-US', { month: 'long' });
+            this.currentYear = year.toString();
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            this.daysInMonth = lastDay.getDate();
+            
+            this.monthDays = [];
+            const today = new Date();
+            
+            for (let day = 1; day <= this.daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dayOfWeek = date.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const isToday = date.toDateString() === today.toDateString();
+                
+                this.monthDays.push({
+                    date: date.toISOString().split('T')[0],
+                    day: day,
+                    dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                    isWeekend: isWeekend,
+                    isToday: isToday
+                });
+            }
+        },
+        
+        // Load sample shifts
+        loadShifts() {
+            this.loading = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                this.shifts = this.generateSampleShifts();
+                this.loading = false;
+            }, 500);
+        },
+        
+        // Generate sample shift data
+        generateSampleShifts() {
+            const shifts = [];
+            const shiftTypes = ['morning', 'afternoon', 'evening', 'night'];
+            const shiftTimes = {
+                morning: { start: '06:00', end: '14:00' },
+                afternoon: { start: '14:00', end: '22:00' },
+                evening: { start: '16:00', end: '00:00' },
+                night: { start: '22:00', end: '06:00' }
+            };
+            
+            this.users.forEach((user, userIndex) => {
+                for (let day = 1; day <= this.daysInMonth; day++) {
+                    // Random chance of having a shift
+                    if (Math.random() > 0.3) {
+                        const shiftType = shiftTypes[Math.floor(Math.random() * shiftTypes.length)];
+                        const times = shiftTimes[shiftType];
+                        
+                        shifts.push({
+                            id: `${user.id}-${day}-${shiftType}`,
+                            userId: user.id,
+                            day: day,
+                            type: shiftType,
+                            title: shiftType.charAt(0).toUpperCase() + shiftType.slice(1),
+                            startTime: times.start,
+                            endTime: times.end,
+                            date: this.monthDays[day - 1]?.date
+                        });
+                    }
+                }
+            });
+            
+            return shifts;
+        },
+        
+        // Calculate shift position on the grid
+        getShiftPosition(shift) {
+            const userIndex = this.users.findIndex(u => u.id === shift.userId);
+            const dayIndex = shift.day - 1;
+            
+            if (userIndex === -1 || dayIndex === -1) return 'display: none;';
+            
+            const row = userIndex + 1;
+            const col = dayIndex + 1;
+            
+            // Calculate time-based positioning within the cell
+            const startHour = parseInt(shift.startTime.split(':')[0]);
+            const endHour = parseInt(shift.endTime.split(':')[0]);
+            
+            let topOffset = 0;
+            let height = 32; // Default height
+            
+            // Adjust position based on shift time
+            if (shift.type === 'morning') {
+                topOffset = 2;
+                height = 12;
+            } else if (shift.type === 'afternoon') {
+                topOffset = 14;
+                height = 12;
+            } else if (shift.type === 'evening') {
+                topOffset = 26;
+                height = 12;
+            } else if (shift.type === 'night') {
+                topOffset = 2;
+                height = 36;
+            }
+            
+            return `
+                grid-row: ${row};
+                grid-column: ${col};
+                top: ${topOffset}px;
+                height: ${height}px;
+                left: 2px;
+                right: 2px;
+            `;
+        },
+        
+        // Get current time position for today indicator
+        getCurrentTimePosition() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // Map to 0-40px range (height of user row)
+            const totalMinutes = hours * 60 + minutes;
+            const dayMinutes = 24 * 60;
+            
+            return (totalMinutes / dayMinutes) * 40;
+        },
+        
+        // Navigation methods
+        previousMonth() {
+            if (this.loading) return;
+            
+            this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+            this.updateCalendar();
+            this.loadShifts();
+        },
+        
+        nextMonth() {
+            if (this.loading) return;
+            
+            this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+            this.updateCalendar();
+            this.loadShifts();
+        },
+        
+        goToToday() {
+            if (this.loading) return;
+            
+            this.currentDate = new Date();
+            this.updateCalendar();
+            this.loadShifts();
+        },
+        
+        // Shift editing
+        editShift(shift) {
+            this.editingShift = { ...shift };
+        },
+        
+        cancelEdit() {
+            this.editingShift = null;
+        },
+        
+        saveShift() {
+            if (!this.editingShift) return;
+            
+            const index = this.shifts.findIndex(s => s.id === this.editingShift.id);
+            if (index !== -1) {
+                this.shifts[index] = { ...this.editingShift };
+            }
+            
+            this.editingShift = null;
+        }
+    }
+}
+</script>
+{% endblock %}

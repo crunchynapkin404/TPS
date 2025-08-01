@@ -237,7 +237,7 @@ class QueryOptimizationService:
         team_stats = Team.objects.aggregate(
             total_teams=Count('id', filter=Q(is_active=True)),
             teams_with_assignments=Count('id', filter=Q(
-                planning_periods__shift_instances__assignments__assigned_at__gte=week_ago
+                planning_periods__shifts__assignments__assigned_at__gte=week_ago
             ), distinct=True)
         )
         

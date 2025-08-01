@@ -8,164 +8,518 @@
 }
 
 .assignment-card {
-    @apply bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4;
+    @apply bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3;
 }
 
 .urgent-badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
 }
 
-.urgent-emergency {
-    @apply bg-red-100 text-red-800;
+/* Prevent overlap issues */
+.desktop-only { display: none; }
+.mobile-only { display: block; }
+
+@media (min-width: 1024px) {
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+    
+    .desktop-table-container {
+        height: calc(100vh - 140px);
+    }
+    
+    .desktop-sidebar {
+        min-width: 320px;
+        max-width: 400px;
+    }
 }
 
-.urgent-high {
-    @apply bg-orange-100 text-orange-800;
+@media (min-width: 1280px) {
+    .desktop-sidebar {
+        min-width: 384px;
+        max-width: 448px;
+    }
+    
+    .desktop-table-container {
+        height: calc(100vh - 120px);
+    }
 }
 
-.urgent-medium {
-    @apply bg-yellow-100 text-yellow-800;
+@media (min-width: 1536px) {
+    .desktop-sidebar {
+        min-width: 448px;
+        max-width: 512px;
+    }
 }
 
-.urgent-low {
-    @apply bg-green-100 text-green-800;
-}
+.urgent-emergency { @apply bg-red-100 text-red-800; }
+.urgent-high { @apply bg-orange-100 text-orange-800; }
+.urgent-medium { @apply bg-yellow-100 text-yellow-800; }  
+.urgent-low { @apply bg-green-100 text-green-800; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div x-data="swapRequestApp()" class="max-w-7xl mx-auto p-6">
-    <!-- Page Header -->
-    <div class="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl p-8 mb-8">
-        <h1 class="text-4xl font-bold mb-2">Shift Swap Requests</h1>
-        <p class="text-xl text-white/90 mb-6">Request shift swaps with your colleagues</p>
-        
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-4 gap-6 lg:grid-cols-2 sm:grid-cols-1">
-            <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-                <div class="text-2xl font-bold mb-1" x-text="stats.total_requests">--</div>
-                <div class="text-sm text-white/80">Total Requests</div>
-            </div>
-            <div class="bg-green-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
-                <div class="text-2xl font-bold mb-1" x-text="stats.approved_requests">--</div>
-                <div class="text-sm text-white/80">Approved</div>
-            </div>
-            <div class="bg-yellow-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
-                <div class="text-2xl font-bold mb-1" x-text="stats.pending_requests">--</div>
-                <div class="text-sm text-white/80">Pending</div>
-            </div>
-            <div class="bg-red-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
-                <div class="text-2xl font-bold mb-1" x-text="stats.expired_requests">--</div>
-                <div class="text-sm text-white/80">Expired</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Action Bar -->
-    <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
-        <div class="flex items-center space-x-2">
-            <button @click="openNewRequestModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
-                <i class="fas fa-plus"></i>
-                <span>New Swap Request</span>
-            </button>
-        </div>
-        
-        <div class="text-sm text-gray-600">
-            Showing <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
-        </div>
-    </div>
-
-    <!-- My Assignments Section -->
-    <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">My Current Assignments</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <template x-for="assignment in myAssignments" :key="assignment.id">
-                <div class="assignment-card">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <h3 class="font-semibold text-gray-900" x-text="assignment.shift_name"></h3>
-                            <p class="text-sm text-gray-600" x-text="formatDate(assignment.shift_date)"></p>
-                        </div>
-                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium" x-text="assignment.status"></span>
+<div x-data="swapRequestApp()" class="h-full w-full overflow-hidden">
+    
+    <!-- DESKTOP LAYOUT (1024px+) -->
+    <div class="desktop-only h-full flex">
+        <!-- Desktop Header -->
+        <div class="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white px-8 py-4 shadow-lg absolute top-0 left-0 z-30">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold mb-1">Shift Swap Requests</h1>
+                    <p class="text-blue-100 text-sm">Manage shift exchanges efficiently</p>
+                </div>
+                
+                <!-- Desktop Stats Row -->
+                <div class="grid grid-cols-4 gap-4 text-center">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+                        <div class="text-xl font-bold" x-text="stats.total_requests">--</div>
+                        <div class="text-xs text-blue-100">Total</div>
                     </div>
-                    
-                    <div class="text-sm text-gray-600 mb-3">
-                        <div class="flex items-center mb-1">
-                            <i class="fas fa-clock w-4 text-gray-400 mr-2"></i>
-                            <span x-text="`${assignment.start_time} - ${assignment.end_time}`"></span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-map-marker-alt w-4 text-gray-400 mr-2"></i>
-                            <span x-text="assignment.location || 'Standard Location'"></span>
-                        </div>
+                    <div class="bg-green-500/20 backdrop-blur-sm rounded-lg px-3 py-2">
+                        <div class="text-xl font-bold" x-text="stats.approved_requests">--</div>
+                        <div class="text-xs text-blue-100">Approved</div>
                     </div>
-                    
-                    <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 font-medium text-sm transition-colors">
-                        Request Swap
+                    <div class="bg-yellow-500/20 backdrop-blur-sm rounded-lg px-3 py-2">
+                        <div class="text-xl font-bold" x-text="stats.pending_requests">--</div>
+                        <div class="text-xs text-blue-100">Pending</div>
+                    </div>
+                    <div class="bg-red-500/20 backdrop-blur-sm rounded-lg px-3 py-2">
+                        <div class="text-xl font-bold" x-text="stats.expired_requests">--</div>
+                        <div class="text-xs text-blue-100">Expired</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Content Area -->
+        <div class="w-full flex pt-24">
+            <!-- Left Sidebar - My Assignments -->
+            <div class="desktop-sidebar bg-gray-50 border-r border-gray-200 flex flex-col">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-3">My Assignments</h2>
+                    <button @click="openNewRequestModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors text-sm">
+                        <i class="fas fa-plus"></i>
+                        <span>New Request</span>
                     </button>
                 </div>
-            </template>
+                
+                <div class="flex-1 overflow-y-auto p-3 space-y-3">
+                    <template x-for="assignment in myAssignments" :key="assignment.id">
+                        <div class="assignment-card">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-semibold text-gray-900 text-sm truncate" x-text="assignment.shift_name"></h3>
+                                    <p class="text-xs text-gray-600" x-text="formatDate(assignment.shift_date)"></p>
+                                </div>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium ml-2" x-text="assignment.status"></span>
+                            </div>
+                            
+                            <div class="text-xs text-gray-600 mb-2 space-y-1">
+                                <div class="flex items-center">
+                                    <i class="fas fa-clock w-3 text-gray-400 mr-2"></i>
+                                    <span x-text="`${assignment.start_time} - ${assignment.end_time}`"></span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-map-marker-alt w-3 text-gray-400 mr-2"></i>
+                                    <span x-text="assignment.location || 'Standard'" class="truncate"></span>
+                                </div>
+                            </div>
+                            
+                            <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-2 py-1.5 rounded-lg hover:bg-blue-50 font-medium text-xs transition-colors">
+                                Request Swap
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+                <!-- Compact Filters Bar -->
+                <div class="bg-white border-b border-gray-200 px-6 py-3">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-xl font-semibold text-gray-900">All Swap Requests</h2>
+                        <div class="text-sm text-gray-600">
+                            <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
+                        </div>
+                    </div>
+                    
+                    <!-- Desktop Inline Filters -->
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm font-medium text-gray-700">Status:</label>
+                            <select x-model="filterStatus" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="declined">Declined</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm font-medium text-gray-700">Priority:</label>
+                            <select x-model="filterUrgency" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="emergency">Emergency</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm font-medium text-gray-700">Date:</label>
+                            <select x-model="filterDateRange" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                        </div>
+                        
+                        <button @click="clearFilters()" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50">
+                            <i class="fas fa-times mr-1"></i>Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Desktop Table -->
+                <div class="flex-1 overflow-auto bg-white">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-50 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-16" @click="sortBy('id')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>ID</span>
+                                        <i class="fas fa-sort text-gray-400"></i>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-24" @click="sortBy('status')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Status</span>
+                                        <i class="fas fa-sort text-gray-400"></i>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Giving Up
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Taking Over
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-20" @click="sortBy('urgency_level')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Priority</span>
+                                        <i class="fas fa-sort text-gray-400"></i>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-32" @click="sortBy('requested_at')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Requested</span>
+                                        <i class="fas fa-sort text-gray-400"></i>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-32" @click="sortBy('expires_at')">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Expires</span>
+                                        <i class="fas fa-sort text-gray-400"></i>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <template x-for="request in paginatedRequests" :key="request.id">
+                                <tr class="hover:bg-gray-50 transition-colors" :class="getRowClass(request)">
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900" x-text="`#${request.id}`"></div>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="flex items-center space-x-1">
+                                            <span :class="getStatusClass(request.status)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.status"></span>
+                                            <span x-show="isUrgent(request)" class="px-1 py-0.5 bg-red-100 text-red-800 rounded-full text-xs">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="text-sm">
+                                            <div class="font-medium text-gray-900 truncate" x-text="request.requesting_assignment.shift_name"></div>
+                                            <div class="text-gray-500 text-xs" x-text="formatDate(request.requesting_assignment.shift_date)"></div>
+                                            <div class="text-gray-500 text-xs" x-text="`${request.requesting_assignment.start_time} - ${request.requesting_assignment.end_time}`"></div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div x-show="request.target_assignment" class="text-sm">
+                                            <div class="font-medium text-gray-900 truncate" x-text="request.target_assignment?.shift_name"></div>
+                                            <div class="text-gray-500 text-xs" x-text="request.target_assignment ? formatDate(request.target_assignment.shift_date) : ''"></div>
+                                            <div class="text-gray-500 text-xs" x-text="request.target_assignment ? `${request.target_assignment.start_time} - ${request.target_assignment.end_time}` : ''"></div>
+                                        </div>
+                                        <div x-show="!request.target_assignment" class="text-sm text-orange-600 font-medium">
+                                            Open Request
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span :class="getUrgencyClass(request.urgency_level)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.urgency_level"></span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                        <div class="text-xs" x-text="formatDateTime(request.requested_at)"></div>
+                                        <div class="text-xs text-gray-400" x-text="getTimeAgo(request.requested_at)"></div>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                        <div x-show="request.expires_at">
+                                            <div class="text-xs" x-text="formatDateTime(request.expires_at)"></div>
+                                            <div class="text-xs" :class="isExpiringSoon(request) ? 'text-red-500' : 'text-gray-400'" x-text="getTimeUntilExpiry(request.expires_at)"></div>
+                                        </div>
+                                        <div x-show="!request.expires_at" class="text-gray-400 italic text-xs">No expiry</div>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex items-center space-x-1">
+                                            <button @click="viewRequestDetails(request)" class="text-blue-600 hover:text-blue-900 p-1" title="View Details">
+                                                <i class="fas fa-eye text-xs"></i>
+                                            </button>
+                                            
+                                            <!-- Manager Actions -->
+                                            <template x-if="canApprove(request)">
+                                                <div class="flex space-x-1">
+                                                    <button @click="approveRequest(request)" class="text-green-600 hover:text-green-900 p-1" title="Approve">
+                                                        <i class="fas fa-check text-xs"></i>
+                                                    </button>
+                                                    <button @click="declineRequest(request)" class="text-red-600 hover:text-red-900 p-1" title="Decline">
+                                                        <i class="fas fa-times text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            
+                                            <!-- User Actions -->
+                                            <template x-if="canCancel(request)">
+                                                <button @click="cancelRequest(request)" class="text-red-600 hover:text-red-900 p-1" title="Cancel">
+                                                    <i class="fas fa-trash text-xs"></i>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                    
+                    <!-- Empty State -->
+                    <div x-show="filteredRequests.length === 0" class="flex flex-col items-center justify-center py-12">
+                        <i class="fas fa-exchange-alt text-4xl text-gray-400 mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No swap requests found</h3>
+                        <p class="text-gray-600 mb-4">No swap requests match your current filters.</p>
+                        <button @click="clearFilters()" class="text-blue-600 hover:text-blue-800 text-sm">Clear all filters</button>
+                    </div>
+                </div>
+
+                <!-- Desktop Pagination -->
+                <div class="bg-gray-50 px-6 py-3 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            Showing <span x-text="((currentPage - 1) * itemsPerPage) + 1"></span> to 
+                            <span x-text="Math.min(currentPage * itemsPerPage, filteredRequests.length)"></span> of 
+                            <span x-text="filteredRequests.length"></span> results
+                        </div>
+                        
+                        <div class="flex items-center space-x-1">
+                            <button @click="previousPage()" :disabled="currentPage === 1" class="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                                Previous
+                            </button>
+                            
+                            <template x-for="page in pageNumbers" :key="page">
+                                <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-2 py-1 border border-gray-300 rounded text-sm">
+                                    <span x-text="page"></span>
+                                </button>
+                            </template>
+                            
+                            <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <!-- Advanced Filters Section -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <div class="flex flex-wrap items-center gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select x-model="filterStatus" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="declined">Declined</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="expired">Expired</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Urgency</label>
-                    <select x-model="filterUrgency" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">All Urgency</option>
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="emergency">Emergency</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                    <select x-model="filterDateRange" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                    </select>
-                </div>
-                
-                <div class="flex items-end">
-                    <button @click="clearFilters()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50">
-                        <i class="fas fa-times mr-1"></i>
-                        Clear Filters
-                    </button>
-                </div>
+    <!-- Desktop-Optimized Header -->
+    <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white px-8 py-4 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold mb-1">Shift Swap Requests</h1>
+                <p class="text-blue-100 text-sm">Manage shift exchanges efficiently</p>
             </div>
             
-            <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-600">
-                    Showing <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
-                </span>
+            <!-- Desktop Stats Row - Improved for wide screens -->
+            <div class="grid grid-cols-4 gap-4 xl:gap-6 2xl:gap-8 text-center">
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 xl:px-4 xl:py-3">
+                    <div class="text-xl xl:text-2xl font-bold" x-text="stats.total_requests">--</div>
+                    <div class="text-xs text-blue-100">Total</div>
+                </div>
+                <div class="bg-green-500/20 backdrop-blur-sm rounded-lg px-3 py-2 xl:px-4 xl:py-3">
+                    <div class="text-xl xl:text-2xl font-bold" x-text="stats.approved_requests">--</div>
+                    <div class="text-xs text-blue-100">Approved</div>
+                </div>
+                <div class="bg-yellow-500/20 backdrop-blur-sm rounded-lg px-3 py-2 xl:px-4 xl:py-3">
+                    <div class="text-xl xl:text-2xl font-bold" x-text="stats.pending_requests">--</div>
+                    <div class="text-xs text-blue-100">Pending</div>
+                </div>
+                <div class="bg-red-500/20 backdrop-blur-sm rounded-lg px-3 py-2 xl:px-4 xl:py-3">
+                    <div class="text-xl xl:text-2xl font-bold" x-text="stats.expired_requests">--</div>
+                    <div class="text-xs text-blue-100">Expired</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Swap Requests Table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 class="text-xl font-bold text-gray-900">Shift Swap Requests</h2>
+    <!-- Desktop Main Content Area -->
+    <div class="flex-1 flex overflow-hidden"
+
+    <!-- Desktop Main Content Area -->
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Left Sidebar - My Assignments (Desktop-First) -->
+        <div class="w-80 xl:w-96 2xl:w-[28rem] bg-gray-50 border-r border-gray-200 flex flex-col lg:flex hidden">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900 mb-3">My Assignments</h2>
+                <button @click="openNewRequestModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors text-sm">
+                    <i class="fas fa-plus"></i>
+                    <span>New Request</span>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-3 space-y-3">
+                <template x-for="assignment in myAssignments" :key="assignment.id">
+                    <div class="assignment-card">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-semibold text-gray-900 text-sm truncate" x-text="assignment.shift_name"></h3>
+                                <p class="text-xs text-gray-600" x-text="formatDate(assignment.shift_date)"></p>
+                            </div>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium ml-2" x-text="assignment.status"></span>
+                        </div>
+                        
+                        <div class="text-xs text-gray-600 mb-2 space-y-1">
+                            <div class="flex items-center">
+                                <i class="fas fa-clock w-3 text-gray-400 mr-2"></i>
+                                <span x-text="`${assignment.start_time} - ${assignment.end_time}`"></span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt w-3 text-gray-400 mr-2"></i>
+                                <span x-text="assignment.location || 'Standard'" class="truncate"></span>
+                            </div>
+                        </div>
+                        
+                        <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-2 py-1.5 rounded-lg hover:bg-blue-50 font-medium text-xs transition-colors">
+                            Request Swap
+                        </button>
+                    </div>
+                </template>
+            </div>
         </div>
+
+        <!-- Main Content Area - Desktop Optimized -->
+        <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+            <!-- Mobile Assignments Section (Hidden on Desktop) -->
+            <div class="lg:hidden mb-4 px-4 pt-4">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">My Current Assignments</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <template x-for="assignment in myAssignments.slice(0, 4)" :key="assignment.id">
+                        <div class="assignment-card">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900" x-text="assignment.shift_name"></h3>
+                                    <p class="text-sm text-gray-600" x-text="formatDate(assignment.shift_date)"></p>
+                                </div>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium" x-text="assignment.status"></span>
+                            </div>
+                            
+                            <div class="text-sm text-gray-600 mb-3">
+                                <div class="flex items-center mb-1">
+                                    <i class="fas fa-clock w-4 text-gray-400 mr-2"></i>
+                                    <span x-text="`${assignment.start_time} - ${assignment.end_time}`"></span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-map-marker-alt w-4 text-gray-400 mr-2"></i>
+                                    <span x-text="assignment.location || 'Standard Location'"></span>
+                                </div>
+                            </div>
+                            
+                            <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 font-medium text-sm transition-colors">
+                                Request Swap
+                            </button>
+                        </div>
+                    </template>
+                </div>
+                
+                <!-- Mobile Action Bar -->
+                <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
+                    <div class="flex items-center space-x-2">
+                        <button @click="openNewRequestModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                            <i class="fas fa-plus"></i>
+                            <span>New Swap Request</span>
+                        </button>
+                    </div>
+                    
+                    <div class="text-sm text-gray-600">
+                        Showing <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compact Filters Bar (Desktop) -->
+            <div class="bg-white border-b border-gray-200 px-6 py-3 hidden lg:block">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xl font-semibold text-gray-900">All Swap Requests</h2>
+                    <div class="text-sm text-gray-600">
+                        <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
+                    </div>
+                </div>
+                
+                <!-- Desktop Inline Filters -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Status:</label>
+                        <select x-model="filterStatus" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="declined">Declined</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="expired">Expired</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Priority:</label>
+                        <select x-model="filterUrgency" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Date:</label>
+                        <select x-model="filterDateRange" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    
+                    <button @click="clearFilters()" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50">
+                        <i class="fas fa-times mr-1"></i>Clear
+                    </button>
+                </div>
+            </div>
         
         <!-- Desktop Table View -->
         <div class="hidden lg:block overflow-x-auto">
@@ -370,39 +724,275 @@
             </template>
         </div>
 
-        <!-- Pagination -->
-        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-            <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Showing <span x-text="((currentPage - 1) * itemsPerPage) + 1"></span> to 
-                    <span x-text="Math.min(currentPage * itemsPerPage, filteredRequests.length)"></span> of 
-                    <span x-text="filteredRequests.length"></span> results
-                </div>
-                
-                <div class="flex items-center space-x-2">
-                    <button @click="previousPage()" :disabled="currentPage === 1" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
-                        Previous
-                    </button>
+            <!-- Desktop Pagination - Compact -->
+            <div class="bg-gray-50 px-6 py-3 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing <span x-text="((currentPage - 1) * itemsPerPage) + 1"></span> to 
+                        <span x-text="Math.min(currentPage * itemsPerPage, filteredRequests.length)"></span> of 
+                        <span x-text="filteredRequests.length"></span> results
+                    </div>
                     
-                    <template x-for="page in pageNumbers" :key="page">
-                        <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-3 py-1 border border-gray-300 rounded text-sm">
-                            <span x-text="page"></span>
+                    <div class="flex items-center space-x-1">
+                        <button @click="previousPage()" :disabled="currentPage === 1" class="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                            Previous
                         </button>
-                    </template>
-                    
-                    <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
-                        Next
-                    </button>
+                        
+                        <template x-for="page in pageNumbers" :key="page">
+                            <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-2 py-1 border border-gray-300 rounded text-sm">
+                                <span x-text="page"></span>
+                            </button>
+                        </template>
+                        
+                        <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                            Next
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Empty State -->
-        <div x-show="filteredRequests.length === 0" class="text-center py-12">
-            <i class="fas fa-exchange-alt text-4xl text-gray-400 mb-4"></i>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No swap requests found</h3>
-            <p class="text-gray-600 mb-4">No swap requests match your current filters.</p>
-            <button @click="clearFilters()" class="text-blue-600 hover:text-blue-800 text-sm">Clear all filters</button>
+    </div>
+
+    <!-- MOBILE LAYOUT (<1024px) -->
+    <div class="mobile-only h-full w-full overflow-hidden">
+        <!-- Mobile Header -->
+        <div class="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl p-8 mb-8">
+            <h1 class="text-4xl font-bold mb-2">Shift Swap Requests</h1>
+            <p class="text-xl text-white/90 mb-6">Request shift swaps with your colleagues</p>
+            
+            <!-- Mobile Stats -->
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold mb-1" x-text="stats.total_requests">--</div>
+                    <div class="text-sm text-white/80">Total</div>
+                </div>
+                <div class="bg-green-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold mb-1" x-text="stats.approved_requests">--</div>
+                    <div class="text-sm text-white/80">Approved</div>
+                </div>
+                <div class="bg-yellow-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold mb-1" x-text="stats.pending_requests">--</div>
+                    <div class="text-sm text-white/80">Pending</div>
+                </div>
+                <div class="bg-red-500/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold mb-1" x-text="stats.expired_requests">--</div>
+                    <div class="text-sm text-white/80">Expired</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Action Bar -->
+        <div class="flex flex-wrap items-center justify-between mb-6 gap-4 px-4">
+            <div class="flex items-center space-x-2">
+                <button @click="openNewRequestModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+                    <i class="fas fa-plus"></i>
+                    <span>New Swap Request</span>
+                </button>
+            </div>
+            
+            <div class="text-sm text-gray-600">
+                Showing <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
+            </div>
+        </div>
+
+        <!-- Mobile My Assignments Section -->
+        <div class="mb-8 px-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">My Current Assignments</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <template x-for="assignment in myAssignments" :key="assignment.id">
+                    <div class="assignment-card">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-gray-900" x-text="assignment.shift_name"></h3>
+                                <p class="text-sm text-gray-600" x-text="formatDate(assignment.shift_date)"></p>
+                            </div>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium" x-text="assignment.status"></span>
+                        </div>
+                        
+                        <div class="text-sm text-gray-600 mb-3">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-clock w-4 text-gray-400 mr-2"></i>
+                                <span x-text="`${assignment.start_time} - ${assignment.end_time}`"></span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt w-4 text-gray-400 mr-2"></i>
+                                <span x-text="assignment.location || 'Standard Location'"></span>
+                            </div>
+                        </div>
+                        
+                        <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 font-medium text-sm transition-colors">
+                            Request Swap
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Mobile Filters Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6 mx-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select x-model="filterStatus" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="declined">Declined</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="expired">Expired</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Urgency</label>
+                        <select x-model="filterUrgency" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Urgency</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                        <select x-model="filterDateRange" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-end">
+                        <button @click="clearFilters()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50">
+                            <i class="fas fa-times mr-1"></i>
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Swap Requests -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mx-4">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 class="text-xl font-bold text-gray-900">Shift Swap Requests</h2>
+            </div>
+            
+            <!-- Mobile Card View -->
+            <div class="space-y-4 p-4">
+                <template x-for="request in paginatedRequests" :key="request.id">
+                    <div class="swap-card" :class="getRowClass(request)">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h3 class="text-lg font-semibold text-gray-900">
+                                        Request #<span x-text="request.id"></span>
+                                    </h3>
+                                    <span :class="getStatusClass(request.status)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.status"></span>
+                                    <span :class="getUrgencyClass(request.urgency_level)" class="px-2 py-1 rounded-full text-xs font-medium" x-text="request.urgency_level"></span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-3" x-text="request.reason"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <!-- Requesting Assignment -->
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <h4 class="font-medium text-red-800 mb-2">Giving Up</h4>
+                                <div class="text-sm text-gray-600">
+                                    <div class="font-medium" x-text="request.requesting_assignment.shift_name"></div>
+                                    <div x-text="formatDate(request.requesting_assignment.shift_date)"></div>
+                                    <div x-text="`${request.requesting_assignment.start_time} - ${request.requesting_assignment.end_time}`"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Target Assignment -->
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h4 class="font-medium text-green-800 mb-2">
+                                    <span x-show="request.target_assignment">Taking Over</span>
+                                    <span x-show="!request.target_assignment">Open Request</span>
+                                </h4>
+                                <div x-show="request.target_assignment" class="text-sm text-gray-600">
+                                    <div class="font-medium" x-text="request.target_assignment?.shift_name"></div>
+                                    <div x-text="request.target_assignment ? formatDate(request.target_assignment.shift_date) : ''"></div>
+                                    <div x-text="request.target_assignment ? `${request.target_assignment.start_time} - ${request.target_assignment.end_time}` : ''"></div>
+                                </div>
+                                <div x-show="!request.target_assignment" class="text-sm text-gray-600">
+                                    Anyone can take this shift
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between text-sm text-gray-500 border-t pt-3">
+                            <div class="flex items-center space-x-4">
+                                <span>Requested: <span x-text="formatDateTime(request.requested_at)"></span></span>
+                                <span x-show="request.expires_at">Expires: <span x-text="formatDateTime(request.expires_at)"></span></span>
+                            </div>
+                            
+                            <div class="flex items-center space-x-2">
+                                <button @click="viewRequestDetails(request)" class="text-blue-600 hover:text-blue-800 p-2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                
+                                <template x-if="canApprove(request)">
+                                    <div class="flex space-x-1">
+                                        <button @click="approveRequest(request)" class="text-green-600 hover:text-green-800 p-2">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button @click="declineRequest(request)" class="text-red-600 hover:text-red-800 p-2">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                                
+                                <template x-if="canCancel(request)">
+                                    <button @click="cancelRequest(request)" class="text-red-600 hover:text-red-800 p-2">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Mobile Pagination -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing <span x-text="((currentPage - 1) * itemsPerPage) + 1"></span> to 
+                        <span x-text="Math.min(currentPage * itemsPerPage, filteredRequests.length)"></span> of 
+                        <span x-text="filteredRequests.length"></span> results
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button @click="previousPage()" :disabled="currentPage === 1" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                            Previous
+                        </button>
+                        
+                        <template x-for="page in pageNumbers" :key="page">
+                            <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                                <span x-text="page"></span>
+                            </button>
+                        </template>
+                        
+                        <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div x-show="filteredRequests.length === 0" class="text-center py-12">
+                <i class="fas fa-exchange-alt text-4xl text-gray-400 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No swap requests found</h3>
+                <p class="text-gray-600 mb-4">No swap requests match your current filters.</p>
+                <button @click="clearFilters()" class="text-blue-600 hover:text-blue-800 text-sm">Clear all filters</button>
+            </div>
         </div>
     </div>
 
@@ -521,84 +1111,6 @@
                     <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" :disabled="isSubmitting">
                         <span x-show="!isSubmitting">Reject Request</span>
                         <span x-show="isSubmitting">Rejecting...</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Assignment to Swap</label>
-                    <select x-model="newRequest.requesting_assignment_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Choose an assignment...</option>
-                        <template x-for="assignment in myAssignments" :key="assignment.id">
-                            <option :value="assignment.id" x-text="`${assignment.shift_name} - ${formatDate(assignment.shift_date)}`"></option>
-                        </template>
-                    </select>
-                </div>
-                
-                <!-- Swap Type -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Swap Type</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center">
-                            <input type="radio" x-model="newRequest.swap_type" value="direct" class="mr-2">
-                            <span>Direct Swap - Exchange with specific person</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" x-model="newRequest.swap_type" value="open" class="mr-2">
-                            <span>Open Request - Anyone can take my shift</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Target Assignment (only for direct swaps) -->
-                <div x-show="newRequest.swap_type === 'direct'" class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Assignment to Take</label>
-                    <select x-model="newRequest.target_assignment_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Choose an assignment...</option>
-                        <template x-for="assignment in availableAssignments" :key="assignment.id">
-                            <option :value="assignment.id" x-text="`${assignment.shift_name} - ${formatDate(assignment.shift_date)} (${assignment.user_name})`"></option>
-                        </template>
-                    </select>
-                </div>
-                
-                <!-- Reason -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Swap</label>
-                    <textarea x-model="newRequest.reason" required rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Please explain why you need this swap..."></textarea>
-                </div>
-                
-                <!-- Urgency Level -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
-                    <select x-model="newRequest.urgency_level" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="low">Low - No rush</option>
-                        <option value="medium">Medium - Preferred</option>
-                        <option value="high">High - Important</option>
-                        <option value="emergency">Emergency - Urgent</option>
-                    </select>
-                </div>
-                
-                <!-- Additional Notes -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes (Optional)</label>
-                    <textarea x-model="newRequest.additional_notes" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Any additional information..."></textarea>
-                </div>
-                
-                <!-- Expiry Time -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Request Expires</label>
-                    <input type="datetime-local" x-model="newRequest.expires_at" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                
-                <!-- Submit Buttons -->
-                <div class="flex justify-end space-x-3">
-                    <button type="button" @click="closeNewRequestModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                        Cancel
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" :disabled="isSubmitting">
-                        <span x-show="!isSubmitting">Create Request</span>
-                        <span x-show="isSubmitting">Creating...</span>
                     </button>
                 </div>
             </form>
@@ -921,486 +1433,6 @@ function swapRequestApp() {
         },
         
         canCancel(request) {
-            return request.status === 'pending' && request.requesting_user === 'current_user';
-        },
-        
-        // Actions
-        async approveRequest(request) {
-            if (!confirm('Are you sure you want to approve this swap request?')) return;
-            
-            // Update locally for demo
-            request.status = 'approved';
-            this.showNotification('Swap request approved successfully', 'success');
-            this.filterRequests();
-            this.updateStats();
-        },
-        
-        openDeclineModal(request) {
-            this.declineRequest = request;
-            this.declineReason = '';
-            this.showDeclineModal = true;
-        },
-        
-        closeDeclineModal() {
-            this.showDeclineModal = false;
-            this.declineRequest = null;
-            this.declineReason = '';
-        },
-        
-        async submitDecline() {
-            if (!this.declineReason.trim()) {
-                this.showNotification('Please provide a reason for rejecting', 'error');
-                return;
-            }
-            
-            // Update locally for demo
-            this.declineRequest.status = 'declined';
-            this.showNotification('Swap request rejected', 'info');
-            this.closeDeclineModal();
-            this.filterRequests();
-            this.updateStats();
-        },
-        
-        async cancelRequest(request) {
-            if (!confirm('Are you sure you want to cancel this swap request?')) return;
-            
-            // Update locally for demo
-            request.status = 'cancelled';
-            this.showNotification('Swap request cancelled', 'success');
-            this.filterRequests();
-            this.updateStats();
-        },
-        
-        // Modal functions
-        openNewRequestModal() {
-            this.showNewRequestModal = true;
-            this.setDefaultExpiry();
-        },
-        
-        closeNewRequestModal() {
-            this.showNewRequestModal = false;
-            this.resetNewRequestForm();
-        },
-        
-        resetNewRequestForm() {
-            this.newRequest = {
-                requesting_assignment_id: '',
-                target_assignment_id: '',
-                swap_type: 'open',
-                reason: '',
-                urgency_level: 'medium',
-                additional_notes: '',
-                expires_at: ''
-            };
-            this.setDefaultExpiry();
-        },
-        
-        setDefaultExpiry() {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 7);
-            this.newRequest.expires_at = tomorrow.toISOString().slice(0, 16);
-        },
-        
-        initiateSwap(assignment) {
-            this.newRequest.requesting_assignment_id = assignment.id;
-            this.openNewRequestModal();
-        },
-        
-        async submitSwapRequest() {
-            this.isSubmitting = true;
-            
-            // Simulate API call
-            setTimeout(() => {
-                const newRequest = {
-                    id: this.swapRequests.length + 1,
-                    status: 'pending',
-                    urgency_level: this.newRequest.urgency_level,
-                    reason: this.newRequest.reason,
-                    requested_at: new Date().toISOString(),
-                    expires_at: this.newRequest.expires_at ? new Date(this.newRequest.expires_at).toISOString() : null,
-                    requesting_assignment: this.myAssignments.find(a => a.id == this.newRequest.requesting_assignment_id),
-                    target_assignment: this.newRequest.target_assignment_id ? 
-                        { shift_name: 'Target Shift', shift_date: '2025-08-10', start_time: '09:00', end_time: '17:00' } : null
-                };
-                
-                this.swapRequests.unshift(newRequest);
-                this.showNotification('Swap request created successfully', 'success');
-                this.closeNewRequestModal();
-                this.filterRequests();
-                this.updateStats();
-                this.isSubmitting = false;
-            }, 1000);
-        },
-        
-        viewRequestDetails(request) {
-            alert(`Request #${request.id}\nReason: ${request.reason}\nStatus: ${request.status}`);
-        },
-        
-        // Utility functions
-        isUrgent(request) {
-            return ['high', 'emergency'].includes(request.urgency_level);
-        },
-        
-        isExpiringSoon(request) {
-            if (!request.expires_at) return false;
-            const now = new Date();
-            const expiryDate = new Date(request.expires_at);
-            const hoursUntilExpiry = (expiryDate - now) / (1000 * 60 * 60);
-            return hoursUntilExpiry <= 24 && hoursUntilExpiry > 0;
-        },
-        
-        getTimeAgo(dateString) {
-            const now = new Date();
-            const date = new Date(dateString);
-            const diffInSeconds = Math.floor((now - date) / 1000);
-            
-            if (diffInSeconds < 60) return 'Just now';
-            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-            return `${Math.floor(diffInSeconds / 86400)}d ago`;
-        },
-        
-        getTimeUntilExpiry(dateString) {
-            if (!dateString) return 'No expiry';
-            const now = new Date();
-            const date = new Date(dateString);
-            const diffInSeconds = Math.floor((date - now) / 1000);
-            
-            if (diffInSeconds < 0) return 'Expired';
-            if (diffInSeconds < 60) return 'Expires soon';
-            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m left`;
-            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h left`;
-            return `${Math.floor(diffInSeconds / 86400)}d left`;
-        },
-        
-        getRowClass(request) {
-            if (request.status === 'expired') return 'opacity-60';
-            if (this.isExpiringSoon(request)) return 'bg-yellow-50 border-l-4 border-yellow-400';
-            if (this.isUrgent(request)) return 'bg-red-50 border-l-4 border-red-400';
-            return '';
-        },
-        
-        formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString();
-        },
-        
-        formatDateTime(dateTimeString) {
-            return new Date(dateTimeString).toLocaleString();
-        },
-        
-        getStatusClass(status) {
-            const classes = {
-                'pending': 'bg-yellow-100 text-yellow-800',
-                'approved': 'bg-green-100 text-green-800',
-                'declined': 'bg-red-100 text-red-800',
-                'cancelled': 'bg-gray-100 text-gray-800',
-                'expired': 'bg-red-100 text-red-800'
-            };
-            return classes[status] || 'bg-gray-100 text-gray-800';
-        },
-        
-        getUrgencyClass(urgency) {
-            return `urgent-${urgency}`;
-        },
-        
-        showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-                type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 
-                type === 'info' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                'bg-green-100 text-green-800 border border-green-200'
-            }`;
-            notification.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <span>${message}</span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 5000);
-        },
-        
-        getCsrfToken() {
-            return 'demo-token';
-        },
-        
-        filterDateRange: '',
-        
-        // Sorting
-        sortField: 'requested_at',
-        sortDirection: 'desc',
-        
-        // Pagination
-        currentPage: 1,
-        itemsPerPage: 10,
-        
-        // Modal state
-        showNewRequestModal: false,
-        showDeclineModal: false,
-        selectedRequest: null,
-        declineReason: '',
-        isSubmitting: false,
-        
-        // New request form
-        newRequest: {
-            requesting_assignment_id: '',
-            target_assignment_id: '',
-            swap_type: 'open',
-            reason: '',
-            urgency_level: 'medium',
-            additional_notes: '',
-            expires_at: ''
-        },
-        
-        // User permissions
-        userRole: 'operationeel', // Will be set from backend
-        
-        // Computed properties
-        get paginatedRequests() {
-            const start = (this.currentPage - 1) * this.itemsPerPage;
-            const end = start + this.itemsPerPage;
-            return this.filteredRequests.slice(start, end);
-        },
-        
-        get totalPages() {
-            return Math.ceil(this.filteredRequests.length / this.itemsPerPage);
-        },
-        
-        get pageNumbers() {
-            const pages = [];
-            const maxPages = 5;
-            let start = Math.max(1, this.currentPage - Math.floor(maxPages / 2));
-            let end = Math.min(this.totalPages, start + maxPages - 1);
-            
-            if (end - start + 1 < maxPages) {
-                start = Math.max(1, end - maxPages + 1);
-            }
-            
-            for (let i = start; i <= end; i++) {
-                pages.push(i);
-            }
-            return pages;
-        },
-        
-        // Initialize
-        init() {
-            this.loadMyAssignments();
-            this.loadSwapRequests();
-            this.loadAvailableAssignments();
-            this.setDefaultExpiry();
-            this.loadUserRole();
-            
-            // Watch for swap_type changes to clear target_assignment_id when switching to open
-            this.$watch('newRequest.swap_type', (value) => {
-                if (value === 'open') {
-                    this.newRequest.target_assignment_id = '';
-                }
-            });
-        },
-        
-        // Load user role for permissions
-        async loadUserRole() {
-            try {
-                const response = await fetch('/api/v1/user/profile/', {
-                    headers: {
-                        'X-CSRFToken': this.getCsrfToken(),
-                    },
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    this.userRole = data.role || 'operationeel';
-                }
-            } catch (error) {
-                console.log('Could not load user role, defaulting to operationeel');
-            }
-        },
-        
-        // Load user's current assignments
-        async loadMyAssignments() {
-            try {
-                const response = await fetch('/api/v1/assignments/simple/', {
-                    headers: {
-                        'X-CSRFToken': this.getCsrfToken(),
-                    },
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    this.myAssignments = data.results || [];
-                }
-            } catch (error) {
-                console.error('Error loading assignments:', error);
-                this.showNotification('Failed to load assignments', 'error');
-            }
-        },
-        
-        // Load swap requests
-        async loadSwapRequests() {
-            try {
-                const response = await fetch('/api/v1/swap-requests/', {
-                    headers: {
-                        'X-CSRFToken': this.getCsrfToken(),
-                    },
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    this.swapRequests = data.results || data || [];
-                    this.filterRequests(); // Apply filters after loading
-                    this.updateStats();
-                } else if (response.status === 401) {
-                    // User not authenticated, show empty state
-                    this.swapRequests = [];
-                    this.filteredRequests = [];
-                    this.updateStats();
-                }
-            } catch (error) {
-                console.error('Error loading swap requests:', error);
-                this.showNotification('Failed to load swap requests', 'error');
-                this.swapRequests = [];
-                this.filteredRequests = [];
-            }
-        },
-        
-        // Load available assignments for swapping
-        async loadAvailableAssignments() {
-            try {
-                const response = await fetch('/api/v1/assignments/available/simple/', {
-                    headers: {
-                        'X-CSRFToken': this.getCsrfToken(),
-                    },
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    this.availableAssignments = data.results || [];
-                }
-            } catch (error) {
-                console.error('Error loading available assignments:', error);
-            }
-        },
-        
-        // Update statistics
-        updateStats() {
-            this.stats.total_requests = this.swapRequests.length;
-            this.stats.pending_requests = this.swapRequests.filter(r => r.status === 'pending').length;
-            this.stats.approved_requests = this.swapRequests.filter(r => r.status === 'approved').length;
-            this.stats.expired_requests = this.swapRequests.filter(r => r.status === 'expired').length;
-        },
-        
-        // Filter requests
-        filterRequests() {
-            let filtered = [...this.swapRequests];
-            
-            // Status filter
-            if (this.filterStatus) {
-                filtered = filtered.filter(request => request.status === this.filterStatus);
-            }
-            
-            // Urgency filter
-            if (this.filterUrgency) {
-                filtered = filtered.filter(request => request.urgency_level === this.filterUrgency);
-            }
-            
-            // Date range filter
-            if (this.filterDateRange) {
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                
-                filtered = filtered.filter(request => {
-                    const requestDate = new Date(request.requested_at);
-                    
-                    switch (this.filterDateRange) {
-                        case 'today':
-                            return requestDate >= today;
-                        case 'week':
-                            const weekAgo = new Date(today);
-                            weekAgo.setDate(weekAgo.getDate() - 7);
-                            return requestDate >= weekAgo;
-                        case 'month':
-                            const monthAgo = new Date(today);
-                            monthAgo.setMonth(monthAgo.getMonth() - 1);
-                            return requestDate >= monthAgo;
-                        default:
-                            return true;
-                    }
-                });
-            }
-            
-            // Apply sorting
-            filtered.sort((a, b) => {
-                let aVal = a[this.sortField];
-                let bVal = b[this.sortField];
-                
-                // Handle nested properties for assignment names
-                if (this.sortField.includes('.')) {
-                    const keys = this.sortField.split('.');
-                    keys.forEach(key => {
-                        aVal = aVal && aVal[key];
-                        bVal = bVal && bVal[key];
-                    });
-                }
-                
-                if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
-                if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
-                return 0;
-            });
-            
-            this.filteredRequests = filtered;
-            this.currentPage = 1; // Reset to first page
-        },
-        
-        // Clear all filters
-        clearFilters() {
-            this.filterStatus = '';
-            this.filterUrgency = '';
-            this.filterDateRange = '';
-            this.filterRequests();
-        },
-        
-        // Sorting
-        sortBy(field) {
-            if (this.sortField === field) {
-                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                this.sortField = field;
-                this.sortDirection = 'asc';
-            }
-            this.filterRequests();
-        },
-        
-        // Pagination
-        goToPage(page) {
-            this.currentPage = page;
-        },
-        
-        nextPage() {
-            if (this.currentPage < this.totalPages) {
-                this.currentPage++;
-            }
-        },
-        
-        previousPage() {
-            if (this.currentPage > 1) {
-                this.currentPage--;
-            }
-        },
-        
-        // Permission checks
-        canApprove(request) {
-            return request.status === 'pending' && 
-                   ['tactisch', 'management', 'planner', 'admin'].includes(this.userRole);
-        },
-        
-        canCancel(request) {
             return request.status === 'pending' && request.requesting_user === this.getCurrentUser();
         },
         
@@ -1481,73 +1513,6 @@ function swapRequestApp() {
             this.showDeclineModal = false;
             this.selectedRequest = null;
             this.declineReason = '';
-        },
-        
-        // Utility functions
-        // Approve request
-        async approveRequest(request) {
-            try {
-                const response = await fetch(`/api/v1/swap-requests/${request.id}/approve/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': this.getCsrfToken(),
-                    }
-                });
-                
-                if (response.ok) {
-                    this.showNotification('Swap request approved successfully', 'success');
-                    this.loadSwapRequests();
-                } else {
-                    const error = await response.json();
-                    this.showNotification(error.error || 'Failed to approve request', 'error');
-                }
-            } catch (error) {
-                console.error('Error approving request:', error);
-                this.showNotification('Failed to approve request', 'error');
-            }
-        },
-        
-        // Decline functions
-        openDeclineModal(request) {
-            this.declineRequest = request;
-            this.declineReason = '';
-            this.showDeclineModal = true;
-        },
-        
-        closeDeclineModal() {
-            this.showDeclineModal = false;
-            this.declineRequest = null;
-            this.declineReason = '';
-        },
-        
-        async submitDecline() {
-            this.isSubmitting = true;
-            
-            try {
-                const response = await fetch(`/api/v1/swap-requests/${this.declineRequest.id}/reject/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': this.getCsrfToken(),
-                    },
-                    body: JSON.stringify({ reason: this.declineReason })
-                });
-                
-                if (response.ok) {
-                    this.showNotification('Swap request rejected', 'info');
-                    this.closeDeclineModal();
-                    this.loadSwapRequests();
-                } else {
-                    const error = await response.json();
-                    this.showNotification(error.error || 'Failed to reject request', 'error');
-                }
-            } catch (error) {
-                console.error('Error rejecting request:', error);
-                this.showNotification('Failed to reject request', 'error');
-            } finally {
-                this.isSubmitting = false;
-            }
         },
         
         // Take over open request

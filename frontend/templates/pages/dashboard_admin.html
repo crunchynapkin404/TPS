@@ -1,18 +1,36 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load custom_filters %}
 
 {% block content %}
 <div class="p-6 h-full overflow-y-auto">
-    <!-- Manager Header -->
+    <!-- Admin Header -->
     <div class="mb-8">
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">Manager Dashboard</div>
-        <div class="text-gray-600 dark:text-gray-400 mt-1">Manage your teams and approve requests</div>
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</div>
+        <div class="text-gray-600 dark:text-gray-400 mt-1">System overview and administration</div>
     </div>
 
-    <!-- Manager Stats -->
+    <!-- Admin Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <!-- Managed Teams -->
+        <!-- Total Users -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Users</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ total_users|default:"0" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Teams -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -24,14 +42,33 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Teams Managed</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ total_managed_teams }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Teams</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ total_teams|default:"0" }}</dd>
                     </dl>
                 </div>
             </div>
         </div>
 
-        <!-- Pending Approvals -->
+        <!-- System Health -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">System Health</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ system_health|default:"100.0" }}%</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Actions -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -43,77 +80,46 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pending Approvals</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ pending_approvals|length }}</dd>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pending Actions</dt>
+                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ pending_leave_requests|default:"0" }}</dd>
                     </dl>
                 </div>
-            </div>
-        </div>
-
-        <!-- Leave Approvals -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Leave Requests</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ pending_leave_approvals|length }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="text-center">
-                <a href="{% url 'frontend:teams' %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                    Manage Teams
-                </a>
             </div>
         </div>
     </div>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Pending Approvals -->
+        <!-- System Activity -->
         <div class="lg:col-span-2">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Pending Approvals</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent System Activity</h2>
                 </div>
                 <div class="p-6">
-                    {% if pending_approvals %}
+                    {% if recent_activity %}
                     <div class="space-y-4">
-                        {% for approval in pending_approvals %}
+                        {% for activity in recent_activity %}
                         <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="flex-1">
                                 <div class="flex items-center space-x-3">
-                                    <div class="w-3 h-3 bg-amber-500 rounded-full"></div>
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
                                     <h3 class="text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ approval.user.get_full_name }} - {{ approval.shift.template.name }}
+                                        {{ activity.user.get_full_name }} assigned to {{ activity.shift.template.name }}
                                     </h3>
                                 </div>
                                 <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ approval.shift.start_datetime|date:"l, F j" }} • 
-                                    {{ approval.shift.start_datetime|time:"H:i" }} - {{ approval.shift.end_datetime|time:"H:i" }}
+                                    {{ activity.assigned_at|date:"l, F j" }} • 
+                                    {{ activity.assigned_at|time:"H:i" }}
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <button class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors">
-                                    Approve
-                                </button>
-                                <button class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors">
-                                    Decline
-                                </button>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if activity.status == 'confirmed' %}bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100
+                                    {% elif activity.status == 'pending_confirmation' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100
+                                    {% else %}bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100{% endif %}">
+                                    {{ activity.get_status_display }}
+                                </span>
                             </div>
                         </div>
                         {% endfor %}
@@ -121,109 +127,77 @@
                     {% else %}
                     <div class="text-center py-8">
                         <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">All caught up!</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No pending approvals at the moment</p>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">No recent activity</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">System activity will appear here</p>
                     </div>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar -->
+        <!-- Admin Sidebar -->
         <div class="space-y-6">
-            <!-- Leave Requests Pending -->
+            <!-- System Status -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Leave Requests</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">System Status</h2>
                 </div>
                 <div class="p-6">
-                    {% if pending_leave_approvals %}
                     <div class="space-y-3">
-                        {% for request in pending_leave_approvals %}
                         <div class="flex items-center justify-between">
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ request.user.get_full_name }}</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ request.leave_type.name }} • {{ request.start_date|date:"d/m/Y" }}</p>
-                            </div>
-                            <div class="flex space-x-1">
-                                <button class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 transition-colors">
-                                    ✓
-                                </button>
-                                <button class="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 transition-colors">
-                                    ✗
-                                </button>
-                            </div>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Database</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                Online
+                            </span>
                         </div>
-                        {% endfor %}
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">API Services</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                Active
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Background Tasks</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                Running
+                            </span>
+                        </div>
                     </div>
-                    <div class="mt-4">
-                        <a href="{% url 'leave_management:overview' %}" class="text-sm text-blue-600 hover:text-blue-500 font-medium">View all requests →</a>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No leave requests pending</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
 
-            <!-- Team Performance -->
+            <!-- Quick Admin Actions -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Team Performance</h2>
-                </div>
-                <div class="p-6">
-                    {% if team_stats %}
-                    <div class="space-y-4">
-                        {% for team in team_stats %}
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ team.team.name }}</h3>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ team.members }} members</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ team.this_week_assignments|mul:10|floatformat:0 }}%"></div>
-                                </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ team.this_week_assignments }} shifts</span>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No team data available</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Quick Management Actions -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Admin Actions</h2>
                 </div>
                 <div class="p-6">
                     <div class="space-y-3">
+                        <a href="/admin/" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                            </svg>
+                            Django Admin
+                        </a>
                         <a href="{% url 'frontend:teams' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                             </svg>
-                            Team Management
+                            Manage Teams
                         </a>
-                        <a href="{% url 'leave_management:overview' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <a href="/admin/accounts/user/" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                             </svg>
-                            Leave Approvals
+                            Manage Users
                         </a>
-                        <a href="#" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <a href="{% url 'frontend:analytics' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H9a2 2 0 01-2-2z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
-                            View Reports
+                            System Analytics
                         </a>
                     </div>
                 </div>

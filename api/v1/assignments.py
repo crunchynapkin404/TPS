@@ -498,6 +498,10 @@ class SwapRequestViewSet(viewsets.ModelViewSet):
         
         return queryset.order_by('-requested_at')
     
+    def perform_create(self, serializer):
+        """Set the requesting user when creating a swap request"""
+        serializer.save(requesting_user=self.request.user)
+    
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         """Approve a swap request"""

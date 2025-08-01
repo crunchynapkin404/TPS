@@ -108,8 +108,8 @@ class SystemHealthTest(TestCase):
         # Create a user
         user = User.objects.create_user(
             username="healthtest",
-            email="health@test.com",
-            employee_id="HEALTH001"
+            email=config_manager.generate_test_email("healthtest"),
+            employee_id=config_manager.generate_employee_id(999, "HEALTH")
         )
         
         # Verify user was created
@@ -124,8 +124,8 @@ class SystemHealthTest(TestCase):
         """Test user model has expected fields"""
         user = User.objects.create_user(
             username="fieldtest",
-            email="field@test.com",
-            employee_id="FIELD001"
+            email=config_manager.generate_test_email("fieldtest"),
+            employee_id=config_manager.generate_employee_id(999, "FIELD")
         )
         
         # Test required fields exist

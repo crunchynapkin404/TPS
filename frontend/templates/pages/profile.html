@@ -2,6 +2,24 @@
 
 {% block content %}
 <div class="space-y-6" x-data="profileData()">
+    <!-- Loading overlay for initial data load -->
+    <div x-show="loading.initialLoad" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-white bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 flex items-center justify-center z-50">
+        <div class="text-center">
+            <svg class="animate-spin -ml-1 mr-3 h-12 w-12 text-tps-primary mx-auto" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12H4z"></path>
+            </svg>
+            <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">Loading profile data...</p>
+        </div>
+    </div>
+    
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -13,7 +31,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Profile Completion</span>
-                    <span class="text-sm text-gray-600 dark:text-gray-400" x-text="Math.round(profileCompletion) + '%'">85%</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400" x-text="Math.round(profileCompletion) + '%'">0%</span>
                 </div>
                 <div class="w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div class="bg-green-600 h-2 rounded-full transition-all duration-300" 
@@ -487,28 +505,29 @@ function profileData() {
             basicInfo: false,
             preferences: false,
             skill: false,
-            photo: false
+            photo: false,
+            initialLoad: true
         },
         
         // Form errors
         errors: {},
         
-        // Basic information
+        // Basic information (will be loaded from API)
         basicInfo: {
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'john.doe@company.com',
-            phone: '+31 6 12345678',
-            employeeId: 'ENG001',
-            department: 'engineering'
+            firstName: '',
+            lastName: '',
+            email: '',
+            phone: '',
+            employeeId: '',
+            department: ''
         },
         
-        // Work preferences
+        // Work preferences (will be loaded from API)
         preferences: {
             shiftTypes: {
-                day: true,
+                day: false,
                 night: false,
-                waakdienst: true
+                waakdienst: false
             },
             maxHoursWeek: 40,
             maxConsecutiveDays: 5,
@@ -519,36 +538,8 @@ function profileData() {
             }
         },
         
-        // Skills array
-        skills: [
-            {
-                id: 1,
-                name: 'Mechanical Engineering',
-                level: 'Expert',
-                certification: 'Certified',
-                proficiency: 90,
-                icon: '🔧',
-                iconBg: 'bg-blue-500'
-            },
-            {
-                id: 2,
-                name: 'Electrical Systems',
-                level: 'Advanced',
-                certification: 'Certified',
-                proficiency: 75,
-                icon: '⚡',
-                iconBg: 'bg-yellow-500'
-            },
-            {
-                id: 3,
-                name: 'Safety Protocols',
-                level: 'Expert',
-                certification: 'Certified',
-                proficiency: 95,
-                icon: '🛡️',
-                iconBg: 'bg-red-500'
-            }
-        ],
+        // Skills array (will be loaded from API)
+        skills: [],
         
         // Skill modal states
         showAddSkillModal: false,
@@ -565,35 +556,23 @@ function profileData() {
         },
         
         // Profile photo
-        profilePhoto: 'https://ui-avatars.com/api/?name=John+Doe&background=3b82f6&color=fff&size=128',
+        profilePhoto: '',
         
-        // Quick stats
+        // Quick stats (will be loaded from API)
         stats: {
-            hoursThisMonth: 156,
-            shiftsCompleted: 23,
-            fairnessScore: 8.5,
-            nextShift: 'Tomorrow'
+            hoursThisMonth: 0,
+            shiftsCompleted: 0,
+            fairnessScore: 0,
+            nextShift: 'No upcoming shifts'
         },
         
         // Recent activity
         recentActivity: [
             {
                 id: 1,
-                description: 'Completed day shift',
-                timeAgo: '2 hours ago',
+                description: 'Profile loaded',
+                timeAgo: 'Just now',
                 colorClass: 'bg-green-500'
-            },
-            {
-                id: 2,
-                description: 'Assignment confirmed',
-                timeAgo: '1 day ago',
-                colorClass: 'bg-blue-500'
-            },
-            {
-                id: 3,
-                description: 'Profile updated',
-                timeAgo: '3 days ago',
-                colorClass: 'bg-yellow-500'
             }
         ],
         
@@ -622,10 +601,70 @@ function profileData() {
         },
         
         // Initialize component
-        init() {
+        async init() {
             this.$watch('basicInfo', () => {
                 this.updateProfilePhoto();
             }, { deep: true });
+            
+            // Load profile data from API
+            await this.loadProfileData();
+        },
+        
+        // Load profile data from API
+        async loadProfileData() {
+            this.loading.initialLoad = true;
+            
+            try {
+                const response = await fetch('/api/v1/profile/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update basic info
+                    this.basicInfo = data.basicInfo;
+                    
+                    // Update preferences
+                    this.preferences = data.preferences;
+                    
+                    // Update skills
+                    this.skills = data.skills;
+                    
+                    // Update stats
+                    this.stats = data.stats;
+                    
+                    // Update profile photo
+                    this.updateProfilePhoto();
+                    
+                    console.log('Profile data loaded successfully');
+                } else {
+                    console.error('Failed to load profile data:', response.statusText);
+                    this.showNotification('Failed to load profile data', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading profile data:', error);
+                this.showNotification('Error loading profile data', 'error');
+            } finally {
+                this.loading.initialLoad = false;
+            }
+        },
+        
+        // Get CSRF token for API requests
+        getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            return '';
         },
         
         // Form validation
@@ -673,13 +712,29 @@ function profileData() {
             this.loading.basicInfo = true;
             
             try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                const response = await fetch('/api/v1/profile/basic-info/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(this.basicInfo)
+                });
                 
-                this.showNotification('Profile updated successfully', 'success');
-                this.updateProfilePhoto();
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update local data with response
+                    this.basicInfo = data.basicInfo;
+                    this.showNotification('Profile updated successfully', 'success');
+                    this.updateProfilePhoto();
+                } else {
+                    this.showNotification(data.error || 'Failed to update profile', 'error');
+                }
             } catch (error) {
-                this.showNotification('Failed to update profile', 'error');
+                console.error('Error updating profile:', error);
+                this.showNotification('Network error occurred', 'error');
             } finally {
                 this.loading.basicInfo = false;
             }
@@ -690,19 +745,35 @@ function profileData() {
             this.loading.preferences = true;
             
             try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                const response = await fetch('/api/v1/profile/preferences/', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(this.preferences)
+                });
                 
-                this.showNotification('Preferences saved successfully', 'success');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update local data with response
+                    this.preferences = { ...this.preferences, ...data.preferences };
+                    this.showNotification('Preferences saved successfully', 'success');
+                } else {
+                    this.showNotification(data.error || 'Failed to save preferences', 'error');
+                }
             } catch (error) {
-                this.showNotification('Failed to save preferences', 'error');
+                console.error('Error saving preferences:', error);
+                this.showNotification('Network error occurred', 'error');
             } finally {
                 this.loading.preferences = false;
             }
         },
         
         // Skill management
-        addSkill() {
+        async addSkill() {
             if (!this.skillForm.name || !this.skillForm.level || !this.skillForm.certification) {
                 this.showNotification('Please fill all required fields', 'error');
                 return;
@@ -710,32 +781,59 @@ function profileData() {
             
             this.loading.skill = true;
             
-            setTimeout(() => {
-                const newSkill = {
-                    id: Date.now(),
-                    name: this.skillForm.name,
-                    level: this.skillForm.level,
-                    certification: this.skillForm.certification,
-                    proficiency: parseInt(this.skillForm.proficiency),
-                    icon: this.skillForm.icon || '⚙️',
-                    iconBg: this.getRandomIconBackground()
-                };
+            try {
+                const response = await fetch('/api/v1/profile/skills/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(this.skillForm)
+                });
                 
-                this.skills.push(newSkill);
-                this.closeSkillModal();
-                this.showNotification('Skill added successfully', 'success');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Add the new skill to the local array
+                    const newSkill = {
+                        id: data.skill.id,
+                        name: data.skill.name,
+                        level: data.skill.level,
+                        certification: data.skill.certification,
+                        proficiency: data.skill.proficiency,
+                        icon: this.skillForm.icon || '⚙️',
+                        iconBg: this.getRandomIconBackground()
+                    };
+                    
+                    this.skills.push(newSkill);
+                    this.closeSkillModal();
+                    this.showNotification('Skill added successfully', 'success');
+                } else {
+                    this.showNotification(data.error || 'Failed to add skill', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding skill:', error);
+                this.showNotification('Network error occurred', 'error');
+            } finally {
                 this.loading.skill = false;
-            }, 800);
+            }
         },
         
         editSkill(index) {
             const skill = this.skills[index];
-            this.skillForm = { ...skill };
+            this.skillForm = { 
+                name: skill.name,
+                level: skill.level,
+                certification: skill.certification,
+                proficiency: skill.proficiency,
+                icon: skill.icon
+            };
             this.editingSkillIndex = index;
             this.showEditSkillModal = true;
         },
         
-        updateSkill() {
+        async updateSkill() {
             if (!this.skillForm.name || !this.skillForm.level || !this.skillForm.certification) {
                 this.showNotification('Please fill all required fields', 'error');
                 return;
@@ -743,26 +841,71 @@ function profileData() {
             
             this.loading.skill = true;
             
-            setTimeout(() => {
-                this.skills[this.editingSkillIndex] = {
-                    ...this.skills[this.editingSkillIndex],
-                    name: this.skillForm.name,
-                    level: this.skillForm.level,
-                    certification: this.skillForm.certification,
-                    proficiency: parseInt(this.skillForm.proficiency),
-                    icon: this.skillForm.icon || '⚙️'
-                };
+            try {
+                const skillId = this.skills[this.editingSkillIndex].id;
+                const response = await fetch(`/api/v1/profile/skills/${skillId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(this.skillForm)
+                });
                 
-                this.closeSkillModal();
-                this.showNotification('Skill updated successfully', 'success');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update the skill in the local array
+                    this.skills[this.editingSkillIndex] = {
+                        ...this.skills[this.editingSkillIndex],
+                        name: data.skill.name,
+                        level: data.skill.level,
+                        certification: data.skill.certification,
+                        proficiency: parseInt(this.skillForm.proficiency),
+                        icon: this.skillForm.icon || '⚙️'
+                    };
+                    
+                    this.closeSkillModal();
+                    this.showNotification('Skill updated successfully', 'success');
+                } else {
+                    this.showNotification(data.error || 'Failed to update skill', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating skill:', error);
+                this.showNotification('Network error occurred', 'error');
+            } finally {
                 this.loading.skill = false;
-            }, 800);
+            }
         },
         
-        removeSkill(index) {
-            if (confirm('Are you sure you want to remove this skill?')) {
-                this.skills.splice(index, 1);
-                this.showNotification('Skill removed', 'info');
+        async removeSkill(index) {
+            if (!confirm('Are you sure you want to remove this skill?')) {
+                return;
+            }
+            
+            try {
+                const skillId = this.skills[index].id;
+                const response = await fetch(`/api/v1/profile/skills/${skillId}/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    this.skills.splice(index, 1);
+                    this.showNotification('Skill removed', 'info');
+                } else {
+                    this.showNotification(data.error || 'Failed to remove skill', 'error');
+                }
+            } catch (error) {
+                console.error('Error removing skill:', error);
+                this.showNotification('Network error occurred', 'error');
             }
         },
         

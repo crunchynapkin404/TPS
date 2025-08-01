@@ -8,10 +8,9 @@
     {% load static %}
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
     
-    <!-- Local Font Awesome (removed CDN dependency) -->
-    <!-- Icons will be replaced with Tailwind Heroicons or inline SVG -->
+    <!-- Alpine.js (Local stub for compatibility) -->
+    <script src="{% static 'js/alpine-stub.js' %}"></script>
     
-    <!-- Inter Font (removed CDN dependency, using system fonts) -->
     <!-- Additional Meta Tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1f2937">
@@ -20,14 +19,20 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="h-screen font-inter bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden">
+<body class="h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden">
     {% if user.is_authenticated %}
         <div class="flex h-screen w-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
             <!-- Sidebar with role-based navigation -->
-            <div class="sidebar w-70 lg:w-80 flex-shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-visible z-40 flex flex-col bg-gray-800 dark:bg-gray-900" id="sidebar">
+            <div class="flex-shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-visible z-40 flex flex-col bg-gray-800 dark:bg-gray-900 w-70 lg:w-80" 
+                 id="sidebar">
                 <!-- Desktop Toggle Button -->
-                <button class="absolute bottom-15 -right-4 w-8 h-8 bg-gray-700 dark:bg-gray-800 border-2 border-gray-600 dark:border-gray-700 rounded-full text-gray-50 cursor-pointer flex items-center justify-center z-50 transition-all duration-300 ease-in-out shadow-lg hover:bg-gray-600 dark:hover:bg-gray-700 hover:scale-110 hover:border-gray-500 dark:hover:border-gray-600 hover:shadow-xl active:scale-95" id="sidebarToggle" title="Toggle Sidebar">
-                    <i class="fas fa-chevron-left text-xs transition-transform duration-300" id="toggleIcon"></i>
+                <button id="sidebarToggle"
+                        class="absolute bottom-15 -right-4 w-8 h-8 bg-gray-700 dark:bg-gray-800 border-2 border-gray-600 dark:border-gray-700 rounded-full text-gray-50 cursor-pointer flex items-center justify-center z-50 transition-all duration-300 ease-in-out shadow-lg hover:bg-gray-600 dark:hover:bg-gray-700 hover:scale-110 hover:border-gray-500 dark:hover:border-gray-600 hover:shadow-xl active:scale-95" 
+                        title="Toggle Sidebar">
+                    <!-- Heroicon: chevron-left/right -->
+                    <svg class="w-4 h-4 transition-transform duration-300 toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
                 </button>
                 
                 <!-- Role-based navigation content -->
@@ -67,9 +72,6 @@
             </div>
         </div>
     {% endif %}
-
-    <!-- Theme Manager -->
-    <script src="{% static 'js/theme-manager.js' %}"></script>
 
     <!-- JavaScript -->
     {% block extra_js %}{% endblock %}

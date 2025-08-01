@@ -41,7 +41,7 @@
                 {% endif %}
 
                 <div>
-                    <label for="id_username" class="form-label">
+                    <label for="id_username" class="block text-sm font-medium text-gray-700">
                         Username
                     </label>
                     <div class="mt-1">
@@ -50,7 +50,7 @@
                                type="text" 
                                autocomplete="username" 
                                required 
-                               class="form-input {% if form.username.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% endif %}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm {% if form.username.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% endif %}"
                                value="{{ form.username.value|default:'' }}">
                         {% if form.username.errors %}
                             <p class="mt-2 text-sm text-red-600">{{ form.username.errors.0 }}</p>
@@ -59,7 +59,7 @@
                 </div>
 
                 <div>
-                    <label for="id_password" class="form-label">
+                    <label for="id_password" class="block text-sm font-medium text-gray-700">
                         Password
                     </label>
                     <div class="mt-1">
@@ -68,7 +68,7 @@
                                type="password" 
                                autocomplete="current-password" 
                                required 
-                               class="form-input {% if form.password.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% endif %}">
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm {% if form.password.errors %}border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500{% endif %}">
                         {% if form.password.errors %}
                             <p class="mt-2 text-sm text-red-600">{{ form.password.errors.0 }}</p>
                         {% endif %}
@@ -80,22 +80,25 @@
                         <input id="remember_me" 
                                name="remember_me" 
                                type="checkbox" 
-                               class="h-4 w-4 text-tps-primary focus:ring-tps-primary border-gray-300 rounded">
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                         <label for="remember_me" class="ml-2 block text-sm text-gray-900">
                             Remember me
                         </label>
                     </div>
 
                     <div class="text-sm">
-                        <a href="#" class="font-medium text-tps-primary hover:text-tps-primary-dark">
+                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
                             Forgot your password?
                         </a>
                     </div>
                 </div>
 
                 <div>
-                    <button type="submit" class="btn-primary w-full justify-center">
-                        <i class="fas fa-sign-in-alt mr-2"></i>
+                    <button type="submit" class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <!-- Heroicon: login -->
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
                         Sign in
                     </button>
                 </div>

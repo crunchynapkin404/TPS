@@ -1,25 +1,36 @@
 <!-- Admin Navigation - Full System Access -->
-<div class="h-full flex flex-col gap-y-5 overflow-y-auto theme-admin px-6 pb-4 shadow-2xl flex-1">
+<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 px-6 pb-4 shadow-2xl flex-1">
     <!-- Logo/Brand -->
-    <div class="flex h-20 shrink-0 items-center justify-between border-b border-role pb-4 pt-4">
+    <div class="flex h-20 shrink-0 items-center justify-between border-b border-red-700 dark:border-red-600 pb-4 pt-4">
         <div class="sidebar-brand">
             <h1 class="text-white text-xl font-bold flex items-center">
                 <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center mr-3 lg:mr-3">
-                    <i class="fas fa-crown text-white"></i>
+                    <!-- Heroicon: shield-check (crown alternative) -->
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
                 </div>
                 <span class="sidebar-text">TPS Admin</span>
             </h1>
-            <p class="text-role-accent text-xs mt-1 sidebar-text">System Administrator</p>
+            <p class="text-red-300 text-xs mt-1 sidebar-text">System Administrator</p>
         </div>
         <!-- Theme Toggle & Notifications -->
         <div class="flex items-center gap-2 sidebar-text">
             <!-- Dark/Light Mode Toggle -->
-            <button id="themeToggle" class="text-role-accent hover:text-white transition-colors p-2 rounded-lg hover:bg-role-hover" title="Toggle Theme">
-                <i class="fas fa-moon text-lg" id="themeIcon"></i>
+            <button data-theme-toggle 
+                    class="text-red-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-700" 
+                    title="Toggle Theme">
+                <!-- Sun/Moon icon -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
             </button>
             <!-- Notifications Bell -->
-            <button class="text-role-accent hover:text-white transition-colors p-2 rounded-lg hover:bg-role-hover">
-                <i class="fas fa-bell text-lg"></i>
+            <button class="text-red-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-700 relative">
+                <!-- Heroicon: bell -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5-5 5-5h-5m-6 0L9 7l5 5-5 5H4l5-5z"></path>
+                </svg>
                 <span class="absolute -top-1 -right-1 bg-yellow-500 text-red-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">!</span>
             </button>
         </div>
@@ -27,7 +38,7 @@
 
     <!-- Team Switcher -->
     <div class="flex items-center justify-between">
-        <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+        <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
             System Overview
         </div>
     </div>
@@ -38,8 +49,11 @@
             <!-- Dashboard -->
             <li>
                 <a href="{% url 'frontend:dashboard' %}" 
-                   class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                    <i class="fas fa-tachometer-alt text-role-accent group-hover:text-white w-5 text-center"></i>
+                   class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                    <!-- Heroicon: view-grid -->
+                    <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                    </svg>
                     <span class="sidebar-text">Admin Dashboard</span>
                 </a>
             </li>
@@ -47,52 +61,99 @@
 
         <!-- System Management Section -->
         <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+            <div x-show="!$parent.sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
                 System Management
             </div>
             <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li>
                     <a href="/admin/" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-database text-role-accent group-hover:text-white w-5 text-center"></i>
+                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                       :class="$parent.sidebarCollapsed ? 'justify-center' : ''">
+                        <!-- Heroicon: database -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                        </svg>
+                        <span x-show="!$parent.sidebarCollapsed" class="sidebar-text">Django Admin</span>
+                    </a>
+                </li>
+                <li>
+                    <button @click="alert('System Settings - Coming Soon')" 
+                            class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                            :class="$parent.sidebarCollapsed ? 'justify-center' : ''">
+                        <!-- Heroicon: adjustments -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                        </svg>
+                        <span x-show="!$parent.sidebarCollapsed" class="sidebar-text">System Settings</span>
+                    </button>
+                </li>
+                <li>
+                    <button @click="alert('Audit Logs - Coming Soon')" 
+                            class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                            :class="$parent.sidebarCollapsed ? 'justify-center' : ''">
+                        <!-- Heroicon: document-text -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span x-show="!$parent.sidebarCollapsed" class="sidebar-text">Audit Logs</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- System Management Section -->
+        <div class="mt-8">
+            <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
+                System Management
+            </div>
+            <ul role="list" class="-mx-2 mt-2 space-y-1">
+                <li>
+                    <a href="/admin/" 
+                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <!-- Heroicon: database -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                        </svg>
                         <span class="sidebar-text">Django Admin</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" onclick="alert('System Settings - Coming Soon')" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-sliders-h text-role-accent group-hover:text-white w-5 text-center"></i>
+                    <button onclick="alert('System Settings - Coming Soon')" 
+                            class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <!-- Heroicon: adjustments -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                        </svg>
                         <span class="sidebar-text">System Settings</span>
-                    </a>
+                    </button>
                 </li>
                 <li>
-                    <a href="#" onclick="alert('Audit Logs - Coming Soon')" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-file-alt text-role-accent group-hover:text-white w-5 text-center"></i>
+                    <button onclick="alert('Audit Logs - Coming Soon')" 
+                            class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <!-- Heroicon: document-text -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
                         <span class="sidebar-text">Audit Logs</span>
-                    </a>
+                    </button>
                 </li>
             </ul>
         </div>
 
         <!-- User Management Section -->
         <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+            <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
                 User Management
             </div>
             <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li>
                     <a href="/admin/accounts/user/" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-user-edit text-role-accent group-hover:text-white w-5 text-center"></i>
+                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <!-- Heroicon: user-group -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
                         <span class="sidebar-text">Manage Users</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="alert('Role Assignment - Coming Soon')" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-user-tag text-role-accent group-hover:text-white w-5 text-center"></i>
-                        <span class="sidebar-text">Role Assignment</span>
                     </a>
                 </li>
             </ul>
@@ -100,45 +161,18 @@
 
         <!-- Team Management Section -->
         <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+            <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
                 Team Management
             </div>
             <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li>
                     <a href="{% url 'frontend:teams' %}" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-users text-role-accent group-hover:text-white w-5 text-center"></i>
+                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <!-- Heroicon: users -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
                         <span class="sidebar-text">All Teams</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="alert('Create Team - Coming Soon')" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-plus-circle text-role-accent group-hover:text-white w-5 text-center"></i>
-                        <span class="sidebar-text">Create Team</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Planning System Section -->
-        <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
-                Planning System
-            </div>
-            <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li>
-                    <a href="{% url 'frontend:planning' %}" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-calendar-plus text-role-accent group-hover:text-white w-5 text-center"></i>
-                        <span class="sidebar-text">Master Planning</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="alert('Auto Planning - Coming Soon')" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-magic text-role-accent group-hover:text-white w-5 text-center"></i>
-                        <span class="sidebar-text">Auto Planning</span>
                     </a>
                 </li>
             </ul>
@@ -146,22 +180,18 @@
 
         <!-- Analytics Section -->
         <div class="mt-8">
-            <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wide sidebar-text">
+            <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
                 Analytics & Reports
             </div>
             <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li>
                     <a href="{% url 'frontend:analytics' %}" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-chart-line text-role-accent group-hover:text-white w-5 text-center"></i>
+                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
+                        <!-- Heroicon: chart-bar -->
+                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
                         <span class="sidebar-text">System Analytics</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" onclick="alert('Performance Reports - Coming Soon')" 
-                       class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200">
-                        <i class="fas fa-file-chart-line text-role-accent group-hover:text-white w-5 text-center"></i>
-                        <span class="sidebar-text">Performance Reports</span>
                     </a>
                 </li>
             </ul>
@@ -169,39 +199,46 @@
     </nav>
 
     <!-- User Profile Section -->
-    <div class="border-t border-role mt-auto pt-6">
+    <div class="border-t border-red-700 mt-auto pt-6">
         <div class="relative">
-            <button 
-                class="w-full flex items-center justify-between p-3 hover:bg-role-hover rounded-lg transition-colors"
-                data-toggle="dropdown" 
-                data-target="#userProfileMenu"
-            >
+            <button data-dropdown-toggle data-dropdown-target="#userProfileMenu"
+                    class="w-full flex items-center justify-between p-3 hover:bg-red-700 rounded-lg transition-colors">
                 <div class="flex items-center">
-                    <div class="w-8 h-8 bg-role-hover rounded-full flex items-center justify-center mr-3">
-                        <i class="fas fa-user text-white text-sm"></i>
+                    <div class="w-8 h-8 bg-red-700 rounded-full flex items-center justify-center mr-3">
+                        <!-- Heroicon: user -->
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
                     </div>
                     <div class="sidebar-text">
                         <div class="text-sm font-medium text-white">{{ user.get_full_name|default:user.username }}</div>
-                        <div class="text-xs text-role-accent">Administrator</div>
+                        <div class="text-xs text-red-300">Administrator</div>
                     </div>
                 </div>
-                <i class="fas fa-chevron-up text-role-accent"></i>
+                <svg class="w-4 h-4 text-red-300 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
             </button>
             
             <!-- User Menu -->
-            <div id="userProfileMenu" class="dropdown-menu hidden absolute bottom-full left-0 right-0 mb-2 bg-role-hover rounded-lg shadow-lg border border-role">
+            <div id="userProfileMenu" 
+                 class="hidden absolute bottom-full left-0 right-0 mb-2 bg-red-700 rounded-lg shadow-lg border border-red-600">
                 <div class="p-2">
-                    <a href="{% url 'frontend:profile' %}" class="block px-4 py-2 text-sm hover:bg-role-hover rounded-lg text-role hover:text-white">
-                        <i class="fas fa-user-cog mr-2"></i>Profile Settings
+                    <a href="{% url 'frontend:profile' %}" class="block px-4 py-2 text-sm hover:bg-red-600 rounded-lg text-red-100 hover:text-white">
+                        <!-- Heroicon: cog -->
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>Profile Settings
                     </a>
-                    <a href="#" onclick="alert('System Preferences - Coming Soon')" class="block px-4 py-2 text-sm hover:bg-role-hover rounded-lg text-role hover:text-white">
-                        <i class="fas fa-cog mr-2"></i>Preferences
-                    </a>
-                    <div class="border-t border-role my-2"></div>
+                    <div class="border-t border-red-600 my-2"></div>
                     <form method="post" action="{% url 'frontend:logout' %}" class="block">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-role-hover rounded-lg text-role-accent">
-                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-red-600 rounded-lg text-red-300">
+                            <!-- Heroicon: logout -->
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>Logout
                         </button>
                     </form>
                 </div>

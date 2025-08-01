@@ -149,7 +149,7 @@ USE_TZ = True
 # Language support for TPS - English and Dutch
 LANGUAGES = [
     ('en', 'English'),
-    ('nl', 'Nederlands'),
+    ('nl', 'Dutch'),
 ]
 
 # Custom locale directory

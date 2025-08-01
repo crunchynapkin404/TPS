@@ -228,7 +228,7 @@ class Command(BaseCommand):
     def bulk_assign_skills(self):
         """Bulk assign skills based on team structure requirements"""
         self.stdout.write(self.style.SUCCESS('Bulk Skill Assignment'))
-        self.stdout.write('This will assign basic skills to users based on the team structure requirements.')
+        self.stdout.write('This will assign basic skills to users based on their team membership.')
         
         confirmation = input('Continue? (y/N): ')
         if confirmation.lower() != 'y':
@@ -245,7 +245,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f'Required skill not found: {e}'))
             return
         
-        # Assign skills to all active users (basic operational skills)
+        # Assign skills to all active users
         users = User.objects.filter(is_active=True).exclude(username='admin')
         
         with transaction.atomic():
@@ -262,19 +262,19 @@ class Command(BaseCommand):
                 team_membership = TeamMembership.objects.filter(user=user, is_active=True).first()
                 
                 if team_membership:
-                    team_name = team_membership.team.name.lower()
+                    team_name = team_membership.team.name
                     role_name = team_membership.role.name.lower() if team_membership.role else 'member'
                     
-                    # Assign Incidenten to most users (operational teams)
-                    if 'infrastructure' in team_name or 'operations' in team_name or 'incident' in team_name:
+                    # Assign Incidenten to operational team members (like "Operationeel")
+                    if team_name.lower() in ['operationeel', 'operations'] or 'operational' in team_name.lower():
                         UserSkill.objects.get_or_create(
                             user=user,
                             skill=incidenten,
                             defaults={'proficiency_level': 'basic', 'is_certified': False}
                         )
                     
-                    # Assign Waakdienst to planners and team leads
-                    if 'lead' in role_name or 'planner' in role_name or 'coordinator' in role_name:
+                    # Assign Waakdienst to team leads and coordinators
+                    if role_name in ['lead', 'coordinator', 'deputy_lead']:
                         UserSkill.objects.get_or_create(
                             user=user,
                             skill=waakdienst,

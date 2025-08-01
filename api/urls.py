@@ -104,8 +104,8 @@ urlpatterns = [
     # path('v1/teams/statistics/', teams_statistics, name='teams-statistics'),
     path('v1/teams/<int:team_id>/members/', team_members, name='team-members'),
     
-    # Assignments Management API endpoints - overview handled by AssignmentViewSet
-    # path('v1/assignments/overview/', assignments_overview, name='assignments-overview'),
+    # Assignments Management API endpoints - overview enabled
+    path('v1/assignments/overview/', assignments_overview, name='assignments-overview'),
     path('v1/assignments/<uuid:assignment_id>/timeline/', assignments_timeline, name='assignments-timeline'),
     path('v1/assignments/bulk-data/', assignments_bulk_data, name='assignments-bulk-data'),
     path('v1/assignments/bulk-update/', assignments_bulk_update, name='assignments-bulk-update'),

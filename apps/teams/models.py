@@ -86,6 +86,8 @@ class TeamRole(models.Model):
         ('deputy_lead', 'Deputy Team Lead'),
         ('trainer', 'Team Trainer'),
         ('scheduler', 'Team Scheduler'),
+        ('operationeel', 'Operationeel'),
+        ('tactisch', 'Tactisch'),
     ]
     
     name = models.CharField(max_length=20, choices=ROLE_CHOICES, unique=True)

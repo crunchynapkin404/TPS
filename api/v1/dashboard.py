@@ -21,10 +21,21 @@ from apps.accounts.models import User
 def dashboard_stats(request):
     """
     Get real-time dashboard statistics for the current user using service layer
+    OPTIMIZED with caching and query optimization
     """
     from core.services import DashboardService
+    from core.services.cache_service import CacheService
     
     try:
+        # Try to get cached dashboard data first
+        cached_response = CacheService.get_dashboard_data(
+            request.user.id, 
+            f"api_{request.user.role}"
+        )
+        
+        if cached_response:
+            return Response(cached_response, status=status.HTTP_200_OK)
+        
         # Use the dashboard service to get context
         dashboard_context = DashboardService.get_dashboard_context(request.user)
         
@@ -46,6 +57,8 @@ def dashboard_stats(request):
                 'total_teams': dashboard_context.get('total_teams', 0),
                 'system_health': dashboard_context.get('system_health', 100),
                 'pending_leave_requests': dashboard_context.get('pending_leave_requests', 0),
+                'user_engagement_rate': dashboard_context.get('user_engagement_rate', 0),
+                'team_utilization_rate': dashboard_context.get('team_utilization_rate', 0),
             })
         elif dashboard_context.get('dashboard_type') == 'manager':
             api_response.update({
@@ -60,13 +73,23 @@ def dashboard_stats(request):
                 'advice_count': len(dashboard_context.get('planning_advice', [])),
             })
         else:  # user
+            assignment_stats = dashboard_context.get('assignment_stats', {})
             api_response.update({
-                'upcoming_shifts_count': len(dashboard_context.get('upcoming_shifts', [])),
+                'upcoming_shifts_count': assignment_stats.get('upcoming_assignments', 0),
+                'pending_confirmations': assignment_stats.get('pending_confirmations', 0),
+                'this_week_assignments': assignment_stats.get('this_week_assignments', 0),
                 'leave_requests_count': len(dashboard_context.get('my_leave_requests', [])),
                 'total_working_today': dashboard_context.get('total_working_today', 0),
                 'incident_engineer_assigned': dashboard_context.get('incident_engineer_today') is not None,
                 'waakdienst_engineer_assigned': dashboard_context.get('waakdienst_engineer_today') is not None,
             })
+        
+        # Cache the API response
+        CacheService.set_dashboard_data(
+            request.user.id, 
+            f"api_{request.user.role}", 
+            api_response
+        )
         
         return Response(api_response, status=status.HTTP_200_OK)
         

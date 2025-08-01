@@ -43,47 +43,94 @@ class AdminDashboardStrategy(DashboardStrategy):
         context.update(self.get_common_stats())
         context.update({
             'dashboard_type': 'admin',
-            **self._get_system_metrics(),
-            **self._get_system_health(),
+            **self._get_system_metrics_optimized(),
             'recent_activity': self._get_recent_activity(),
         })
         return context
     
-    def _get_system_metrics(self) -> Dict[str, Any]:
-        """Get system-wide metrics"""
+    def _get_system_metrics_optimized(self) -> Dict[str, Any]:
+        """Get system-wide metrics using optimized query service"""
+        from core.services.query_optimization_service import QueryOptimizationService
+        
+        # Use the optimized query service for comprehensive metrics
+        system_metrics = QueryOptimizationService.get_system_health_metrics()
+        
         return {
-            'total_users': User.objects.filter(is_active=True).count(),
-            'total_teams': Team.objects.count(),
-            'total_assignments_this_week': Assignment.objects.filter(
-                shift__start_datetime__gte=self.week_start,
-                shift__start_datetime__lte=self.week_end
-            ).count(),
+            'total_users': system_metrics['total_active_users'],
+            'total_teams': system_metrics['total_teams'],
+            'total_assignments_this_week': system_metrics['total_assignments_week'],
+            'system_health': system_metrics['success_rate'],
+            'pending_leave_requests': system_metrics['pending_leave_requests'],
+            'user_engagement_rate': system_metrics['user_engagement_rate'],
+            'team_utilization_rate': system_metrics['team_utilization_rate'],
+            'auto_assignment_rate': system_metrics['auto_assignment_rate'],
+        }
+    
+    def _get_system_metrics(self) -> Dict[str, Any]:
+        """Get system-wide metrics - OPTIMIZED with single query"""
+        from django.db.models import Count, Case, When, IntegerField
+        
+        # Get all metrics in single aggregated query
+        metrics = Assignment.objects.filter(
+            shift__start_datetime__gte=self.week_start,
+            shift__start_datetime__lte=self.week_end
+        ).aggregate(
+            total_assignments_this_week=Count('id'),
+            # Count unique users and teams involved this week
+            active_users_this_week=Count('user', distinct=True),
+            teams_this_week=Count('shift__planning_period__teams', distinct=True)
+        )
+        
+        # Get total counts separately but cache them
+        total_counts = User.objects.aggregate(
+            total_active_users=Count('id', filter=Q(is_active=True))
+        )
+        
+        team_count = Team.objects.count()
+        
+        return {
+            'total_users': total_counts['total_active_users'],
+            'total_teams': team_count,
+            'total_assignments_this_week': metrics['total_assignments_this_week'],
+            'active_users_this_week': metrics['active_users_this_week'],
+            'teams_with_assignments_this_week': metrics['teams_this_week'],
         }
     
     def _get_system_health(self) -> Dict[str, Any]:
-        """Calculate system health metrics"""
-        failed_assignments = Assignment.objects.filter(
-            status__in=['declined', 'no_show', 'cancelled'],
-            assigned_at__gte=self.current_date - timedelta(days=7)
-        ).count()
+        """Calculate system health metrics - OPTIMIZED with single query"""
+        from django.db.models import Count, Case, When, FloatField
         
-        total_assignments = Assignment.objects.filter(
+        # Get assignment statistics in single query
+        assignment_stats = Assignment.objects.filter(
             assigned_at__gte=self.current_date - timedelta(days=7)
-        ).count()
+        ).aggregate(
+            total_assignments=Count('id'),
+            failed_assignments=Count('id', filter=Q(
+                status__in=['declined', 'no_show', 'cancelled']
+            ))
+        )
+        
+        total_assignments = assignment_stats['total_assignments']
+        failed_assignments = assignment_stats['failed_assignments']
         
         health_percentage = 100.0 if total_assignments == 0 else (
             (total_assignments - failed_assignments) / total_assignments
         ) * 100
         
-        # Get pending leave requests
-        from apps.leave_management.models import LeaveRequest
-        pending_leave_requests = LeaveRequest.objects.filter(
-            status__in=['submitted', 'pending_hr']
-        ).count()
+        # Get pending leave requests in same query scope
+        try:
+            from apps.leave_management.models import LeaveRequest
+            pending_leave_requests = LeaveRequest.objects.filter(
+                status__in=['submitted', 'pending_hr']
+            ).count()
+        except ImportError:
+            pending_leave_requests = 0
         
         return {
             'system_health': round(health_percentage, 1),
             'pending_leave_requests': pending_leave_requests,
+            'total_assignments_last_week': total_assignments,
+            'failed_assignments_last_week': failed_assignments,
         }
     
     def _get_recent_activity(self) -> List[Assignment]:
@@ -133,20 +180,38 @@ class ManagerDashboardStrategy(DashboardStrategy):
         ).distinct().select_related('user', 'leave_type')[:10]
     
     def _get_team_stats(self, managed_teams) -> List[Dict[str, Any]]:
-        """Get performance stats for managed teams"""
-        team_stats = []
-        for team in managed_teams:
-            team_members = User.objects.filter(team_memberships__team=team).count()
-            this_week_assignments = Assignment.objects.filter(
-                shift__planning_period__teams=team,
+        """Get performance stats for managed teams - OPTIMIZED to avoid N+1 queries"""
+        from django.db.models import Count
+        
+        # Get team member counts in single query with annotation
+        team_member_counts = {
+            team.id: team.member_count 
+            for team in managed_teams.annotate(
+                member_count=Count('memberships', filter=Q(
+                    memberships__is_active=True,
+                    memberships__user__is_active_employee=True
+                ))
+            )
+        }
+        
+        # Get assignment counts in single query with annotation
+        team_assignment_counts = dict(
+            Assignment.objects.filter(
+                shift__planning_period__teams__in=managed_teams,
                 shift__start_datetime__gte=self.week_start,
                 shift__start_datetime__lte=self.week_end
-            ).count()
-            
+            ).values('shift__planning_period__teams').annotate(
+                assignment_count=Count('id')
+            ).values_list('shift__planning_period__teams', 'assignment_count')
+        )
+        
+        # Combine results
+        team_stats = []
+        for team in managed_teams:
             team_stats.append({
                 'team': team,
-                'members': team_members,
-                'this_week_assignments': this_week_assignments,
+                'members': team_member_counts.get(team.id, 0),
+                'this_week_assignments': team_assignment_counts.get(team.id, 0),
             })
         
         return team_stats
@@ -190,18 +255,27 @@ class PlannerDashboardStrategy(DashboardStrategy):
         ).select_related('template', 'planning_period')[:10]
     
     def _generate_planning_advice(self, user_teams) -> List[Dict[str, Any]]:
-        """Generate intelligent planning advice"""
+        """Generate intelligent planning advice - OPTIMIZED to avoid N+1 queries"""
+        from django.db.models import Count
         from apps.scheduling.models import ShiftInstance
+        
         advice = []
         
-        # Check for understaffed periods
-        for team in user_teams[:3]:  # Limit for performance
-            upcoming_shifts = ShiftInstance.objects.filter(
-                planning_period__teams=team,
+        # Get unassigned shift counts for all teams in single query
+        team_unassigned_counts = dict(
+            ShiftInstance.objects.filter(
+                planning_period__teams__in=user_teams,
                 start_datetime__gte=self.current_date,
                 start_datetime__lte=self.current_date + timedelta(days=14),
                 assignments__isnull=True
-            ).count()
+            ).values('planning_period__teams').annotate(
+                unassigned_count=Count('id')
+            ).values_list('planning_period__teams', 'unassigned_count')
+        )
+        
+        # Check for understaffed periods using pre-calculated counts
+        for team in user_teams[:3]:  # Limit for performance
+            upcoming_shifts = team_unassigned_counts.get(team.id, 0)
             
             if upcoming_shifts > 5:
                 advice.append({
@@ -239,12 +313,33 @@ class UserDashboardStrategy(DashboardStrategy):
         context.update(self.get_common_stats())
         context.update({
             'dashboard_type': 'user',
-            'upcoming_shifts': self._get_upcoming_shifts(),
-            'my_leave_requests': self._get_leave_requests(),
-            **self._get_daily_assignments(),
+            **self._get_user_dashboard_data_optimized(),
             'personal_advice': self._generate_personal_advice(),
         })
         return context
+    
+    def _get_user_dashboard_data_optimized(self) -> Dict[str, Any]:
+        """Get user dashboard data using optimized query service"""
+        from core.services.query_optimization_service import QueryOptimizationService
+        
+        # Use optimized service for user dashboard data
+        dashboard_data = QueryOptimizationService.get_user_dashboard_data(self.user)
+        
+        # Get leave requests separately (if leave management is available)
+        try:
+            leave_requests = self._get_leave_requests()
+        except ImportError:
+            leave_requests = []
+        
+        # Get today's assignments
+        daily_assignments = self._get_daily_assignments()
+        
+        return {
+            'upcoming_shifts': dashboard_data['upcoming_shifts'],
+            'assignment_stats': dashboard_data['assignment_stats'],
+            'my_leave_requests': leave_requests,
+            **daily_assignments,
+        }
     
     def _get_upcoming_shifts(self) -> List[Assignment]:
         """Get user's upcoming shifts"""

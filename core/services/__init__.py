@@ -1,6 +1,7 @@
 """
 TPS V1.4 - Core Services Package
 Business logic services for the TPS application
+ENHANCED with performance optimization services
 """
 
 from .base_service import BaseService, ContextService, PermissionService
@@ -14,6 +15,10 @@ from .waakdienst_planning_service import WaakdienstPlanningService
 from .incident_planning_service import IncidentPlanningService
 from .skills_service import SkillsService
 from .validation_service import ValidationService
+
+# Performance optimization services
+from .cache_service import CacheService, CacheInvalidationService
+from .query_optimization_service import QueryOptimizationService
 
 __all__ = [
     'BaseService',
@@ -29,4 +34,8 @@ __all__ = [
     'IncidentPlanningService',
     'SkillsService',
     'ValidationService',
+    # Performance services
+    'CacheService',
+    'CacheInvalidationService',
+    'QueryOptimizationService',
 ]

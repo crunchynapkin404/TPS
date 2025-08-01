@@ -1,5 +1,5 @@
-<!-- Admin Navigation - Full System Access -->
-<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 px-6 pb-4 shadow-2xl flex-1" x-data="{ userProfileMenuOpen: false, notifications: [] }">
+<!-- Admin Navigation - Comprehensive System Access with All Features -->
+<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 px-6 pb-4 shadow-2xl flex-1" x-data="{ userProfileMenuOpen: false, notifications: [], systemStats: { totalUsers: 156, activeTeams: 24, pendingRequests: 8, systemHealth: 'excellent' } }">
     <!-- Logo/Brand -->
     <div class="flex h-20 shrink-0 items-center justify-between border-b border-red-700 dark:border-red-600 pb-4 pt-4">
         <div class="sidebar-brand" :class="sidebarCollapsed ? 'hidden' : ''">
@@ -39,131 +39,272 @@
         </div>
     </div>
 
-    <!-- Team Switcher -->
-    <div class="flex items-center justify-between" x-show="!sidebarCollapsed">
-        <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
-            System Overview
+    <!-- System Status Overview -->
+    <div x-show="!sidebarCollapsed" class="border-b border-red-700 pb-4 mb-4 sidebar-text">
+        <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3">
+            System Status
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-green-900/30 border border-green-700/50 rounded-lg p-2 text-center">
+                <div class="text-green-400 font-semibold" x-text="systemStats.totalUsers">156</div>
+                <div class="text-red-300">Total Users</div>
+            </div>
+            <div class="bg-blue-900/30 border border-blue-700/50 rounded-lg p-2 text-center">
+                <div class="text-blue-400 font-semibold" x-text="systemStats.activeTeams">24</div>
+                <div class="text-red-300">Active Teams</div>
+            </div>
+            <div class="bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-2 text-center">
+                <div class="text-yellow-400 font-semibold" x-text="systemStats.pendingRequests">8</div>
+                <div class="text-red-300">Pending</div>
+            </div>
+            <div class="bg-emerald-900/30 border border-emerald-700/50 rounded-lg p-2 text-center">
+                <div class="text-emerald-400 font-semibold">98%</div>
+                <div class="text-red-300">Uptime</div>
+            </div>
         </div>
     </div>
 
     <!-- Navigation Menu -->
-    <nav class="flex-1">
-        <ul role="list" class="-mx-2 space-y-1">
-            <!-- Dashboard -->
+    <nav class="flex flex-1 flex-col">
+        <ul role="list" class="flex flex-1 flex-col gap-y-2">
+            
+            <!-- Dashboard Section -->
             <li>
-                <a href="{% url 'frontend:dashboard' %}" 
-                   class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                   :class="sidebarCollapsed ? 'justify-center' : ''">
-                    <!-- Heroicon: view-grid -->
-                    <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                    </svg>
-                    <span x-show="!sidebarCollapsed" class="sidebar-text">Admin Dashboard</span>
-                </a>
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                    Dashboard & Overview
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <!-- Admin Dashboard -->
+                    <li>
+                        <a href="{% url 'frontend:dashboard' %}" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Admin Dashboard</span>
+                        </a>
+                    </li>
+                    <!-- System Overview -->
+                    <li>
+                        <a href="{% url 'frontend:schedule' %}" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">System Schedule</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
+
+            <!-- System Management Section -->
+            <li>
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                    System Management
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <li>
+                        <a href="/admin/" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Django Admin</span>
+                        </a>
+                    </li>
+                    <li>
+                        <button @click="$dispatch('show-notification', { message: 'System Settings - Coming Soon', type: 'info' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">System Settings</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button @click="$dispatch('show-notification', { message: 'System Health - All systems operational', type: 'success' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">System Health</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button @click="$dispatch('show-notification', { message: 'Audit Logs - Coming Soon', type: 'info' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Audit Logs</span>
+                        </button>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Organization Management Section -->
+            <li>
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                    Organization
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <li>
+                        <a href="/admin/accounts/user/" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Manage Users</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'frontend:teams' %}" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">All Teams</span>
+                        </a>
+                    </li>
+                    <li>
+                        <button @click="$dispatch('show-notification', { message: 'Department Management - Coming Soon', type: 'info' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Departments</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button @click="$dispatch('show-notification', { message: 'Skills Management - Coming Soon', type: 'info' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364-.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Skills</span>
+                        </button>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Planning & Scheduling Section -->
+            <li>
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                    Planning & Scheduling
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <li>
+                        <a href="{% url 'frontend:planning' %}" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">System Planning</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'frontend:assignments' %}" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">All Assignments</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Leave & Request Management Section -->
+            <li>
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                    Leave & Requests
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <li>
+                        <a href="{% url 'leave_management:overview' %}" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">All Leave Requests</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'leave_management:calendar' %}" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Leave Calendar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <button @click="$dispatch('show-notification', { message: 'Shift Swaps Management - Coming Soon', type: 'info' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Shift Swaps</span>
+                        </button>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Analytics & Reports Section -->
+            <li>
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                    Analytics & Reports
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <li>
+                        <a href="{% url 'frontend:analytics' %}" 
+                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">System Analytics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <button @click="$dispatch('show-notification', { message: 'Advanced Reports - Coming Soon', type: 'info' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Advanced Reports</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button @click="$dispatch('show-notification', { message: 'Performance Metrics - Coming Soon', type: 'info' })" 
+                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                :class="sidebarCollapsed ? 'justify-center' : ''">
+                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">Performance</span>
+                        </button>
+                    </li>
+                </ul>
+            </li>
+
         </ul>
-
-        <!-- System Management Section -->
-        <div class="mt-8">
-            <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
-                System Management
-            </div>
-            <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li>
-                    <a href="/admin/" 
-                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                       :class="sidebarCollapsed ? 'justify-center' : ''">
-                        <!-- Heroicon: database -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
-                        </svg>
-                        <span x-show="!sidebarCollapsed" class="sidebar-text">Django Admin</span>
-                    </a>
-                </li>
-                <li>
-                    <button @click="$dispatch('show-notification', { message: 'System Settings - Coming Soon', type: 'info' })" 
-                            class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                        <!-- Heroicon: adjustments -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
-                        </svg>
-                        <span x-show="!sidebarCollapsed" class="sidebar-text">System Settings</span>
-                    </button>
-                </li>
-                <li>
-                    <button @click="$dispatch('show-notification', { message: 'Audit Logs - Coming Soon', type: 'info' })" 
-                            class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                        <!-- Heroicon: document-text -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <span x-show="!sidebarCollapsed" class="sidebar-text">Audit Logs</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-
-        <!-- User Management Section -->
-        <div class="mt-8">
-            <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
-                User Management
-            </div>
-            <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li>
-                    <a href="/admin/accounts/user/" 
-                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                       :class="sidebarCollapsed ? 'justify-center' : ''">
-                        <!-- Heroicon: user-group -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                        </svg>
-                        <span x-show="!sidebarCollapsed" class="sidebar-text">Manage Users</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Team Management Section -->
-        <div class="mt-8">
-            <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
-                Team Management
-            </div>
-            <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li>
-                    <a href="{% url 'frontend:teams' %}" 
-                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                       :class="sidebarCollapsed ? 'justify-center' : ''">
-                        <!-- Heroicon: users -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                        </svg>
-                        <span x-show="!sidebarCollapsed" class="sidebar-text">All Teams</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Analytics Section -->
-        <div class="mt-8">
-            <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wide sidebar-text">
-                Analytics & Reports
-            </div>
-            <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li>
-                    <a href="{% url 'frontend:analytics' %}" 
-                       class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                       :class="sidebarCollapsed ? 'justify-center' : ''">
-                        <!-- Heroicon: chart-bar -->
-                        <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        <span x-show="!sidebarCollapsed" class="sidebar-text">System Analytics</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
     </nav>
 
     <!-- User Profile Section -->

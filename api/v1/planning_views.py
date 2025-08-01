@@ -93,8 +93,10 @@ def generate_planning(request):
                     
             elif shift_type == 'incident' or shift_type == 'incident-standby':
                 incident_service = IncidentPlanningService(team)
+                # Determine if standby should be included
+                include_standby = shift_type == 'incident-standby'
                 incident_result = incident_service.generate_incident_planning(
-                    start_date, duration_weeks, algorithm.value
+                    start_date, duration_weeks, algorithm.value, include_standby=include_standby
                 )
                 if incident_result.success:
                     incident_assignments = incident_result.data.get('assignments', [])

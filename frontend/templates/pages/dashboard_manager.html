@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 <div class="p-6 h-full overflow-y-auto">
     <!-- Manager Header -->
     <div class="mb-8">
-        <div class="text-2xl font-bold text-gray-900 dark:text-white">Manager Dashboard</div>
+                                  <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ team.this_week_assignments|mul:10|floatformat:0 }}%"></div>
+                                </div>  <div class="text-2xl font-bold text-gray-900 dark:text-white">Manager Dashboard</div>
         <div class="text-gray-600 dark:text-gray-400 mt-1">Manage your teams and approve requests</div>
     </div>
 

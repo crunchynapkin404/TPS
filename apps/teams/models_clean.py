@@ -590,14 +590,39 @@ class TeamSchedulePatternDay(models.Model):
     
     def get_shift_duration_hours(self):
         """Calculate shift duration in hours"""
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, time
+        from django.utils.safestring import SafeString
         
-        start = datetime.combine(datetime.today(), self.shift_start_time)
-        end = datetime.combine(datetime.today(), self.shift_end_time)
+        # Ensure we have proper time objects (not SafeString or string)
+        start_time = self.shift_start_time
+        end_time = self.shift_end_time
         
-        # Handle overnight shifts
-        if end < start:
-            end += timedelta(days=1)
+        # Handle SafeString or string inputs
+        if isinstance(start_time, (str, SafeString)):
+            from django.utils.dateparse import parse_time
+            start_time = parse_time(str(start_time))
             
-        duration = end - start
-        return duration.total_seconds() / 3600
+        if isinstance(end_time, (str, SafeString)):
+            from django.utils.dateparse import parse_time
+            end_time = parse_time(str(end_time))
+        
+        # Validate that we have proper time objects
+        if not isinstance(start_time, time) or not isinstance(end_time, time):
+            return 8.0  # Default 8-hour shift if parsing fails
+        
+        try:
+            start = datetime.combine(datetime.today(), start_time)
+            end = datetime.combine(datetime.today(), end_time)
+            
+            # Handle overnight shifts
+            if end < start:
+                end += timedelta(days=1)
+                
+            duration = end - start
+            return duration.total_seconds() / 3600
+        except (TypeError, ValueError) as e:
+            # Log the error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error calculating shift duration: {e}. Start: {start_time}, End: {end_time}")
+            return 8.0  # Default fallback

@@ -33,6 +33,10 @@ from api.v1.analytics_overview import (
 from api.v1.assignments_overview import (
     assignments_overview, assignments_timeline, assignments_bulk_data, assignments_bulk_update
 )
+from api.v1.skills import (
+    skill_categories, skills_list, user_skills, create_user_skill, 
+    update_user_skill, delete_user_skill
+)
 
 # Notification API imports
 from django.http import JsonResponse
@@ -109,6 +113,14 @@ urlpatterns = [
     # path('v1/teams/overview/', teams_overview, name='teams-overview'),
     # path('v1/teams/statistics/', teams_statistics, name='teams-statistics'),
     path('v1/teams/<int:team_id>/members/', team_members, name='team-members'),
+    
+    # Skills API endpoints
+    path('v1/skills/categories/', skill_categories, name='skill-categories'),
+    path('v1/skills/', skills_list, name='skills-list'),
+    path('v1/users/<int:user_id>/skills/', user_skills, name='user-skills'),
+    path('v1/user-skills/', create_user_skill, name='create-user-skill'),
+    path('v1/user-skills/<int:user_skill_id>/', update_user_skill, name='update-user-skill'),
+    path('v1/user-skills/<int:user_skill_id>/', delete_user_skill, name='delete-user-skill'),
     
     # Notification API endpoints (temporary endpoints)
     path('v1/notifications/unread/', lambda request: JsonResponse({'count': 0, 'notifications': []}), name='notifications-unread'),

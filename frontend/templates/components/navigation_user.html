@@ -1,4 +1,5 @@
 <!-- User Navigation - Simple menu for regular team members -->
+{% load i18n %}
 <div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-blue-900 to-blue-800 dark:from-blue-900 dark:to-blue-800 px-6 pb-4 shadow-2xl flex-1" 
      x-data="{
          userProfileMenuOpen: false,
@@ -15,9 +16,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                 </div>
-                <span class="sidebar-text">TPS User</span>
+                <span class="sidebar-text">{% trans 'TPS User' %}</span>
             </h1>
-            <p class="text-blue-300 text-xs mt-1 sidebar-text">Team Member</p>
+            <p class="text-blue-300 text-xs mt-1 sidebar-text">{% trans 'Team Member' %}</p>
         </div>
         <!-- Collapsed Logo -->
         <div x-show="sidebarCollapsed" class="w-full flex justify-center">
@@ -77,7 +78,7 @@
             <!-- My Work Section -->
             <li>
                 <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3 sidebar-text">
-                    My Work
+                    {% trans 'My Work' %}
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
                     <!-- Dashboard -->
@@ -89,7 +90,7 @@
                             <svg class="w-5 h-5 {% if active_nav == 'dashboard' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
                             </svg>
-                            <span x-show="!sidebarCollapsed" class="sidebar-text">Dashboard</span>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">{% trans 'Dashboard' %}</span>
                         </a>
                     </li>
                     <!-- My Schedule -->
@@ -101,7 +102,7 @@
                             <svg class="w-5 h-5 {% if active_nav == 'schedule' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
-                            <span x-show="!sidebarCollapsed" class="sidebar-text">My Schedule</span>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">{% trans 'My Schedule' %}</span>
                         </a>
                     </li>
                     <!-- My Assignments -->
@@ -113,7 +114,7 @@
                             <svg class="w-5 h-5 {% if active_nav == 'assignments' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                             </svg>
-                            <span x-show="!sidebarCollapsed" class="sidebar-text">My Assignments</span>
+                            <span x-show="!sidebarCollapsed" class="sidebar-text">{% trans 'My Assignments' %}</span>
                         </a>
                     </li>
                 </ul>

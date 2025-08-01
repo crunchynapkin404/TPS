@@ -1,5 +1,5 @@
 <!-- Admin Navigation - Comprehensive System Access with All Features -->
-<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 px-6 pb-4 shadow-2xl flex-1" 
+<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-blue-900 to-blue-800 dark:from-blue-900 dark:to-blue-800 px-6 pb-4 shadow-2xl flex-1" 
      x-data="{
          userProfileMenuOpen: false,
          notifications: [],
@@ -11,10 +11,10 @@
          }
      }">
     <!-- Logo/Brand -->
-    <div class="flex h-20 shrink-0 items-center justify-between border-b border-red-700 dark:border-red-600 pb-4 pt-4">
+    <div class="flex h-20 shrink-0 items-center justify-between border-b border-blue-700 dark:border-blue-600 pb-4 pt-4">
         <div class="sidebar-brand" :class="sidebarCollapsed ? 'hidden' : ''">
             <h1 class="text-white text-xl font-bold flex items-center">
-                <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center mr-3 lg:mr-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 lg:mr-3">
                     <!-- Heroicon: shield-check (crown alternative) -->
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
@@ -22,11 +22,11 @@
                 </div>
                 <span class="sidebar-text">TPS Admin</span>
             </h1>
-            <p class="text-red-300 text-xs mt-1 sidebar-text">System Administrator</p>
+            <p class="text-blue-300 text-xs mt-1 sidebar-text">System Administrator</p>
         </div>
         <!-- Collapsed Logo -->
         <div x-show="sidebarCollapsed" class="w-full flex justify-center">
-            <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <!-- Heroicon: shield-check (crown alternative) -->
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
@@ -37,7 +37,7 @@
         <div class="flex items-center gap-2" :class="sidebarCollapsed ? 'flex-col absolute right-2 top-2' : ''">
             <!-- Dark/Light Mode Toggle -->
             <button @click="$store.theme.toggle()" 
-                    class="text-red-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-700" 
+                    class="text-blue-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-blue-700" 
                     title="Toggle Theme">
                 <!-- Sun/Moon icon -->
                 <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -48,7 +48,7 @@
                 </svg>
             </button>
             <!-- Notifications Bell -->
-            <button @click="notifications = []" class="text-red-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-red-700 relative">
+            <button @click="notifications = []" class="text-blue-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-blue-700 relative">
                 <!-- Heroicon: bell -->
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5-5v-5a3 3 0 00-6 0v5l-5 5h5a3 3 0 006 0z"></path>
@@ -59,26 +59,26 @@
     </div>
 
     <!-- System Status Overview -->
-    <div x-show="!sidebarCollapsed" class="border-b border-red-700 pb-4 mb-4 sidebar-text">
-        <div class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3">
+    <div x-show="!sidebarCollapsed" class="border-b border-blue-700 pb-4 mb-4 sidebar-text">
+        <div class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3">
             System Status
         </div>
         <div class="grid grid-cols-2 gap-2 text-xs">
             <div class="bg-green-900/30 border border-green-700/50 rounded-lg p-2 text-center">
                 <div class="text-green-400 font-semibold" x-text="systemStats.totalUsers">156</div>
-                <div class="text-red-300">Total Users</div>
+                <div class="text-blue-300">Total Users</div>
             </div>
             <div class="bg-blue-900/30 border border-blue-700/50 rounded-lg p-2 text-center">
                 <div class="text-blue-400 font-semibold" x-text="systemStats.activeTeams">24</div>
-                <div class="text-red-300">Active Teams</div>
+                <div class="text-blue-300">Active Teams</div>
             </div>
             <div class="bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-2 text-center">
                 <div class="text-yellow-400 font-semibold" x-text="systemStats.pendingRequests">8</div>
-                <div class="text-red-300">Pending</div>
+                <div class="text-blue-300">Pending</div>
             </div>
             <div class="bg-emerald-900/30 border border-emerald-700/50 rounded-lg p-2 text-center">
                 <div class="text-emerald-400 font-semibold">98%</div>
-                <div class="text-red-300">Uptime</div>
+                <div class="text-blue-300">Uptime</div>
             </div>
         </div>
     </div>
@@ -89,17 +89,17 @@
             
             <!-- Dashboard Section -->
             <li>
-                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3 sidebar-text">
                     Dashboard & Overview
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
                     <!-- Admin Dashboard -->
                     <li>
                         <a href="{% url 'frontend:dashboard' %}" 
-                           class="{% if active_nav == 'dashboard' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-red-100 hover:text-white hover:bg-red-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'dashboard' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''"
                            :title="sidebarCollapsed ? 'Admin Dashboard' : ''">
-                            <svg class="w-5 h-5 {% if active_nav == 'dashboard' %}text-white{% else %}text-red-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 {% if active_nav == 'dashboard' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Admin Dashboard</span>
@@ -108,10 +108,10 @@
                     <!-- System Schedule -->
                     <li>
                         <a href="{% url 'frontend:schedule' %}" 
-                           class="{% if active_nav == 'schedule' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-red-100 hover:text-white hover:bg-red-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'schedule' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''"
                            :title="sidebarCollapsed ? 'System Schedule' : ''">
-                            <svg class="w-5 h-5 {% if active_nav == 'schedule' %}text-white{% else %}text-red-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 {% if active_nav == 'schedule' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">System Schedule</span>
@@ -120,9 +120,9 @@
                     <!-- All Assignments -->
                     <li>
                         <a href="{% url 'frontend:assignments' %}" 
-                           class="{% if active_nav == 'assignments' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-red-100 hover:text-white hover:bg-red-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'assignments' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 {% if active_nav == 'assignments' %}text-white{% else %}text-red-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 {% if active_nav == 'assignments' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">All Assignments</span>
@@ -131,9 +131,9 @@
                     <!-- Planning Tools -->
                     <li>
                         <a href="{% url 'frontend:planning' %}" 
-                           class="{% if active_nav == 'planning' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-red-100 hover:text-white hover:bg-red-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'planning' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 {% if active_nav == 'planning' %}text-white{% else %}text-red-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 {% if active_nav == 'planning' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Planning Tools</span>
@@ -142,9 +142,9 @@
                     <!-- Analytics -->
                     <li>
                         <a href="{% url 'frontend:analytics' %}" 
-                           class="{% if active_nav == 'analytics' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-red-100 hover:text-white hover:bg-red-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'analytics' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 {% if active_nav == 'analytics' %}text-white{% else %}text-red-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 {% if active_nav == 'analytics' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Analytics</span>
@@ -155,15 +155,15 @@
 
             <!-- System Management Section -->
             <li>
-                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3 sidebar-text">
                     System Management
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
                     <li>
                         <a href="/admin/" 
-                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Django Admin</span>
@@ -171,9 +171,9 @@
                     </li>
                     <li>
                         <button @click="$dispatch('show-notification', { message: 'System Settings - Coming Soon', type: 'info' })" 
-                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                class="w-full text-left text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                                 :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">System Settings</span>
@@ -181,9 +181,9 @@
                     </li>
                     <li>
                         <button @click="$dispatch('show-notification', { message: 'System Health - All systems operational', type: 'success' })" 
-                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                class="w-full text-left text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                                 :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">System Health</span>
@@ -191,9 +191,9 @@
                     </li>
                     <li>
                         <button @click="$dispatch('show-notification', { message: 'Audit Logs - Coming Soon', type: 'info' })" 
-                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                class="w-full text-left text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                                 :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Audit Logs</span>
@@ -204,24 +204,24 @@
 
             <!-- Organization Management Section -->
             <li>
-                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3 sidebar-text">
                     Organization
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
                     <li>
                         <a href="/admin/accounts/user/" 
-                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                             </svg>
                         </a>
                     </li>
                     <li>
                         <a href="{% url 'frontend:teams' %}" 
-                           class="{% if active_nav == 'teams' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-red-100 hover:text-white hover:bg-red-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'teams' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 {% if active_nav == 'teams' %}text-white{% else %}text-red-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 {% if active_nav == 'teams' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Manage Teams</span>
@@ -229,10 +229,10 @@
                     </li>
                     <li>
                         <button @click="$dispatch('show-notification', { message: 'Department Management - Coming Soon', type: 'info' })" 
-                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                class="w-full text-left text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                                 :class="sidebarCollapsed ? 'justify-center' : ''"
                                 title="Departments">>>
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Departments</span>
@@ -240,9 +240,9 @@
                     </li>
                     <li>
                         <button @click="$dispatch('show-notification', { message: 'Skills Management - Coming Soon', type: 'info' })" 
-                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                class="w-full text-left text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                                 :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364-.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Skills</span>
@@ -253,15 +253,15 @@
 
             <!-- Planning & Scheduling Section -->
             <li>
-                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3 sidebar-text">
                     Planning & Scheduling
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
                     <li>
                         <a href="{% url 'frontend:planning' %}" 
-                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">System Planning</span>
@@ -269,9 +269,9 @@
                     </li>
                     <li>
                         <a href="{% url 'frontend:assignments' %}" 
-                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">All Assignments</span>
@@ -282,15 +282,15 @@
 
             <!-- Leave & Request Management Section -->
             <li>
-                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3 sidebar-text">
                     Leave & Requests
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
                     <li>
                         <a href="{% url 'leave_management:overview' %}" 
-                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">All Leave Requests</span>
@@ -298,9 +298,9 @@
                     </li>
                     <li>
                         <a href="{% url 'leave_management:calendar' %}" 
-                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Leave Calendar</span>
@@ -308,9 +308,9 @@
                     </li>
                     <li>
                         <a href="{% url 'frontend:swap_requests' %}" 
-                           class="{% if active_nav == 'swap_requests' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-red-100 hover:text-white hover:bg-red-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'swap_requests' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 {% if active_nav == 'swap_requests' %}text-white{% else %}text-red-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 {% if active_nav == 'swap_requests' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">All Shift Swaps</span>
@@ -318,9 +318,9 @@
                     </li>
                     <li>
                         <a href="{% url 'frontend:swap_approvals' %}" 
-                           class="{% if active_nav == 'swap_approvals' %}bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg{% else %}text-red-100 hover:text-white hover:bg-red-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'swap_approvals' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-blue-100 hover:text-white hover:bg-blue-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 {% if active_nav == 'swap_approvals' %}text-white{% else %}text-red-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 {% if active_nav == 'swap_approvals' %}text-white{% else %}text-blue-300 group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Swap Approvals</span>
@@ -338,15 +338,15 @@
 
             <!-- Analytics & Reports Section -->
             <li>
-                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-red-300 uppercase tracking-wider mb-3 sidebar-text">
+                <div x-show="!sidebarCollapsed" class="text-xs font-semibold leading-6 text-blue-300 uppercase tracking-wider mb-3 sidebar-text">
                     Analytics & Reports
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
                     <li>
                         <a href="{% url 'frontend:analytics' %}" 
-                           class="text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                            :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">System Analytics</span>
@@ -354,9 +354,9 @@
                     </li>
                     <li>
                         <button @click="$dispatch('show-notification', { message: 'Advanced Reports - Coming Soon', type: 'info' })" 
-                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                class="w-full text-left text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                                 :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Advanced Reports</span>
@@ -364,9 +364,9 @@
                     </li>
                     <li>
                         <button @click="$dispatch('show-notification', { message: 'Performance Metrics - Coming Soon', type: 'info' })" 
-                                class="w-full text-left text-red-100 hover:text-white hover:bg-red-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                                class="w-full text-left text-blue-100 hover:text-white hover:bg-blue-700 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
                                 :class="sidebarCollapsed ? 'justify-center' : ''">
-                            <svg class="w-5 h-5 text-red-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-300 group-hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
                             <span x-show="!sidebarCollapsed" class="sidebar-text">Performance</span>
@@ -379,10 +379,10 @@
     </nav>
 
     <!-- User Profile Section -->
-    <div class="border-t border-red-700 mt-auto pt-6">
+    <div class="border-t border-blue-700 mt-auto pt-6">
         <div class="relative">
             <button @click="userProfileMenuOpen = !userProfileMenuOpen"
-                    class="w-full flex items-center justify-between p-3 hover:bg-red-700 rounded-lg transition-colors"
+                    class="w-full flex items-center justify-between p-3 hover:bg-blue-700 rounded-lg transition-colors"
                     :class="sidebarCollapsed ? 'justify-center' : ''">
                 <div class="flex items-center">
                     <div class="w-8 h-8 bg-red-700 rounded-full flex items-center justify-center mr-3">
@@ -393,10 +393,10 @@
                     </div>
                     <div x-show="!sidebarCollapsed" class="sidebar-text">
                         <div class="text-sm font-medium text-white">{{ user.get_full_name|default:user.username }}</div>
-                        <div class="text-xs text-red-300">Administrator</div>
+                        <div class="text-xs text-blue-300">Administrator</div>
                     </div>
                 </div>
-                <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-red-300 transition-transform" :class="userProfileMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-blue-300 transition-transform" :class="userProfileMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </button>
@@ -412,7 +412,7 @@
                  x-transition:leave-end="transform opacity-0 scale-95"
                  class="absolute bottom-full left-0 right-0 mb-2 bg-red-700 rounded-lg shadow-lg border border-red-600">
                 <div class="p-2">
-                    <a href="{% url 'frontend:profile' %}" class="block px-4 py-2 text-sm hover:bg-red-600 rounded-lg text-red-100 hover:text-white">
+                    <a href="{% url 'frontend:profile' %}" class="block px-4 py-2 text-sm hover:bg-red-600 rounded-lg text-blue-100 hover:text-white">
                         <!-- Heroicon: cog -->
                         <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -422,7 +422,7 @@
                     <div class="border-t border-red-600 my-2"></div>
                     <form method="post" action="{% url 'frontend:logout' %}" class="block">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-red-600 rounded-lg text-red-300">
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-red-600 rounded-lg text-blue-300">
                             <!-- Heroicon: logout -->
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>

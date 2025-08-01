@@ -1,5 +1,5 @@
 <!-- Planner Navigation - Comprehensive planning tools for team scheduling -->
-<div class="h-full flex flex-col gap-y-5 overflow-y-auto theme-planner px-6 pb-4 shadow-2xl flex-1" 
+<div class="h-full flex flex-col gap-y-5 overflow-y-auto bg-gradient-to-b from-blue-900 to-blue-800 dark:from-blue-900 dark:to-blue-800 px-6 pb-4 shadow-2xl flex-1" 
      x-data="{
          userProfileMenuOpen: false,
          notifications: [],
@@ -9,22 +9,30 @@
          }
      }">
     <!-- Logo/Brand -->
-    <div class="flex h-20 shrink-0 items-center justify-between border-b border-role pb-4 pt-4">
-        <div class="sidebar-brand">
+    <div class="flex h-20 shrink-0 items-center justify-between border-b border-blue-700 dark:border-blue-600 pb-4 pt-4">
+        <div class="sidebar-brand" :class="sidebarCollapsed ? 'hidden' : ''">
             <h1 class="text-white text-xl font-bold flex items-center">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-3 lg:mr-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 lg:mr-3">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                 </div>
                 <span class="sidebar-text">TPS Planner</span>
             </h1>
-            <p class="text-role-accent text-xs mt-1 sidebar-text">Team Planning System</p>
+            <p class="text-blue-300 text-xs mt-1 sidebar-text">Team Planning System</p>
+        </div>
+        <!-- Collapsed Logo -->
+        <div x-show="sidebarCollapsed" class="w-full flex justify-center">
+            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            </div>
         </div>
         <!-- Theme Toggle & Notifications -->
-        <div class="flex items-center gap-2 sidebar-text">
+        <div class="flex items-center gap-2" :class="sidebarCollapsed ? 'flex-col' : ''" >>
             <!-- Dark/Light Mode Toggle -->
-            <button @click="$store.theme.toggle()" class="text-role-accent hover:text-white transition-colors p-2 rounded-lg hover:bg-role-hover" title="Toggle Theme">
+            <button @click="$store.theme.toggle()" class="text-blue-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-blue-700" title="Toggle Theme">
                 <!-- Sun/Moon icon -->
                 <svg x-show="!$store.theme.dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -34,11 +42,11 @@
                 </svg>
             </button>
             <!-- Notifications Bell -->
-            <button class="text-role-accent hover:text-white transition-colors p-2 rounded-lg hover:bg-role-hover">
+            <button @click="notifications = []" class="text-blue-300 hover:text-white transition-colors p-2 rounded-lg hover:bg-blue-700 relative">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5-5v-5a3 3 0 00-6 0v5l-5 5h5a3 3 0 006 0z"></path>
                 </svg>
-                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                <span x-show="notifications.length > 0" class="absolute -top-1 -right-1 bg-yellow-500 text-blue-900 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold" x-text="notifications.length">2</span>
             </button>
         </div>
     </div>
@@ -260,10 +268,10 @@
     </nav>
 
     <!-- User Profile Section -->
-    <div class="border-t border-role mt-auto pt-6">
+    <div class="border-t border-blue-700 mt-auto pt-6">
         <div class="relative">
             <button @click="userProfileMenuOpen = !userProfileMenuOpen"
-                    class="w-full flex items-center justify-between p-3 hover:bg-role-hover rounded-lg transition-colors"
+                    class="w-full flex items-center justify-between p-3 hover:bg-blue-700 rounded-lg transition-colors"
                     :class="sidebarCollapsed ? 'justify-center' : ''">
                 <div class="flex items-center">
                     <div class="w-8 h-8 bg-role-hover rounded-full flex items-center justify-center mr-3">
@@ -274,10 +282,10 @@
                     </div>
                     <div x-show="!sidebarCollapsed" class="sidebar-text">
                         <div class="text-sm font-medium text-white">{{ user.get_full_name|default:user.username }}</div>
-                        <div class="text-xs text-role-accent">Team Planner</div>
+                        <div class="text-xs text-blue-300">Team Planner</div>
                     </div>
                 </div>
-                <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-role-accent transition-transform" :class="userProfileMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-blue-300 transition-transform" :class="userProfileMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </button>
@@ -291,19 +299,19 @@
                  x-transition:leave="transition ease-in duration-75"
                  x-transition:leave-start="transform opacity-100 scale-100"
                  x-transition:leave-end="transform opacity-0 scale-95"
-                 class="absolute bottom-full left-0 right-0 mb-2 bg-role-hover rounded-lg shadow-lg border border-role">
+                 class="absolute bottom-full left-0 right-0 mb-2 bg-role-hover rounded-lg shadow-lg border border-blue-700">
                 <div class="p-2">
-                    <a href="{% url 'frontend:profile' %}" class="block px-4 py-2 text-sm hover:bg-role-hover rounded-lg text-gray-100 hover:text-white">
+                    <a href="{% url 'frontend:profile' %}" class="block px-4 py-2 text-sm hover:bg-blue-700 rounded-lg text-gray-100 hover:text-white">
                         <!-- Heroicon: cog -->
                         <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>Profile Settings
                     </a>
-                    <div class="border-t border-role my-2"></div>
+                    <div class="border-t border-blue-700 my-2"></div>
                     <form method="post" action="{% url 'frontend:logout' %}" class="block">
                         {% csrf_token %}
-                        <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-role-hover rounded-lg text-role-accent">
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm hover:bg-blue-700 rounded-lg text-blue-300">
                             <!-- Heroicon: logout -->
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>

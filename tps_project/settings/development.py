@@ -6,8 +6,12 @@ Settings for local development environment
 import os
 from .base import *
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8g1@i!n4b#_*t5(!bc2dp7^5s3z6nmmx^vc#h$mle4=x45r8qf'
+# Development requires environment variables too for security
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    # Only for development - provide a warning
+    SECRET_KEY = 'django-insecure-dev-only-change-in-env-file'
+    print("WARNING: Using default SECRET_KEY. Please set SECRET_KEY in your .env file!")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

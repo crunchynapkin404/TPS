@@ -18,6 +18,7 @@ from core.services.assignment_service import AssignmentService
 from core.services.skills_service import SkillsService
 from core.services.validation_service import ValidationService
 from core.services.planning_orchestrator import PlanningOrchestrator
+from core.config import config_manager
 
 User = get_user_model()
 
@@ -33,20 +34,20 @@ class IntegrationTestCase(TestCase):
             description="Team for integration testing"
         )
         
-        # Create test users  
+        # Create test users using configuration
         self.user1 = User.objects.create_user(
             username="testuser1",
-            email="test1@example.com",
+            email=config_manager.generate_test_email("testuser1"),
             first_name="John", 
             last_name="Doe",
-            employee_id="EMP001"
+            employee_id=config_manager.generate_employee_id(1)
         )
         self.user2 = User.objects.create_user(
             username="testuser2",
-            email="test2@example.com",
+            email=config_manager.generate_test_email("testuser2"),
             first_name="Jane",
             last_name="Smith",
-            employee_id="EMP002"
+            employee_id=config_manager.generate_employee_id(2)
         )
         
         # Create team role and memberships

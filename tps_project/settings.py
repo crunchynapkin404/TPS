@@ -12,9 +12,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env file
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-in-production')
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1],testserver').split(',')
+# SECURITY: Ensure SECRET_KEY is set from environment
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is required. Please set it in your .env file.")
+
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]').split(',')
+
+# Environment type
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'production')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -68,11 +75,14 @@ WSGI_APPLICATION = 'tps_project.wsgi.application'
 ASGI_APPLICATION = 'tps_project.asgi.application'
 
 # Channel Layers Configuration for WebSockets
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [(os.getenv('REDIS_HOST', 'localhost'), int(os.getenv('REDIS_PORT', '6379')))],
+            'hosts': [(REDIS_HOST, REDIS_PORT)],
         },
     },
 }
@@ -88,12 +98,43 @@ except ImportError:
         },
     }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database Configuration
+# Support both DATABASE_URL and individual DB settings
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    if DATABASE_URL.startswith('sqlite'):
+        # Parse SQLite URL: sqlite:///path/to/db.sqlite3
+        db_path = DATABASE_URL.replace('sqlite:///', '')
+        if not db_path.startswith('/'):
+            db_path = BASE_DIR / db_path
+        
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': db_path,
+            }
+        }
+    elif DATABASE_URL.startswith('postgresql'):
+        # For production PostgreSQL - would need dj-database-url for full parsing
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.getenv('DB_NAME', 'tps'),
+                'USER': os.getenv('DB_USER', 'postgres'),
+                'PASSWORD': os.getenv('DB_PASSWORD', ''),
+                'HOST': os.getenv('DB_HOST', 'localhost'),
+                'PORT': os.getenv('DB_PORT', '5432'),
+            }
+        }
+else:
+    # Default SQLite for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'

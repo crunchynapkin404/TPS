@@ -1,12 +1,16 @@
 """
 Temporary simple settings for testing Django setup
+WARNING: This file contains insecure defaults and should only be used for initial testing.
+Use proper settings.py with environment variables for any real usage.
 """
 
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-8g1@i!n4b#_*t5(!bc2dp7^5s3z6nmmx^vc#h$mle4=x45r8qf'
+# WARNING: Insecure default for testing only
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-testing-only-do-not-use-in-production')
 DEBUG = True
 ALLOWED_HOSTS = []
 

@@ -9,6 +9,7 @@ from django.db import transaction
 from apps.teams.models import Team, TeamRole, TeamMembership
 from apps.accounts.models import SkillCategory, Skill, UserSkill
 from apps.scheduling.models import ShiftCategory, ShiftTemplate, ShiftInstance, PlanningPeriod
+from core.config import config_manager
 from datetime import date, datetime, timedelta
 import random
 
@@ -39,10 +40,14 @@ class Command(BaseCommand):
                 
                 self.stdout.write(self.style.SUCCESS('✅ TPS server initialization complete!'))
                 self.stdout.write('🌟 You can now log in with:')
+                admin_config = config_manager.get_admin_config()
                 if options['production']:
-                    self.stdout.write('   Username: manager  Password: tps2024!')
+                    self.stdout.write(f'   Username: manager  Password: [generated secure password]')
                 else:
-                    self.stdout.write('   Username: manager1  Password: password123')
+                    test_config = config_manager.get_test_config()
+                    self.stdout.write(f'   Username: {admin_config["username"]}  Password: {admin_config["password"]}')
+                    if test_config['create_test_users']:
+                        self.stdout.write(f'   Test users: manager1  Password: {test_config["test_password"]}')
                     
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'❌ Initialization failed: {str(e)}'))
@@ -228,107 +233,117 @@ class Command(BaseCommand):
         """Create user accounts"""
         self.stdout.write('👤 Creating user accounts...')
         
+        # Get configuration
+        admin_config = config_manager.get_admin_config()
+        test_config = config_manager.get_test_config()
+        org_config = config_manager.get_organization_config()
+        
         users_created = 0
         
         # Create or update admin user
-        admin_user = User.objects.filter(username='admin').first()
+        admin_username = admin_config['username']
+        admin_user = User.objects.filter(username=admin_username).first()
         if not admin_user:
             admin = User.objects.create_superuser(
-                username='admin',
-                email='admin@tps.local',
-                password='admin123',
-                first_name='System',
-                last_name='Administrator'
+                username=admin_config['username'],
+                email=admin_config['email'],
+                password=admin_config['password'],
+                first_name=admin_config['first_name'],
+                last_name=admin_config['last_name']
             )
-            admin.employee_id = 'ADM001'
+            admin.employee_id = config_manager.generate_employee_id(1, 'ADM')
             admin.role = 'ADMIN'
-            admin.phone = '+31 20 1234567'
+            admin.phone = config_manager.generate_phone_number()
             admin.save()
             users_created += 1
             self.stdout.write('  + Created admin user')
         else:
             # Update existing admin user
             if not admin_user.employee_id:
-                admin_user.employee_id = 'ADM001'
+                admin_user.employee_id = config_manager.generate_employee_id(1, 'ADM')
             if not hasattr(admin_user, 'role') or not admin_user.role:
                 admin_user.role = 'ADMIN'
             if not admin_user.phone:
-                admin_user.phone = '+31 20 1234567'
+                admin_user.phone = config_manager.generate_phone_number()
             admin_user.save()
             self.stdout.write('  + Updated existing admin user')
         
         if production:
             # Minimal production users
             production_users = [
-                ('planner', 'Planning', 'User', 'planner@tps.local', 'PLANNER', 'PLN001'),
-                ('manager', 'Department', 'Manager', 'manager@tps.local', 'MANAGER', 'MGR001'),
+                ('planner', 'Planning', 'User', 'PLANNER', config_manager.generate_employee_id(1, 'PLN')),
+                ('manager', 'Department', 'Manager', 'MANAGER', config_manager.generate_employee_id(1, 'MGR')),
             ]
             
-            for username, first_name, last_name, email, role, emp_id in production_users:
+            for username, first_name, last_name, role, emp_id in production_users:
                 if not User.objects.filter(username=username).exists():
-                    user = User.objects.create_user(
-                        username=username,
-                        email=email,
-                        password='tps2024!',
-                        first_name=first_name,
-                        last_name=last_name
-                    )
-                    user.employee_id = emp_id
-                    user.role = role
-                    user.is_staff = True if role in ['PLANNER', 'MANAGER'] else False
-                    user.save()
-                    users_created += 1
-                    self.stdout.write(f'  + Created {role.lower()} user: {username}')
-        else:
-            # Test users
-            test_users_data = [
-                ('planner1', 'Alice', 'Planner', 'PLANNER', 'PLN001'),
-                ('manager1', 'Bob', 'Manager', 'MANAGER', 'MGR001'),
-                ('user1', 'Charlie', 'Engineer', 'USER', 'ENG001'),
-                ('user2', 'Diana', 'Technician', 'USER', 'ENG002'),
-                ('user3', 'Edward', 'Analyst', 'USER', 'ENG003'),
-                ('user4', 'Fiona', 'Specialist', 'USER', 'ENG004'),
-                ('user5', 'George', 'Coordinator', 'USER', 'ENG005'),
-            ]
-            
-            for username, first_name, last_name, role, emp_id in test_users_data:
-                if not User.objects.filter(username=username).exists() and not User.objects.filter(employee_id=emp_id).exists():
-                    user = User.objects.create_user(
-                        username=username,
-                        email=f'{username}@tps.local',
-                        password='password123',
-                        first_name=first_name,
-                        last_name=last_name
-                    )
-                    user.employee_id = emp_id
-                    user.role = role
-                    user.phone = f'+31 6 {random.randint(10000000, 99999999)}'
-                    user.is_staff = True if role in ['PLANNER', 'MANAGER'] else False
-                    user.save()
-                    users_created += 1
-                    self.stdout.write(f'  + Created test user: {username} ({role})')
+                    # Generate secure password for production
+                    secure_password = config_manager.generate_secure_password()
                     
-                    # Assign to a team
-                    if role == 'USER':
-                        teams = list(Team.objects.all())
-                        if teams:
-                            team = random.choice(teams)
-                            member_role = TeamRole.objects.get(name='member')
-                            TeamMembership.objects.get_or_create(
-                                user=user,
-                                team=team,
-                                defaults={'role': member_role}
-                            )
-                else:
-                    if User.objects.filter(username=username).exists():
-                        self.stdout.write(f'  ! Skipped {username} - username already exists')
-                    elif User.objects.filter(employee_id=emp_id).exists():
-                        self.stdout.write(f'  ! Skipped {username} - employee_id {emp_id} already exists')
+                    user = User.objects.create_user(
+                        username=username,
+                        email=config_manager.generate_test_email(username),
+                        password=secure_password,
+                        first_name=first_name,
+                        last_name=last_name
+                    )
+                    user.employee_id = emp_id
+                    user.role = role
+                    user.is_staff = True if role in ['PLANNER', 'MANAGER'] else False
+                    user.save()
+                    users_created += 1
+                    self.stdout.write(f'  + Created {role.lower()} user: {username} (password: {secure_password})')
+        else:
+            # Test users if enabled
+            if test_config['create_test_users']:
+                test_users_data = [
+                    ('planner1', 'Alice', 'Planner', 'PLANNER', config_manager.generate_employee_id(1, 'PLN')),
+                    ('manager1', 'Bob', 'Manager', 'MANAGER', config_manager.generate_employee_id(1, 'MGR')),
+                    ('user1', 'Charlie', 'Engineer', 'USER', config_manager.generate_employee_id(1)),
+                    ('user2', 'Diana', 'Technician', 'USER', config_manager.generate_employee_id(2)),
+                    ('user3', 'Edward', 'Analyst', 'USER', config_manager.generate_employee_id(3)),
+                    ('user4', 'Fiona', 'Specialist', 'USER', config_manager.generate_employee_id(4)),
+                    ('user5', 'George', 'Coordinator', 'USER', config_manager.generate_employee_id(5)),
+                ]
+                
+                for username, first_name, last_name, role, emp_id in test_users_data:
+                    if not User.objects.filter(username=username).exists() and not User.objects.filter(employee_id=emp_id).exists():
+                        user = User.objects.create_user(
+                            username=username,
+                            email=config_manager.generate_test_email(username),
+                            password=test_config['test_password'],
+                            first_name=first_name,
+                            last_name=last_name
+                        )
+                        user.employee_id = emp_id
+                        user.role = role
+                        user.phone = config_manager.generate_phone_number()
+                        user.is_staff = True if role in ['PLANNER', 'MANAGER'] else False
+                        user.save()
+                        users_created += 1
+                        self.stdout.write(f'  + Created test user: {username} ({role})')
+                        
+                        # Assign to a team
+                        if role == 'USER':
+                            teams = list(Team.objects.all())
+                            if teams:
+                                team = random.choice(teams)
+                                member_role = TeamRole.objects.get(name='member')
+                                TeamMembership.objects.get_or_create(
+                                    user=user,
+                                    team=team,
+                                    defaults={'role': member_role}
+                                )
+                    else:
+                        if User.objects.filter(username=username).exists():
+                            self.stdout.write(f'  ! Skipped {username} - username already exists')
+                        elif User.objects.filter(employee_id=emp_id).exists():
+                            self.stdout.write(f'  ! Skipped {username} - employee_id {emp_id} already exists')
         
         self.stdout.write(f'  ✅ Created {users_created} user accounts')
         
         # Assign some skills to test users
-        if not production:
+        if not production and test_config['create_test_users']:
             self.assign_skills_to_users()
 
     def assign_skills_to_users(self):

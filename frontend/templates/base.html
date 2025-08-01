@@ -8,8 +8,8 @@
     {% load static %}
     <link href="{% static 'css/styles.css' %}" rel="stylesheet">
     
-    <!-- Alpine.js (Local stub for compatibility) -->
-    <script src="{% static 'js/alpine-stub.js' %}"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     
     <!-- Additional Meta Tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,18 +19,19 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden">
+<body class="h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-300 overflow-hidden" x-data="{ sidebarCollapsed: false, darkMode: localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches) }" x-init="$watch('darkMode', val => { localStorage.setItem('theme', val ? 'dark' : 'light'); document.documentElement.classList.toggle('dark', val) })" :class="{ 'dark': darkMode }">
     {% if user.is_authenticated %}
         <div class="flex h-screen w-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
-            <!-- Sidebar with role-based navigation -->
+            <!-- Sidebar with Alpine.js toggle functionality -->
             <div class="flex-shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-visible z-40 flex flex-col bg-gray-800 dark:bg-gray-900 w-70 lg:w-80" 
+                 :class="sidebarCollapsed ? 'w-16' : 'w-70 lg:w-80'"
                  id="sidebar">
                 <!-- Desktop Toggle Button -->
-                <button id="sidebarToggle"
+                <button @click="sidebarCollapsed = !sidebarCollapsed"
                         class="absolute bottom-15 -right-4 w-8 h-8 bg-gray-700 dark:bg-gray-800 border-2 border-gray-600 dark:border-gray-700 rounded-full text-gray-50 cursor-pointer flex items-center justify-center z-50 transition-all duration-300 ease-in-out shadow-lg hover:bg-gray-600 dark:hover:bg-gray-700 hover:scale-110 hover:border-gray-500 dark:hover:border-gray-600 hover:shadow-xl active:scale-95" 
                         title="Toggle Sidebar">
                     <!-- Heroicon: chevron-left/right -->
-                    <svg class="w-4 h-4 transition-transform duration-300 toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 transition-transform duration-300" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>

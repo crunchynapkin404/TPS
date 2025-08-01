@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'apps.assignments',
     'apps.leave_management',
     'apps.notifications',
+    'frontend',
 ]
 
 MIDDLEWARE = [

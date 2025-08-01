@@ -33,6 +33,10 @@ from api.v1.analytics_overview import (
 from api.v1.assignments_overview import (
     assignments_overview, assignments_timeline, assignments_bulk_data, assignments_bulk_update
 )
+from api.v1.profile import (
+    get_current_user_profile, update_current_user_profile, update_user_preferences,
+    add_user_skill, update_user_skill, delete_user_skill
+)
 
 # Notification API imports
 from django.http import JsonResponse
@@ -57,6 +61,14 @@ urlpatterns = [
     path('v1/assignments/<uuid:assignment_id>/timeline/', assignments_timeline, name='assignments-timeline'),
     path('v1/assignments/bulk-data/', assignments_bulk_data, name='assignments-bulk-data'),
     path('v1/assignments/bulk-update/', assignments_bulk_update, name='assignments-bulk-update'),
+    
+    # Profile API endpoints
+    path('v1/profile/', get_current_user_profile, name='profile-get'),
+    path('v1/profile/basic-info/', update_current_user_profile, name='profile-update-basic'),
+    path('v1/profile/preferences/', update_user_preferences, name='profile-update-preferences'),
+    path('v1/profile/skills/', add_user_skill, name='profile-add-skill'),
+    path('v1/profile/skills/<int:skill_id>/', update_user_skill, name='profile-update-skill'),
+    path('v1/profile/skills/<int:skill_id>/delete/', delete_user_skill, name='profile-delete-skill'),
     
     # Router-generated URLs
     path('v1/', include(router.urls)),

@@ -107,27 +107,84 @@ class User(AbstractUser):
         return self.role == 'USER'
     
     def is_planner(self):
-        """Check if user can access planning features"""
-        return self.role in ['PLANNER', 'MANAGER', 'ADMIN']
+        """Check if user can access planning features - CACHED"""
+        from core.services.cache_service import CacheService
+        
+        cached_permissions = CacheService.get_user_permissions(self.id)
+        if cached_permissions and 'is_planner' in cached_permissions:
+            return cached_permissions['is_planner']
+        
+        # Calculate and cache
+        result = self.role in ['PLANNER', 'MANAGER', 'ADMIN']
+        permissions = {
+            'role': self.role,
+            'is_planner': result,
+            'is_manager': self.role in ['MANAGER', 'ADMIN'],
+            'is_admin': self.role == 'ADMIN',
+            'can_access_planning': result,
+            'can_access_analytics': self.role in ['MANAGER', 'ADMIN'],
+            'can_manage_teams': self.role in ['MANAGER', 'ADMIN'],
+        }
+        CacheService.set_user_permissions(self.id, permissions)
+        return result
     
     def is_manager(self):
-        """Check if user has manager privileges"""
+        """Check if user has manager privileges - CACHED"""
+        from core.services.cache_service import CacheService
+        
+        cached_permissions = CacheService.get_user_permissions(self.id)
+        if cached_permissions and 'is_manager' in cached_permissions:
+            return cached_permissions['is_manager']
+        
+        # Fallback to is_planner which will cache all permissions
+        self.is_planner()  # This will cache all permissions
         return self.role in ['MANAGER', 'ADMIN']
     
     def is_admin(self):
-        """Check if user has admin privileges"""
+        """Check if user has admin privileges - CACHED"""
+        from core.services.cache_service import CacheService
+        
+        cached_permissions = CacheService.get_user_permissions(self.id)
+        if cached_permissions and 'is_admin' in cached_permissions:
+            return cached_permissions['is_admin']
+        
+        # Fallback to is_planner which will cache all permissions
+        self.is_planner()  # This will cache all permissions
         return self.role == 'ADMIN'
     
     def can_access_planning(self):
-        """Check if user can access planning tools"""
-        return self.role in ['PLANNER', 'MANAGER', 'ADMIN']
+        """Check if user can access planning tools - CACHED"""
+        from core.services.cache_service import CacheService
+        
+        cached_permissions = CacheService.get_user_permissions(self.id)
+        if cached_permissions and 'can_access_planning' in cached_permissions:
+            return cached_permissions['can_access_planning']
+        
+        # Fallback to is_planner which will cache all permissions
+        return self.is_planner()
     
     def can_access_analytics(self):
-        """Check if user can access analytics dashboard"""
+        """Check if user can access analytics dashboard - CACHED"""
+        from core.services.cache_service import CacheService
+        
+        cached_permissions = CacheService.get_user_permissions(self.id)
+        if cached_permissions and 'can_access_analytics' in cached_permissions:
+            return cached_permissions['can_access_analytics']
+        
+        # Fallback to is_planner which will cache all permissions
+        self.is_planner()  # This will cache all permissions
         return self.role in ['MANAGER', 'ADMIN']
     
     def can_manage_teams(self):
-        """Check if user can manage teams and users"""
+        """Check if user can manage teams and users - CACHED"""
+        from core.services.cache_service import CacheService
+        
+        cached_permissions = CacheService.get_user_permissions(self.id)
+        if cached_permissions and 'can_manage_teams' in cached_permissions:
+            return cached_permissions['can_manage_teams']
+        
+        # Fallback to is_planner which will cache all permissions
+        self.is_planner()  # This will cache all permissions
         return self.role in ['MANAGER', 'ADMIN']
     
     def get_ytd_stats(self):

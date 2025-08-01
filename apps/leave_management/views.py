@@ -38,40 +38,57 @@ class LeaveOverviewView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        # Get user's leave balances for current year
+        # Get user's leave balances for current year - OPTIMIZED with single query
         current_year = timezone.now().year
         leave_balances = LeaveBalance.objects.filter(
             user=user,
             year=current_year
         ).select_related('leave_type')
         
-        # Get pending approvals if user is manager
+        # Get base queryset once to avoid repeated evaluation
+        base_queryset = self.get_queryset()
+        
+        # Get pending approvals if user is manager - OPTIMIZED with better select_related
         pending_approvals = []
         if user.is_manager() or user.is_admin():
             pending_approvals = LeaveRequest.objects.filter(
                 status__in=['submitted', 'pending_manager', 'pending_hr']
-            ).select_related('user', 'leave_type').order_by('start_date')
+            ).select_related(
+                'user', 'leave_type'
+            ).prefetch_related(
+                'user__team_memberships__team'  # For team-based filtering if needed
+            ).order_by('start_date')
         
-        # Get upcoming leave
+        # Get upcoming leave - OPTIMIZED query
         upcoming_leave = LeaveRequest.objects.filter(
             user=user,
             status='approved',
             start_date__gte=timezone.now().date()
         ).select_related('leave_type').order_by('start_date')[:5]
         
-        # Statistics
-        stats = {
-            'total_requests': self.get_queryset().count(),
-            'pending_requests': self.get_queryset().filter(
+        # Statistics - OPTIMIZED with combined aggregations
+        from django.db.models import Count, Case, When, Sum as DBSum
+        
+        # Get request counts and leave balance totals in optimized queries
+        request_stats = base_queryset.aggregate(
+            total_requests=Count('id'),
+            pending_requests=Count('id', filter=Q(
                 status__in=['submitted', 'pending_manager', 'pending_hr']
-            ).count(),
-            'approved_requests': self.get_queryset().filter(status='approved').count(),
-            'used_days_ytd': leave_balances.aggregate(
-                total=Sum('used')
-            )['total'] or 0,
-            'pending_days': leave_balances.aggregate(
-                total=Sum('pending')
-            )['total'] or 0,
+            )),
+            approved_requests=Count('id', filter=Q(status='approved'))
+        )
+        
+        balance_stats = leave_balances.aggregate(
+            used_days_ytd=DBSum('used'),
+            pending_days=DBSum('pending')
+        )
+        
+        stats = {
+            'total_requests': request_stats['total_requests'],
+            'pending_requests': request_stats['pending_requests'],
+            'approved_requests': request_stats['approved_requests'],
+            'used_days_ytd': balance_stats['used_days_ytd'] or 0,
+            'pending_days': balance_stats['pending_days'] or 0,
         }
         
         context.update({

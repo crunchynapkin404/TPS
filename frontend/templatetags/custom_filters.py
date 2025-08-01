@@ -13,3 +13,11 @@ def lookup(dictionary, key):
 def get_item(dictionary, key):
     """Alternative dictionary lookup filter"""
     return dictionary.get(key, [])
+
+@register.filter
+def mul(value, arg):
+    """Multiply filter - multiplies the value by the argument"""
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0

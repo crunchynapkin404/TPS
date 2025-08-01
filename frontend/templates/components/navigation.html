@@ -114,6 +114,16 @@
                             <span class="sidebar-text">Analytics</span>
                         </a>
                     </li>
+                    
+                    <!-- Assignments -->
+                    <li>
+                        <a href="{% url 'frontend:assignments' %}" 
+                           class="{% if active_nav == 'assignments' %}bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Assignments">
+                            <i class="fas fa-tasks {% if active_nav == 'assignments' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <span class="sidebar-text">Assignments</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
             
@@ -130,16 +140,6 @@
                            title="Teams">
                             <i class="fas fa-users {% if active_nav == 'teams' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
                             <span class="sidebar-text">Teams</span>
-                        </a>
-                    </li>
-                    
-                    <!-- Assignments -->
-                    <li>
-                        <a href="{% url 'frontend:assignments' %}" 
-                           class="{% if active_nav == 'assignments' %}bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
-                           title="Assignments">
-                            <i class="fas fa-tasks {% if active_nav == 'assignments' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
-                            <span class="sidebar-text">Assignments</span>
                         </a>
                     </li>
                 </ul>

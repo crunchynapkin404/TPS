@@ -60,10 +60,68 @@
             <!-- Analytics & Reporting Section -->
             <li>
                 <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wider mb-3 sidebar-text">
+                    Dashboard & Overview
+                </div>
+                <ul role="list" class="-mx-2 space-y-1">
+                    <!-- Manager Dashboard -->
+                    <li>
+                        <a href="{% url 'frontend:dashboard' %}" 
+                           class="{% if active_nav == 'dashboard' %}bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg{% else %}text-role hover:text-white hover:bg-role-hover{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Manager Dashboard">
+                            <svg class="w-5 h-5 {% if active_nav == 'dashboard' %}text-white{% else %}text-role-accent group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                            <span class="sidebar-text">Dashboard</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Schedule Overview -->
+                    <li>
+                        <a href="{% url 'frontend:schedule' %}" 
+                           class="{% if active_nav == 'schedule' %}bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg{% else %}text-role hover:text-white hover:bg-role-hover{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Schedule Overview">
+                            <svg class="w-5 h-5 {% if active_nav == 'schedule' %}text-white{% else %}text-role-accent group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="sidebar-text">Schedules</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Assignments -->
+                    <li>
+                        <a href="{% url 'frontend:assignments' %}" 
+                           class="{% if active_nav == 'assignments' %}bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg{% else %}text-role hover:text-white hover:bg-role-hover{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Assignment Management">
+                            <svg class="w-5 h-5 {% if active_nav == 'assignments' %}text-white{% else %}text-role-accent group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4"></path>
+                            </svg>
+                            <span class="sidebar-text">Assignments</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Planning Tools -->
+                    <li>
+                        <a href="{% url 'frontend:planning' %}" 
+                           class="{% if active_nav == 'planning' %}bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg{% else %}text-role hover:text-white hover:bg-role-hover{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           title="Planning Tools">
+                            <svg class="w-5 h-5 {% if active_nav == 'planning' %}text-white{% else %}text-role-accent group-hover:text-white{% endif %} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            <span class="sidebar-text">Planning</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            
+            <!-- Analytics & Reporting Section -->
+            <li>
+                <div class="text-xs font-semibold leading-6 text-role-accent uppercase tracking-wider mb-3 sidebar-text">
                     Analytics & Reports
                 </div>
                 <ul role="list" class="-mx-2 space-y-1">
-                    <!-- Executive Dashboard -->
+                    <!-- Executive Analytics -->
+                    <li>
+                    <!-- Executive Analytics -->
                     <li>
                         <a href="{% url 'frontend:analytics' %}" 
                            class="{% if active_nav == 'analytics' %}bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg{% else %}text-role hover:text-white hover:bg-role-hover{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
@@ -73,9 +131,7 @@
                             </svg>
                             <span class="sidebar-text">Analytics</span>
                         </a>
-                    </li>
-                    
-                    <!-- Reports -->
+                    </li>                    <!-- Reports -->
                     <li>
                         <a href="#" onclick="alert('Advanced Reports feature coming soon!')" 
                            class="text-role hover:text-white hover:bg-role-hover group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200 cursor-pointer"

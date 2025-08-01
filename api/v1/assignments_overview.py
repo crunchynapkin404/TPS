@@ -23,125 +23,135 @@ def assignments_overview(request):
     """
     Get comprehensive assignments overview with statistics
     """
-    user = request.user
-    now = timezone.now()
-    today = now.date()
-    
-    # Date filters from request
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    team_filter = request.GET.get('team')
-    status_filter = request.GET.get('status')
-    
-    # Default to current month if no dates provided
-    if not start_date:
-        start_date = today.replace(day=1)
-    else:
-        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    try:
+        user = request.user
+        now = timezone.now()
+        today = now.date()
         
-    if not end_date:
-        end_date = today
-    else:
-        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-    
-    # Get user's accessible teams
-    user_teams = Team.objects.filter(
-        Q(memberships__user=user) | Q(team_leader=user)
-    ).distinct()
-    
-    # Base queryset
-    assignments_queryset = Assignment.objects.filter(
-        shift__start_datetime__gte=start_date,
-        shift__start_datetime__lte=end_date + timedelta(days=1)
-    ).select_related('user', 'shift__template', 'shift__planning_period')
-    
-    # Filter by accessible teams
-    assignments_queryset = assignments_queryset.filter(
-        shift__planning_period__teams__in=user_teams
-    ).distinct()
-    
-    # Apply filters
-    if team_filter:
-        assignments_queryset = assignments_queryset.filter(
-            shift__planning_period__teams__id=team_filter
-        )
+        # Date filters from request
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        team_filter = request.GET.get('team')
+        status_filter = request.GET.get('status')
         
-    if status_filter:
-        assignments_queryset = assignments_queryset.filter(status=status_filter)
-    
-    # Get statistics
-    total_assignments = assignments_queryset.count()
-    confirmed_assignments = assignments_queryset.filter(status='confirmed').count()
-    pending_assignments = assignments_queryset.filter(status='pending_confirmation').count()
-    declined_assignments = assignments_queryset.filter(status='declined').count()
-    completed_assignments = assignments_queryset.filter(status='completed').count()
-    
-    # Calculate completion rate
-    completion_rate = round((completed_assignments / total_assignments * 100), 1) if total_assignments > 0 else 0
-    confirmation_rate = round((confirmed_assignments / total_assignments * 100), 1) if total_assignments > 0 else 0
-    
-    # Get recent assignments (limited to prevent large payloads)
-    recent_assignments = assignments_queryset.order_by('-assigned_at')[:50]
-    
-    assignments_data = []
-    for assignment in recent_assignments:
-        assignments_data.append({
-            'id': str(assignment.assignment_id),
-            'user': {
-                'id': assignment.user.pk,
-                'name': assignment.user.get_full_name(),
-                'email': assignment.user.email
+        # Default to current month if no dates provided
+        if not start_date:
+            start_date = today.replace(day=1)
+        else:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            
+        if not end_date:
+            end_date = today
+        else:
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+        # Get user's accessible teams
+        user_teams = Team.objects.filter(
+            Q(memberships__user=user) | Q(team_leader=user)
+        ).distinct()
+        
+        # Get statistics - use separate queries to avoid slice issues
+        base_filter_kwargs = {
+            'shift__start_datetime__gte': start_date,
+            'shift__start_datetime__lte': end_date + timedelta(days=1)
+        }
+        
+        # Build the team filter
+        team_filter_q = Q(shift__planning_period__teams__in=user_teams)
+        if team_filter:
+            team_filter_q &= Q(shift__planning_period__teams__id=team_filter)
+        
+        # Build status filter
+        status_filter_q = Q()
+        if status_filter:
+            status_filter_q = Q(status=status_filter)
+        
+        # Combine all filters
+        combined_filter = Q(**base_filter_kwargs) & team_filter_q & status_filter_q
+        
+        # Get statistics with separate queries
+        total_assignments = Assignment.objects.filter(combined_filter).distinct().count()
+        confirmed_assignments = Assignment.objects.filter(combined_filter & Q(status='confirmed')).distinct().count()
+        pending_assignments = Assignment.objects.filter(combined_filter & Q(status='pending_confirmation')).distinct().count()
+        declined_assignments = Assignment.objects.filter(combined_filter & Q(status='declined')).distinct().count()
+        completed_assignments = Assignment.objects.filter(combined_filter & Q(status='completed')).distinct().count()
+        
+        # Calculate completion rate
+        completion_rate = round((completed_assignments / total_assignments * 100), 1) if total_assignments > 0 else 0
+        confirmation_rate = round((confirmed_assignments / total_assignments * 100), 1) if total_assignments > 0 else 0
+        
+        # Get recent assignments - use a fresh query
+        recent_assignments = Assignment.objects.filter(combined_filter).select_related(
+            'user', 'shift__template', 'shift__planning_period'
+        ).distinct().order_by('-assigned_at')[:50]
+        
+        assignments_data = []
+        for assignment in recent_assignments:
+            assignments_data.append({
+                'id': str(assignment.assignment_id),
+                'user': {
+                    'id': assignment.user.pk,
+                    'name': assignment.user.get_full_name(),
+                    'email': assignment.user.email
+                },
+                'shift': {
+                    'id': assignment.shift.pk,
+                    'name': assignment.shift.template.name if assignment.shift.template else 'Unknown',
+                    'start_datetime': assignment.shift.start_datetime.isoformat(),
+                    'end_datetime': assignment.shift.end_datetime.isoformat(),
+                    'category': assignment.shift.template.category.name if assignment.shift.template and assignment.shift.template.category else 'General'
+                },
+                'status': assignment.status,
+                'status_display': dict(Assignment.STATUS_CHOICES).get(assignment.status, assignment.status),
+                'assignment_type': assignment.assignment_type,
+                'assigned_at': assignment.assigned_at.isoformat(),
+                'confirmed_at': assignment.confirmed_at.isoformat() if assignment.confirmed_at else None,
+                'completed_at': assignment.completed_at.isoformat() if assignment.completed_at else None,
+                'assigned_by': assignment.assigned_by.get_full_name() if assignment.assigned_by else 'System',
+                'assignment_notes': assignment.assignment_notes or '',
+                'can_edit': user.is_staff or assignment.assigned_by == user,
+                'can_approve': user.is_staff or assignment.shift.planning_period.teams.filter(team_leader=user).exists()
+            })
+        
+        return Response({
+            'success': True,
+            'overview': {
+                'total_assignments': total_assignments,
+                'confirmed_assignments': confirmed_assignments,
+                'pending_assignments': pending_assignments,
+                'overdue_assignments': declined_assignments,  # Using declined as overdue for now
+                'completion_rate': completion_rate,
+                'confirmation_rate': confirmation_rate
             },
-            'shift': {
-                'id': assignment.shift.pk,
-                'name': assignment.shift.template.name if assignment.shift.template else 'Unknown',
-                'start_datetime': assignment.shift.start_datetime.isoformat(),
-                'end_datetime': assignment.shift.end_datetime.isoformat(),
-                'category': assignment.shift.template.category.name if assignment.shift.template and assignment.shift.template.category else 'General'
+            'statistics': {
+                'total_assignments': total_assignments,
+                'confirmed_assignments': confirmed_assignments,
+                'pending_assignments': pending_assignments,
+                'declined_assignments': declined_assignments,
+                'completed_assignments': completed_assignments,
+                'completion_rate': completion_rate,
+                'confirmation_rate': confirmation_rate
             },
-            'status': assignment.status,
-            'status_display': dict(Assignment.STATUS_CHOICES).get(assignment.status, assignment.status),
-            'assignment_type': assignment.assignment_type,
-            'assigned_at': assignment.assigned_at.isoformat(),
-            'confirmed_at': assignment.confirmed_at.isoformat() if assignment.confirmed_at else None,
-            'completed_at': assignment.completed_at.isoformat() if assignment.completed_at else None,
-            'assigned_by': assignment.assigned_by.get_full_name() if assignment.assigned_by else 'System',
-            'assignment_notes': assignment.assignment_notes or '',
-            'can_edit': user.is_staff or assignment.assigned_by == user,
-            'can_approve': user.is_staff or assignment.shift.planning_period.teams.filter(team_leader=user).exists()
+            'assignments': assignments_data,
+            'filters': {
+                'teams': [{'id': team.pk, 'name': team.name} for team in user_teams],
+                'statuses': Assignment.STATUS_CHOICES
+            },
+            'pagination': {
+                'total': total_assignments,
+                'showing': len(assignments_data),
+                'has_more': total_assignments > 50
+            },
+            'timestamp': now.isoformat()
         })
     
-    return Response({
-        'success': True,
-        'overview': {
-            'total_assignments': total_assignments,
-            'confirmed_assignments': confirmed_assignments,
-            'pending_assignments': pending_assignments,
-            'overdue_assignments': declined_assignments,  # Using declined as overdue for now
-            'completion_rate': completion_rate,
-            'confirmation_rate': confirmation_rate
-        },
-        'statistics': {
-            'total_assignments': total_assignments,
-            'confirmed_assignments': confirmed_assignments,
-            'pending_assignments': pending_assignments,
-            'declined_assignments': declined_assignments,
-            'completed_assignments': completed_assignments,
-            'completion_rate': completion_rate,
-            'confirmation_rate': confirmation_rate
-        },
-        'assignments': assignments_data,
-        'filters': {
-            'teams': [{'id': team.pk, 'name': team.name} for team in user_teams],
-            'statuses': Assignment.STATUS_CHOICES
-        },
-        'pagination': {
-            'total': total_assignments,
-            'showing': len(assignments_data),
-            'has_more': total_assignments > 50
-        },
-        'timestamp': now.isoformat()
-    })
+    except Exception as e:
+        import traceback
+        return Response({
+            'success': False,
+            'error': f'Failed to fetch assignments overview: {str(e)}',
+            'traceback': traceback.format_exc()
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])

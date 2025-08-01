@@ -7,7 +7,8 @@ from django.urls import path
 from api.consumers import NotificationConsumer, PlanningConsumer, AssignmentConsumer
 
 websocket_urlpatterns = [
-    # User notifications WebSocket
+    # User notifications WebSocket - support both with and without user ID
+    path('ws/notifications/', NotificationConsumer.as_asgi()),
     path('ws/notifications/<int:user_id>/', NotificationConsumer.as_asgi()),
     
     # Planning progress WebSocket  

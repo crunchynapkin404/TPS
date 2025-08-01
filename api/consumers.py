@@ -20,11 +20,22 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
         """Accept WebSocket connection and join user notification group"""
-        self.user_id = self.scope['url_route']['kwargs']['user_id']
+        # Get user_id from URL if provided, otherwise use authenticated user's ID
+        self.user_id = self.scope['url_route']['kwargs'].get('user_id')
+        user = self.scope.get('user')
+        
+        # If no user_id in URL and user is authenticated, use their ID
+        if not self.user_id and user and user.is_authenticated:
+            self.user_id = user.id
+        
+        # If still no user_id, reject connection
+        if not self.user_id:
+            await self.close(code=4001)  # Unauthorized
+            return
+            
         self.user_group_name = f'notifications_user_{self.user_id}'
         
         # Check if user is authenticated and authorized
-        user = self.scope.get('user')
         if user and user.is_authenticated:
             if user.id == self.user_id or user.is_superuser or hasattr(user, 'role') and user.role in ['management', 'admin']:
                 # Join notification group

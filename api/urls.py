@@ -52,6 +52,12 @@ urlpatterns = [
     path('v1/assignments/types/', assignment_types, name='assignment-types'),
     path('v1/assignments/validate-slot/', validate_assignment_slot, name='assignment-validate-slot'),
     
+    # Assignments Management API endpoints - must come BEFORE router to override ViewSet routes
+    path('v1/assignments/overview/', assignments_overview, name='assignments-overview'),
+    path('v1/assignments/<uuid:assignment_id>/timeline/', assignments_timeline, name='assignments-timeline'),
+    path('v1/assignments/bulk-data/', assignments_bulk_data, name='assignments-bulk-data'),
+    path('v1/assignments/bulk-update/', assignments_bulk_update, name='assignments-bulk-update'),
+    
     # Router-generated URLs
     path('v1/', include(router.urls)),
     
@@ -103,12 +109,6 @@ urlpatterns = [
     # path('v1/teams/overview/', teams_overview, name='teams-overview'),
     # path('v1/teams/statistics/', teams_statistics, name='teams-statistics'),
     path('v1/teams/<int:team_id>/members/', team_members, name='team-members'),
-    
-    # Assignments Management API endpoints - overview enabled
-    path('v1/assignments/overview/', assignments_overview, name='assignments-overview'),
-    path('v1/assignments/<uuid:assignment_id>/timeline/', assignments_timeline, name='assignments-timeline'),
-    path('v1/assignments/bulk-data/', assignments_bulk_data, name='assignments-bulk-data'),
-    path('v1/assignments/bulk-update/', assignments_bulk_update, name='assignments-bulk-update'),
     
     # Notification API endpoints (temporary endpoints)
     path('v1/notifications/unread/', lambda request: JsonResponse({'count': 0, 'notifications': []}), name='notifications-unread'),

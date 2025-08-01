@@ -337,7 +337,7 @@ function swapRequestApp() {
         // Load user's current assignments
         async loadMyAssignments() {
             try {
-                const response = await fetch('/api/v1/assignments/', {
+                const response = await fetch('/api/v1/assignments/simple/', {
                     headers: {
                         'X-CSRFToken': this.getCsrfToken(),
                     },
@@ -356,7 +356,7 @@ function swapRequestApp() {
         // Load swap requests
         async loadSwapRequests() {
             try {
-                const response = await fetch('/api/v1/swap-requests/', {
+                const response = await fetch('/api/v1/swap-requests/simple/', {
                     headers: {
                         'X-CSRFToken': this.getCsrfToken(),
                     },
@@ -377,7 +377,7 @@ function swapRequestApp() {
         // Load available assignments for swapping
         async loadAvailableAssignments() {
             try {
-                const response = await fetch('/api/v1/assignments/?available_for_swap=true', {
+                const response = await fetch('/api/v1/assignments/available/simple/', {
                     headers: {
                         'X-CSRFToken': this.getCsrfToken(),
                     },

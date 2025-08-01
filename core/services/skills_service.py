@@ -26,7 +26,11 @@ class SkillsService:
     def get_qualified_users(self, shift_template: ShiftTemplate) -> QuerySet[User]:
         """
         Get users qualified for a specific shift template
-        Based on skills, proficiency levels, and certifications
+        Based on simplified skill system with only 4 skills:
+        - Incidenten (incident response)
+        - Projects (daily default work)
+        - Changes (daily default work)
+        - Waakdienst (on-call duty)
         """
         # Get team members
         team_member_ids = TeamMembership.objects.filter(
@@ -39,40 +43,71 @@ class SkillsService:
             is_active=True
         )
         
-        # Get required skills for this shift category
-        category_skills = Skill.objects.filter(
-            category__name__icontains=shift_template.category,
-            is_active=True
-        )
+        # Map shift categories to required skills
+        category_skill_mapping = {
+            'WAAKDIENST': 'Waakdienst',
+            'INCIDENT': 'Incidenten',
+            'CHANGES': 'Changes',
+            'PROJECTS': 'Projects'
+        }
         
-        if not category_skills.exists():
-            logger.warning(f"No skills defined for category: {shift_template.category}")
+        required_skill_name = category_skill_mapping.get(shift_template.category.name)
+        if not required_skill_name:
+            logger.warning(f"No skill mapping found for category: {shift_template.category.name}")
             return base_users.none()
         
-        # Filter users who have at least one relevant skill with adequate proficiency
-        qualified_user_ids = []
+        # Get the required skill
+        try:
+            required_skill = Skill.objects.get(name=required_skill_name, is_active=True)
+        except Skill.DoesNotExist:
+            logger.warning(f"Required skill not found: {required_skill_name}")
+            return base_users.none()
         
-        for user in base_users:
-            user_skills = UserSkill.objects.filter(
-                user=user,
-                skill__in=category_skills,
-                proficiency_level__in=['intermediate', 'advanced', 'expert']
-            )
-            
-            # Check if user has required certifications
-            if self._has_required_certifications(user, user_skills):
-                qualified_user_ids.append(user.id)
+        # Filter users who have the required skill
+        qualified_user_ids = UserSkill.objects.filter(
+            skill=required_skill,
+            user__in=base_users
+        ).values_list('user_id', flat=True)
         
         return User.objects.filter(id__in=qualified_user_ids).order_by('last_name')
     
     def calculate_skill_score(self, user: User, shift_template: ShiftTemplate) -> float:
         """
-        Calculate skill score for user assignment
-        Higher score = better qualified
-        """
-        score = 0.0
+        Calculate skill score for user assignment based on simplified skill system
         
-        # Proficiency level weights
+        Load balancing rules:
+        - Projects and Changes have no value (score = 0 for load balancing)
+        - Only incident shifts count when balancing incident workload
+        - Only waakdienst shifts count when balancing waakdienst workload
+        """
+        # Projects and Changes are daily default work and have no value for load balancing
+        if shift_template.category.name in ['PROJECTS', 'CHANGES']:
+            return 0.0
+        
+        # Map shift categories to required skills
+        category_skill_mapping = {
+            'WAAKDIENST': 'Waakdienst',
+            'INCIDENT': 'Incidenten'
+        }
+        
+        required_skill_name = category_skill_mapping.get(shift_template.category.name)
+        if not required_skill_name:
+            return 0.0
+        
+        # Check if user has the required skill
+        try:
+            user_skill = UserSkill.objects.get(
+                user=user,
+                skill__name=required_skill_name,
+                skill__is_active=True
+            )
+        except UserSkill.DoesNotExist:
+            return 0.0
+        
+        # Base score for having the skill
+        score = 10.0
+        
+        # Proficiency level weights (simplified)
         proficiency_weights = {
             'learning': 1.0,
             'basic': 2.0,
@@ -81,41 +116,32 @@ class SkillsService:
             'expert': 5.0
         }
         
-        # Get user's skills for this shift category
-        category_skills = UserSkill.objects.filter(
-            user=user,
-            skill__category__name__icontains=shift_template.category,
-            skill__is_active=True
-        )
+        proficiency_score = proficiency_weights.get(user_skill.proficiency_level, 2.0)
+        score += proficiency_score
         
-        for user_skill in category_skills:
-            # Add proficiency score
-            proficiency_score = proficiency_weights.get(user_skill.proficiency_level, 1.0)
-            score += proficiency_score
+        # Bonus for certification (especially important for Waakdienst)
+        if user_skill.is_certified and user_skill.skill.name == 'Waakdienst':
+            score += 5.0
+        elif user_skill.is_certified:
+            score += 2.0
             
-            # Bonus for certification
-            if user_skill.is_certified:
+        # Bonus for recent usage
+        if user_skill.last_used_date:
+            days_since_use = (timezone.now().date() - user_skill.last_used_date).days
+            if days_since_use < 30:  # Used in last month
+                score += 2.0
+            elif days_since_use < 90:  # Used in last 3 months
                 score += 1.0
-                
-            # Bonus for recent usage
-            if user_skill.last_used_date:
-                days_since_use = (timezone.now().date() - user_skill.last_used_date).days
-                if days_since_use < 30:  # Used in last month
-                    score += 0.5
-                elif days_since_use < 90:  # Used in last 3 months
-                    score += 0.2
         
-        # Penalty for missing required skills
-        required_skills = Skill.objects.filter(
-            category__name__icontains=shift_template.category,
-            required_proficiency_level__in=['intermediate', 'advanced', 'expert'],
-            is_active=True
-        )
-        
-        for required_skill in required_skills:
-            user_has_skill = category_skills.filter(skill=required_skill).exists()
-            if not user_has_skill:
-                score -= 2.0  # Penalty for missing required skill
+        # Load balancing factor based on current YTD workload
+        if shift_template.category.name == 'WAAKDIENST':
+            # Lower score for users with higher waakdienst workload
+            ytd_waakdienst = user.ytd_waakdienst_weeks or 0
+            score -= (ytd_waakdienst * 2.0)  # Reduce score by 2 for each week worked
+        elif shift_template.category.name == 'INCIDENT':
+            # Lower score for users with higher incident workload  
+            ytd_incident = user.ytd_incident_weeks or 0
+            score -= (ytd_incident * 1.0)  # Reduce score by 1 for each week worked
         
         return max(score, 0.0)  # Ensure non-negative score
     
@@ -150,13 +176,24 @@ class SkillsService:
     def get_skill_gaps(self, shift_template: ShiftTemplate) -> Dict[str, List[str]]:
         """
         Identify skill gaps for a shift template across the team
-        Returns dict with 'missing_skills' and 'users_needing_training'
+        Simplified for the 4-skill system
         """
-        # Get required skills for this shift
-        required_skills = Skill.objects.filter(
-            category__name__icontains=shift_template.category,
-            is_active=True
-        )
+        # Map shift categories to required skills
+        category_skill_mapping = {
+            'WAAKDIENST': 'Waakdienst',
+            'INCIDENT': 'Incidenten',
+            'CHANGES': 'Changes', 
+            'PROJECTS': 'Projects'
+        }
+        
+        required_skill_name = category_skill_mapping.get(shift_template.category.name)
+        if not required_skill_name:
+            return {'missing_skills': [], 'users_needing_training': [], 'certification_gaps': []}
+        
+        try:
+            required_skill = Skill.objects.get(name=required_skill_name, is_active=True)
+        except Skill.DoesNotExist:
+            return {'missing_skills': [required_skill_name], 'users_needing_training': [], 'certification_gaps': []}
         
         # Get team members
         team_members = self._get_team_members()
@@ -167,52 +204,56 @@ class SkillsService:
             'certification_gaps': []
         }
         
-        for skill in required_skills:
-            # Check how many team members have this skill
-            qualified_count = UserSkill.objects.filter(
+        # Check how many team members have this skill
+        qualified_count = UserSkill.objects.filter(
+            user__in=team_members,
+            skill=required_skill
+        ).count()
+        
+        # Minimum requirements based on skill type
+        min_required = 3 if required_skill_name in ['Waakdienst', 'Incidenten'] else 2
+        
+        if qualified_count < min_required:
+            skill_gaps['missing_skills'].append({
+                'skill_name': required_skill.name,
+                'qualified_count': qualified_count,
+                'required_minimum': min_required
+            })
+        
+        # Check certification gaps (important for Waakdienst)
+        if required_skill.requires_certification:
+            certified_count = UserSkill.objects.filter(
                 user__in=team_members,
-                skill=skill,
-                proficiency_level__in=['intermediate', 'advanced', 'expert']
+                skill=required_skill,
+                is_certified=True,
+                certification_expiry__gt=timezone.now().date()
             ).count()
             
-            # If less than 3 people have the skill, it's a gap
-            if qualified_count < 3:
-                skill_gaps['missing_skills'].append({
-                    'skill_name': skill.name,
-                    'qualified_count': qualified_count,
-                    'required_minimum': 3
+            min_certified = 2 if required_skill_name == 'Waakdienst' else 1
+            if certified_count < min_certified:
+                skill_gaps['certification_gaps'].append({
+                    'skill_name': required_skill.name,
+                    'certified_count': certified_count,
+                    'required_minimum': min_certified
                 })
-            
-            # Check certification gaps
-            if skill.requires_certification:
-                certified_count = UserSkill.objects.filter(
-                    user__in=team_members,
-                    skill=skill,
-                    is_certified=True,
-                    certification_expiry__gt=timezone.now().date()
-                ).count()
-                
-                if certified_count < 2:  # Need at least 2 certified users
-                    skill_gaps['certification_gaps'].append({
-                        'skill_name': skill.name,
-                        'certified_count': certified_count,
-                        'required_minimum': 2
-                    })
         
-        # Identify users who need training
+        # Identify users who need this skill
+        users_without_skill = []
         for user in team_members:
-            user_skills = UserSkill.objects.filter(
+            has_skill = UserSkill.objects.filter(
                 user=user,
-                skill__in=required_skills
-            )
+                skill=required_skill
+            ).exists()
             
-            if user_skills.count() < required_skills.count() / 2:  # Has less than half required skills
-                skill_gaps['users_needing_training'].append({
+            if not has_skill:
+                users_without_skill.append({
                     'user_name': user.get_full_name(),
                     'user_id': user.id,
-                    'current_skills': user_skills.count(),
-                    'required_skills': required_skills.count()
+                    'missing_skill': required_skill.name
                 })
+        
+        # Show up to 5 users needing training
+        skill_gaps['users_needing_training'] = users_without_skill[:5]
         
         return skill_gaps
     
@@ -263,28 +304,50 @@ class SkillsService:
     
     def recommend_skill_assignments(self, shift_template: ShiftTemplate) -> List[Dict]:
         """
-        Recommend users for a shift based on skill matching
-        Returns ranked list of recommendations
+        Recommend users for a shift based on simplified skill matching
+        Returns ranked list of recommendations with load balancing
         """
         qualified_users = self.get_qualified_users(shift_template)
         recommendations = []
         
+        # Map shift categories to required skills
+        category_skill_mapping = {
+            'WAAKDIENST': 'Waakdienst',
+            'INCIDENT': 'Incidenten',
+            'CHANGES': 'Changes',
+            'PROJECTS': 'Projects'
+        }
+        
+        required_skill_name = category_skill_mapping.get(shift_template.category.name)
+        
         for user in qualified_users:
             skill_score = self.calculate_skill_score(user, shift_template)
             
-            # Get user's specific skills for this shift
-            user_skills = UserSkill.objects.filter(
-                user=user,
-                skill__category__name__icontains=shift_template.category
-            ).select_related('skill')
-            
+            # Get user's skill details for this shift
             skill_details = []
-            for user_skill in user_skills:
-                skill_details.append({
-                    'skill_name': user_skill.skill.name,
-                    'proficiency': user_skill.proficiency_level,
-                    'certified': user_skill.is_certified
-                })
+            if required_skill_name:
+                try:
+                    user_skill = UserSkill.objects.get(
+                        user=user,
+                        skill__name=required_skill_name
+                    )
+                    skill_details.append({
+                        'skill_name': user_skill.skill.name,
+                        'proficiency': user_skill.proficiency_level,
+                        'certified': user_skill.is_certified
+                    })
+                except UserSkill.DoesNotExist:
+                    pass
+            
+            # Calculate load balancing weight
+            load_balancing_weight = 0
+            if shift_template.category.name == 'WAAKDIENST':
+                # For waakdienst, consider only waakdienst workload
+                load_balancing_weight = user.ytd_waakdienst_weeks or 0
+            elif shift_template.category.name == 'INCIDENT':
+                # For incident, consider only incident workload
+                load_balancing_weight = user.ytd_incident_weeks or 0
+            # Projects and Changes don't contribute to load balancing
             
             recommendations.append({
                 'user': user,
@@ -293,11 +356,17 @@ class SkillsService:
                 'skill_score': skill_score,
                 'skill_details': skill_details,
                 'ytd_waakdienst_weeks': user.ytd_waakdienst_weeks or 0,
-                'ytd_incident_weeks': user.ytd_incident_weeks or 0
+                'ytd_incident_weeks': user.ytd_incident_weeks or 0,
+                'load_balancing_weight': load_balancing_weight,
+                'shift_category': shift_template.category.name
             })
         
-        # Sort by skill score (descending) then by YTD workload (ascending)
-        recommendations.sort(key=lambda x: (-x['skill_score'], x.get('ytd_waakdienst_weeks', 0) + x.get('ytd_incident_weeks', 0)))
+        # Sort by skill score (descending) then by load balancing weight (ascending for fairness)
+        # Projects and Changes are sorted only by skill score since they don't count for load balancing
+        if shift_template.category.name in ['PROJECTS', 'CHANGES']:
+            recommendations.sort(key=lambda x: -x['skill_score'])
+        else:
+            recommendations.sort(key=lambda x: (-x['skill_score'], x['load_balancing_weight']))
         
         return recommendations
     

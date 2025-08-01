@@ -100,28 +100,23 @@ class PlanningOrchestrator:
         checks['incident_engineers'] = len(incident_engineers)
         checks['waakdienst_engineers'] = len(waakdienst_engineers)
 
-        # 4. Check skill-availability alignment
+        # 4. Check skill-availability alignment  
         team_members = self._get_team_members()
         misaligned_users = []
         
         for user in team_members:
-            # Check incident skill alignment
-            has_incident_skills = user.user_skills.filter(
-                skill__category__name__icontains='incident'
+            # Check if user has any of the core operational skills
+            has_operational_skills = user.user_skills.filter(
+                skill__name__in=['Incidenten', 'Waakdienst', 'Projects', 'Changes']
             ).exists()
             
-            # Check waakdienst skill alignment  
-            has_waakdienst_skills = user.user_skills.filter(
-                skill__category__name__icontains='waakdienst'
-            ).exists()
-            
-            if not has_incident_skills and not has_waakdienst_skills:
-                misaligned_users.append(f"{user.get_full_name()} (no incident or waakdienst skills)")
+            if not has_operational_skills:
+                misaligned_users.append(f"{user.get_full_name()} (no operational skills)")
                 
         if misaligned_users:
             warnings.extend(misaligned_users[:3])  # Show first 3
             if len(misaligned_users) > 3:
-                warnings.append(f"... and {len(misaligned_users) - 3} more users without required skills")
+                warnings.append(f"... and {len(misaligned_users) - 3} more users without operational skills")
 
         # 5. Check planning service readiness
         service_errors = []

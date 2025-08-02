@@ -1,386 +1,308 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block extra_css %}
-{% endblock %}
-
 {% block content %}
-<!-- CLEAN DESKTOP DASHBOARD -->
-<div class="grid grid-rows-4 gap-5 w-full p-6" x-data="dashboardData()">
-    <!-- Welcome Header -->
-    <header class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {% trans "Welcome back" %}, {{ user.first_name|default:user.username }}! 👋
-        </h1>
-        <p class="text-lg text-gray-600 dark:text-gray-300">
-            {% trans "Here's what's happening with your team today" %}
-        </p>
-    </header>
+<!-- Using new layout system -->
+{% include 'layouts/page_wrapper.html' with wrapper_type="standard" %}
 
-    <!-- Stats Grid -->
-    <section class="grid grid-cols-6 gap-4 xl:grid-cols-6 lg:grid-cols-3 lg:grid-rows-2 md:grid-cols-2 md:grid-rows-3 sm:grid-cols-1" 
-             aria-labelledby="stats-heading">
-        <h2 id="stats-heading" class="sr-only">{% trans "Dashboard Statistics" %}</h2>
-        
-        <article class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/40 focus-within:ring-2 focus-within:ring-blue-300" 
-                 @click="window.location.href='/schedule/'"
-                 tabindex="0"
-                 role="button"
-                 aria-label="{% trans 'View my shifts' %}: {{ my_upcoming_shifts.count }} {% trans 'shifts' %}"
-                 @keydown.enter="window.location.href='/schedule/'"
-                 @keydown.space.prevent="window.location.href='/schedule/'">
-            <div class="text-2xl mb-2 opacity-90" aria-hidden="true">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-            </div>
-            <div class="text-3xl font-bold mb-1" x-text="stats.myShifts">{{ my_upcoming_shifts.count }}</div>
-            <div class="text-sm opacity-90 font-medium">{% trans "My Shifts" %}</div>
-        </article>
-        
-        <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-amber-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-amber-500/40" @click="showPendingApprovals()">
-            <div class="text-2xl mb-2 opacity-90">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.958-.833-2.728 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                </svg>
-            </div>
-            <div class="text-3xl font-bold mb-1" x-text="stats.pendingApprovals">{{ pending_approvals }}</div>
-            <div class="text-sm opacity-90 font-medium">Pending</div>
-        </div>
-        
-        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-500/40" @click="window.location.href='/teams/'">
-            <div class="text-2xl mb-2 opacity-90">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                </svg>
-            </div>
-            <div class="text-3xl font-bold mb-1" x-text="stats.activeMembers">{{ active_members }}</div>
-            <div class="text-sm opacity-90 font-medium">Team Members</div>
-        </div>
-        
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-purple-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-purple-500/40" @click="window.location.href='/assignments/'">
-            <div class="text-2xl mb-2 opacity-90">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                </svg>
-            </div>
-            <div class="text-3xl font-bold mb-1" x-text="stats.monthlyAssignments">{{ monthly_assignments }}</div>
-            <div class="text-sm opacity-90 font-medium">This Month</div>
-        </div>
-        
-        <div class="bg-gradient-to-br from-teal-500 to-teal-600 text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg shadow-teal-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-500/40">
-            <div class="text-2xl mb-2 opacity-90">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                </svg>
-            </div>
-            <div class="text-3xl font-bold mb-1" x-text="stats.systemHealth + '%'">{{ system_health }}%</div>
-            <div class="text-sm opacity-90 font-medium">System Health</div>
-        </div>
-        
-        <div class="text-white p-5 rounded-lg flex flex-col items-center justify-center text-center relative overflow-hidden cursor-pointer transition-all duration-200 shadow-lg hover:-translate-y-0.5" 
-             :class="fairnessCardClasses">
-            <div class="text-2xl mb-2 opacity-90">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
-                </svg>
-            </div>
-            <div class="text-3xl font-bold mb-1" x-text="stats.fairnessScore + '%'">{{ fairness_score }}%</div>
-            <div class="text-sm opacity-90 font-medium">Fairness</div>
-        </div>
+{% block page_content %}
+    <!-- Page Header using new system -->
+    {% include 'layouts/page_header.html' with title="Welcome back, "|add:user.first_name|default:user.username|add:"! 👋" description="Here's what's happening with your team today" show_actions=True %}
+    
+    {% block page_actions %}
+    <div class="flex items-center gap-3">
+        <button @click="openPlanningWizard()" class="btn-primary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+            </svg>
+            Generate Planning
+        </button>
+        <button @click="openQuickAssign()" class="btn-secondary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Quick Assign
+        </button>
     </div>
+    {% endblock %}
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-3 gap-4 lg:grid-cols-2 md:grid-cols-1">
-        <!-- Recent Activity -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
-            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <i class="fas fa-stream text-blue-600 mr-2"></i>
-                Recent Activity
-            </div>
-            <div class="flex-1 p-5 overflow-y-auto">
-                <div id="recent-activity-list">
-                    {% for assignment in recent_assignments %}
-                    <div class="py-3 border-b border-gray-100 dark:border-gray-600 last:border-b-0 flex items-center gap-3">
-                        <div class="flex justify-between items-center w-full">
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-white text-sm">{{ assignment.user.get_full_name }} - {{ assignment.shift.template.name }}</div>
-                                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ assignment.shift.start_datetime|date:"M d" }} • {{ assignment.shift.start_datetime|time:"H:i" }}-{{ assignment.shift.end_datetime|time:"H:i" }}</div>
+    <!-- Stats Grid using new system -->
+    {% include 'layouts/stats_grid.html' with stats=dashboard_stats columns="6" %}
+
+    <!-- Content Layout using new system -->
+    {% include 'layouts/content_layout.html' with layout_type="sidebar-right" sidebar_width="standard" %}
+    
+    {% block primary_content %}
+        <!-- Main Content Area -->
+        <div class="p-6 space-y-6">
+            <!-- Recent Activity Section -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="space-y-3 max-h-80 overflow-y-auto">
+                        {% for assignment in recent_assignments %}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ assignment.user.get_full_name }} - {{ assignment.shift.template.name }}
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ assignment.shift.start_datetime|date:"M d" }} • 
+                                    {{ assignment.shift.start_datetime|time:"H:i" }}-{{ assignment.shift.end_datetime|time:"H:i" }}
+                                </div>
                             </div>
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-{% if assignment.status == 'confirmed' %}blue{% elif assignment.status == 'completed' %}green{% else %}yellow{% endif %}-100 text-{% if assignment.status == 'confirmed' %}blue{% elif assignment.status == 'completed' %}green{% else %}yellow{% endif %}-800">{{ assignment.get_status_display }}</span>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="text-center text-gray-500 dark:text-gray-400 py-4">
-                        <i class="fas fa-inbox text-2xl mb-2"></i>
-                        <div>No recent activity</div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-center flex-shrink-0">
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">View All Activity</button>
-            </div>
-        </div>
-        
-        <!-- Quick Actions -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
-            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
-                Quick Actions
-            </div>
-            <div class="flex-1 p-5 overflow-y-auto">
-                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click="openPlanningWizard()">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">Generate Planning</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Auto-assign shifts</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click="openQuickAssign()">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">Quick Assign</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Manual assignment</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg mb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click="showPendingApprovals()">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">Approve Requests</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Review pending</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click="exportSchedule()">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center text-orange-600 dark:text-orange-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="font-medium text-gray-900 dark:text-white">Export Schedule</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Download files</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Team Overview -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
-            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <i class="fas fa-users text-green-600 mr-2"></i>
-                Team Overview
-            </div>
-            <div class="flex-1 p-5 overflow-y-auto">
-                <div id="team-overview-list">
-                    {% for team_data in teams_data %}
-                    <div class="py-3 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-white text-sm">{{ team_data.team.name }}</div>
-                                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ team_data.team.memberships.count }} members • {{ team_data.workload_percentage|floatformat:1 }}% workload</div>
-                            </div>
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-{% if team_data.workload_status == 'success' %}green{% elif team_data.workload_status == 'warning' %}yellow{% else %}red{% endif %}-100 text-{% if team_data.workload_status == 'success' %}green{% elif team_data.workload_status == 'warning' %}yellow{% else %}red{% endif %}-800">
-                                {% if team_data.workload_status == 'success' %}Active{% elif team_data.workload_status == 'warning' %}Attention{% else %}High Load{% endif %}
+                            <span class="badge {% if assignment.status == 'confirmed' %}badge-info{% elif assignment.status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">
+                                {{ assignment.get_status_display }}
                             </span>
                         </div>
-                    </div>
-                    {% empty %}
-                    <div class="text-center text-gray-500 dark:text-gray-400 py-4">
-                        <i class="fas fa-users text-2xl mb-2"></i>
-                        <div>No teams found</div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-center flex-shrink-0">
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">View All Teams</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Secondary Content Grid -->
-    <div class="grid grid-cols-3 gap-4 lg:grid-cols-2 md:grid-cols-1">
-        <!-- Workload Chart -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
-            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <i class="fas fa-chart-pie text-purple-600 mr-2"></i>
-                Workload Distribution
-            </div>
-            <div class="flex-1 p-5 overflow-y-auto">
-                <div class="h-full flex items-center justify-center">
-                    <div class="text-center text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-chart-pie text-lg mb-2"></i>
-                        <div>Chart Loading...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Fairness Chart -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
-            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
-                Fairness Trends
-            </div>
-            <div class="flex-1 p-5 overflow-y-auto">
-                <div class="h-full flex items-center justify-center">
-                    <div class="text-center text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-chart-line text-lg mb-2"></i>
-                        <div>Chart Loading...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- System Status -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
-            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <i class="fas fa-server text-teal-600 mr-2"></i>
-                System Status
-            </div>
-            <div class="flex-1 p-5 overflow-y-auto">
-                <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-600">
-                    <span class="text-gray-700 dark:text-gray-300">API Response</span>
-                    <div class="flex items-center">
-                        <span class="text-green-600 font-medium mr-2">99.9%</span>
-                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-600">
-                    <span class="text-gray-700 dark:text-gray-300">Database</span>
-                    <div class="flex items-center">
-                        <span class="text-green-600 font-medium mr-2">Healthy</span>
-                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-600">
-                    <span class="text-gray-700 dark:text-gray-300">WebSocket</span>
-                    <div class="flex items-center">
-                        <span class="text-green-600 font-medium mr-2">Connected</span>
-                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center py-3">
-                    <span class="text-gray-700 dark:text-gray-300">Last Backup</span>
-                    <span class="text-gray-500 dark:text-gray-400">2 hours ago</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom Content Grid -->
-    <div class="grid grid-cols-2 gap-4 md:grid-cols-1">
-        <!-- My Upcoming Shifts - PERFECT SIZE REFERENCE -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
-            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <i class="fas fa-calendar-check text-green-600 mr-2"></i>
-                My Upcoming Shifts
-            </div>
-            <div class="flex-1 p-5 overflow-y-auto">
-                <div id="my-shifts-list">
-                    {% for assignment in my_upcoming_shifts %}
-                    <div class="py-3 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-white text-sm">{{ assignment.shift.template.name }}</div>
-                                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ assignment.shift.start_datetime|date:"M d" }} • {{ assignment.shift.start_datetime|time:"H:i" }}-{{ assignment.shift.end_datetime|time:"H:i" }}</div>
-                            </div>
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-{% if assignment.status == 'confirmed' %}blue{% elif assignment.status == 'pending_confirmation' %}yellow{% else %}purple{% endif %}-100 text-{% if assignment.status == 'confirmed' %}blue{% elif assignment.status == 'pending_confirmation' %}yellow{% else %}purple{% endif %}-800">{{ assignment.get_status_display }}</span>
+                        {% empty %}
+                        <div class="text-center py-8">
+                            <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">No recent activity</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Activity will appear here as it happens</p>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <div class="text-center text-gray-500 dark:text-gray-400 py-4">
-                        <i class="fas fa-calendar-check text-2xl mb-2"></i>
-                        <div>No upcoming shifts</div>
+                    {% if recent_assignments %}
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <button class="btn-secondary btn-sm w-full">View All Activity</button>
                     </div>
-                    {% endfor %}
+                    {% endif %}
                 </div>
             </div>
-            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-center flex-shrink-0">
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium">View Full Schedule</button>
-            </div>
-        </div>
-        
-        <!-- Pending Approvals - PERFECT SIZE REFERENCE -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col h-80">
-            <div class="bg-gray-50 dark:bg-gray-700 px-5 py-4 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between text-gray-900 dark:text-white font-semibold text-base flex-shrink-0">
-                <i class="fas fa-clock text-yellow-600 mr-2"></i>
-                Pending Approvals
-            </div>
-            <div class="flex-1 p-5 overflow-y-auto">
-                <div id="pending-approvals-list">
-                    {% for assignment in pending_approvals_list %}
-                    <div class="py-3 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <div class="font-medium text-gray-900 dark:text-white text-sm">{{ assignment.user.get_full_name }}</div>
-                                <div class="text-gray-600 dark:text-gray-400 text-xs">{{ assignment.shift.template.name }} • {{ assignment.shift.start_datetime|date:"M d" }}</div>
-                            </div>
-                            <div class="flex space-x-1">
-                                <button class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors" @click="approveAssignment('{{ assignment.assignment_id }}')">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                </button>
-                                <button class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition-colors" @click="declineAssignment('{{ assignment.assignment_id }}')">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
+
+            <!-- Upcoming Events -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Events</h2>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="space-y-3">
+                        {% for shift in my_upcoming_shifts|slice:":5" %}
+                        <div class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex-shrink-0 w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ shift.template.name }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                    {{ shift.start_datetime|date:"l, F j" }} • 
+                                    {{ shift.start_datetime|time:"H:i" }} - {{ shift.end_datetime|time:"H:i" }}
+                                </div>
                             </div>
                         </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">No upcoming shifts scheduled</p>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% empty %}
-                    <div class="text-center text-gray-500 dark:text-gray-400 py-4">
-                        <i class="fas fa-check-circle text-2xl mb-2"></i>
-                        <div>No pending approvals</div>
-                    </div>
-                    {% endfor %}
                 </div>
             </div>
-            <div class="px-5 py-3 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-center flex-shrink-0">
-                <button class="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors duration-200 text-sm font-medium">View All Approvals</button>
+        </div>
+    {% endblock %}
+    
+    {% block right_sidebar %}
+        <!-- Sidebar content -->
+        <div class="space-y-6">
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="space-y-3">
+                        <button @click="openPlanningWizard()" class="w-full flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
+                            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-medium">Generate Planning</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Auto-assign shifts</div>
+                            </div>
+                        </button>
+                        
+                        <button @click="openQuickAssign()" class="w-full flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400 mr-3">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-medium">Quick Assign</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Assign specific shifts</div>
+                            </div>
+                        </button>
+                        
+                        <a href="{% url 'frontend:teams' %}" class="w-full flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 mr-3">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 715.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-medium">Manage Teams</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">View team details</div>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'frontend:analytics' %}" class="w-full flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
+                            <div class="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center text-red-600 dark:text-red-400 mr-3">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-medium">Analytics</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">View reports</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">System Status</h2>
+                </div>
+                <div class="card-content">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">System Health</span>
+                            <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="stats.systemHealth + '%'">{{ system_health }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div class="bg-teal-600 h-2 rounded-full transition-all" :style="'width: ' + stats.systemHealth + '%'"></div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Fairness Score</span>
+                            <span class="text-sm font-medium text-gray-900 dark:text-white" x-text="stats.fairnessScore + '%'">{{ fairness_score }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div class="h-2 rounded-full transition-all" :class="fairnessBarColor" :style="'width: ' + stats.fairnessScore + '%'"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+    {% endblock %}
 {% endblock %}
 
 {% block extra_js %}
-<!-- Dashboard JavaScript -->
-<script src="{% static 'js/dashboard.js' %}" defer></script>
 <script>
-    // Set dashboard stats for JavaScript
-    window.dashboardStats = {
-        myShifts: {{ my_upcoming_shifts.count }},
-        pendingApprovals: {{ pending_approvals }},
-        activeMembers: {{ active_members }},
-        monthlyAssignments: {{ monthly_assignments }},
-        systemHealth: {{ system_health }},
-        fairnessScore: {{ fairness_score }}
-    };
+    // Dashboard data and functionality
+    function dashboardData() {
+        return {
+            stats: {
+                myShifts: {{ my_upcoming_shifts.count }},
+                pendingApprovals: {{ pending_approvals }},
+                activeMembers: {{ active_members }},
+                monthlyAssignments: {{ monthly_assignments }},
+                systemHealth: {{ system_health }},
+                fairnessScore: {{ fairness_score }}
+            },
+            
+            get fairnessBarColor() {
+                if (this.stats.fairnessScore >= 80) return 'bg-green-600';
+                if (this.stats.fairnessScore >= 60) return 'bg-yellow-600';
+                return 'bg-red-600';
+            },
+            
+            get fairnessCardClasses() {
+                const base = 'bg-gradient-to-br ';
+                if (this.stats.fairnessScore >= 80) return base + 'from-green-500 to-green-600 shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40';
+                if (this.stats.fairnessScore >= 60) return base + 'from-yellow-500 to-yellow-600 shadow-yellow-500/30 hover:shadow-xl hover:shadow-yellow-500/40';
+                return base + 'from-red-500 to-red-600 shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40';
+            },
+
+            openPlanningWizard() {
+                // TODO: Implement planning wizard
+                alert('Planning wizard coming soon!');
+            },
+
+            openQuickAssign() {
+                // TODO: Implement quick assign
+                alert('Quick assign coming soon!');
+            },
+
+            showPendingApprovals() {
+                // TODO: Show pending approvals modal
+                alert('Pending approvals: ' + this.stats.pendingApprovals);
+            }
+        }
+    }
+
+    // Stats data for the new layout system
+    window.dashboard_stats = [
+        {
+            'title': 'My Shifts',
+            'value': '{{ my_upcoming_shifts.count }}',
+            'icon': 'clock',
+            'color': 'blue',
+            'link': '/schedule/',
+            'description': 'Upcoming shifts'
+        },
+        {
+            'title': 'Pending',
+            'value': '{{ pending_approvals }}',
+            'icon': 'warning',
+            'color': 'amber',
+            'link': '#',
+            'description': 'Awaiting approval'
+        },
+        {
+            'title': 'Team Members',
+            'value': '{{ active_members }}',
+            'icon': 'users',
+            'color': 'green',
+            'link': '/teams/',
+            'description': 'Active team members'
+        },
+        {
+            'title': 'This Month',
+            'value': '{{ monthly_assignments }}',
+            'icon': 'calendar',
+            'color': 'purple',
+            'link': '/assignments/',
+            'description': 'Monthly assignments'
+        },
+        {
+            'title': 'System Health',
+            'value': '{{ system_health }}%',
+            'icon': 'check',
+            'color': 'blue',
+            'link': '#',
+            'description': 'Overall system status'
+        },
+        {
+            'title': 'Fairness',
+            'value': '{{ fairness_score }}%',
+            'icon': 'chart',
+            'color': '{% if fairness_score >= 80 %}green{% elif fairness_score >= 60 %}amber{% else %}red{% endif %}',
+            'link': '#',
+            'description': 'Distribution fairness'
+        }
+    ];
 </script>
 {% endblock %}

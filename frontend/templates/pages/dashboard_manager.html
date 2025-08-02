@@ -3,96 +3,38 @@
 {% load custom_filters %}
 
 {% block content %}
-<div class="p-6 h-full overflow-y-auto">
-    <!-- Manager Header -->
-    <div class="mb-8">
-                                  <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ team.this_week_assignments|mul:10|floatformat:0 }}%"></div>
-                                </div>  <div class="text-2xl font-bold text-gray-900 dark:text-white">Manager Dashboard</div>
-        <div class="text-gray-600 dark:text-gray-400 mt-1">Manage your teams and approve requests</div>
+<!-- Using new layout system -->
+{% include 'layouts/page_wrapper.html' with wrapper_type="standard" %}
+
+{% block page_content %}
+    <!-- Page Header using new system -->
+    {% include 'layouts/page_header.html' with title="Manager Dashboard" description="Manage your teams and approve requests" show_actions=True %}
+    
+    {% block page_actions %}
+    <div class="flex items-center gap-3">
+        <a href="{% url 'frontend:teams' %}" class="btn-primary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 715.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            Manage Teams
+        </a>
     </div>
+    {% endblock %}
 
-    <!-- Manager Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <!-- Managed Teams -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Teams Managed</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ total_managed_teams }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
+    <!-- Stats Grid using new system -->
+    {% include 'layouts/stats_grid.html' with stats=dashboard_stats columns="4" %}
 
-        <!-- Pending Approvals -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pending Approvals</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ pending_approvals|length }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Leave Approvals -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Leave Requests</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ pending_leave_approvals|length }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="text-center">
-                <a href="{% url 'frontend:teams' %}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                    Manage Teams
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Pending Approvals -->
-        <div class="lg:col-span-2">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <!-- Content Layout using new system -->
+    {% include 'layouts/content_layout.html' with layout_type="sidebar-right" sidebar_width="standard" %}
+    
+    {% block primary_content %}
+        <!-- Pending Approvals Section -->
+        <div class="p-6">
+            <div class="card">
+                <div class="card-header">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Pending Approvals</h2>
                 </div>
-                <div class="p-6">
+                <div class="card-content">
                     {% if pending_approvals %}
                     <div class="space-y-4">
                         {% for approval in pending_approvals %}
@@ -110,10 +52,10 @@
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <button class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors">
+                                <button class="btn-success btn-sm">
                                     Approve
                                 </button>
-                                <button class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors">
+                                <button class="btn-danger btn-sm">
                                     Decline
                                 </button>
                             </div>
@@ -132,15 +74,17 @@
                 </div>
             </div>
         </div>
-
-        <!-- Sidebar -->
+    {% endblock %}
+    
+    {% block right_sidebar %}
+        <!-- Sidebar content -->
         <div class="space-y-6">
             <!-- Leave Requests Pending -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="card">
+                <div class="card-header">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Leave Requests</h2>
                 </div>
-                <div class="p-6">
+                <div class="card-content">
                     {% if pending_leave_approvals %}
                     <div class="space-y-3">
                         {% for request in pending_leave_approvals %}
@@ -150,12 +94,8 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ request.leave_type.name }} • {{ request.start_date|date:"d/m/Y" }}</p>
                             </div>
                             <div class="flex space-x-1">
-                                <button class="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 transition-colors">
-                                    ✓
-                                </button>
-                                <button class="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700 transition-colors">
-                                    ✗
-                                </button>
+                                <button class="btn-success btn-sm">✓</button>
+                                <button class="btn-danger btn-sm">✗</button>
                             </div>
                         </div>
                         {% endfor %}
@@ -172,11 +112,11 @@
             </div>
 
             <!-- Team Performance -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="card">
+                <div class="card-header">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Team Performance</h2>
                 </div>
-                <div class="p-6">
+                <div class="card-content">
                     {% if team_stats %}
                     <div class="space-y-4">
                         {% for team in team_stats %}
@@ -203,27 +143,27 @@
             </div>
 
             <!-- Quick Management Actions -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="card">
+                <div class="card-header">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
                 </div>
-                <div class="p-6">
+                <div class="card-content">
                     <div class="space-y-3">
-                        <a href="{% url 'frontend:teams' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <a href="{% url 'frontend:teams' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
                             <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 715.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                             </svg>
                             Team Management
                         </a>
-                        <a href="{% url 'leave_management:overview' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <a href="{% url 'leave_management:overview' %}" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
                             <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                             </svg>
                             Leave Approvals
                         </a>
-                        <a href="#" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <a href="#" class="flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
                             <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H9a2 2 0 01-2-2z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
                             View Reports
                         </a>
@@ -231,6 +171,45 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    {% endblock %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Stats data for the new layout system
+    window.dashboard_stats = [
+        {
+            'title': 'Teams Managed',
+            'value': '{{ total_managed_teams }}',
+            'icon': 'users',
+            'color': 'purple',
+            'link': '{% url "frontend:teams" %}',
+            'description': 'Teams under management'
+        },
+        {
+            'title': 'Pending Approvals',
+            'value': '{{ pending_approvals|length }}',
+            'icon': 'warning',
+            'color': 'amber',
+            'link': '#',
+            'description': 'Awaiting your approval'
+        },
+        {
+            'title': 'Leave Requests',
+            'value': '{{ pending_leave_approvals|length }}',
+            'icon': 'calendar',
+            'color': 'blue',
+            'link': '{% url "leave_management:overview" %}',
+            'description': 'Pending leave requests'
+        },
+        {
+            'title': 'Quick Actions',
+            'value': '3',
+            'icon': 'check',
+            'color': 'green',
+            'link': '{% url "frontend:teams" %}',
+            'description': 'Available actions'
+        }
+    ];
+</script>
 {% endblock %}

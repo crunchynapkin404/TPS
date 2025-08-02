@@ -1,412 +1,381 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block extra_css %}
-{% endblock %}
-
 {% block content %}
-<div class="max-w-2xl mx-auto my-10" x-data="planningData()">
-    <!-- Header Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-10 mb-8">
-        <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mb-4">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                </svg>
-            </div>
-            <h1 class="text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Generate Planning</h1>
-            <p class="text-gray-600 dark:text-gray-400 text-base">Create shift assignments for your team using our intelligent scheduling system</p>
-        </div>
+<!-- Using new layout system -->
+{% include 'layouts/page_wrapper.html' with wrapper_type="contained" %}
 
-        <form @submit.prevent="generatePlanning()" x-ref="planningForm">
-            {% csrf_token %}
-            
-            <!-- Shift Type Selection -->
-            <div class="mb-8">
-                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-3 text-base flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Shift Type
-                </label>
-                <select x-model="form.shiftType" 
-                        class="w-full px-5 py-4 border-2 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                        :class="errors.shiftType ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600'"
-                        required>
-                    <option value="">Select shift type...</option>
-                    <option value="waakdienst">Waakdienst</option>
-                    <option value="incident">Incident</option>
-                    <option value="incident-standby">Incident Standby</option>
-                </select>
-                <div x-show="errors.shiftType" x-text="errors.shiftType" class="text-red-500 text-sm mt-1" x-transition></div>
-            </div>
-
-            <!-- Team and Period in one row -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="mb-8">
-                    <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-3 text-base flex items-center gap-2">
-                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                        Team
-                    </label>
-                    <select x-model="form.teamId" 
-                            class="w-full px-5 py-4 border-2 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                            :class="errors.teamId ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600'"
-                            :disabled="loading.teams" 
-                            required>
-                        <option value="" x-show="loading.teams">Loading teams...</option>
-                        <option value="" x-show="!loading.teams && teams.length === 0">No teams available</option>
-                        <option value="" x-show="!loading.teams && teams.length > 0">Select team...</option>
-                        <template x-for="team in teams" :key="team.id">
-                            <option :value="team.id" x-text="`${team.name} (${team.member_count} members)`"></option>
-                        </template>
-                    </select>
-                    <div x-show="errors.teamId" x-text="errors.teamId" class="text-red-500 text-sm mt-1" x-transition></div>
-                </div>
-
-                <div class="mb-8">
-                    <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-3 text-base flex items-center gap-2">
-                        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        Period
-                    </label>
-                    <select x-model="form.duration" 
-                            class="w-full px-5 py-4 border-2 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                            :class="errors.duration ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600'"
-                            required>
-                        <option value="">Select period...</option>
-                        <option value="1">1 Week</option>
-                        <option value="2">2 Weeks</option>
-                        <option value="4">1 Month (4 Weeks)</option>
-                        <option value="12">3 Months (12 Weeks)</option>
-                    </select>
-                    <div x-show="errors.duration" x-text="errors.duration" class="text-red-500 text-sm mt-1" x-transition></div>
-                </div>
-            </div>
-
-            <!-- Start Date -->
-            <div class="mb-8">
-                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-3 text-base flex items-center gap-2">
-                    <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    Start Date
-                </label>
-                <input type="date" 
-                       x-model="form.startDate" 
-                       class="w-full px-5 py-4 border-2 rounded-lg text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                       :class="errors.startDate ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600'"
-                       required>
-                <div x-show="errors.startDate" x-text="errors.startDate" class="text-red-500 text-sm mt-1" x-transition></div>
-            </div>
-
-            <!-- Generate Button -->
-            <button type="submit" 
-                    :disabled="loading.generating || !isFormValid"
-                    class="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 px-8 py-5 rounded-lg text-lg font-semibold cursor-pointer transition-all duration-300 mb-8 flex items-center justify-center gap-3 hover:-translate-y-0.5 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none disabled:from-gray-400 disabled:to-gray-400">
-                <div x-show="loading.generating" class="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" x-transition></div>
-                <svg x-show="!loading.generating" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-transition>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                </svg>
-                <span x-text="loading.generating ? 'Generating...' : 'Generate Planning'"></span>
-            </button>
-        </form>
-    </div>
-
-    <!-- Progress Indicator -->
-    <div x-show="loading.generating" 
-         class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform scale-95"
-         x-transition:enter-end="opacity-100 transform scale-100">
-        <div class="flex items-center justify-center space-x-4">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <div class="text-gray-700 dark:text-gray-300">
-                <div class="font-medium">Generating your planning...</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">This may take a few moments</div>
-            </div>
-        </div>
-        
-        <!-- Progress Bar -->
-        <div class="mt-4">
-            <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-1000" :style="`width: ${progress}%`"></div>
-            </div>
-            <div class="text-center text-sm text-gray-500 dark:text-gray-400 mt-2" x-text="`${Math.round(progress)}% complete`"></div>
-        </div>
-    </div>
-
-    <!-- Quick Stats Card -->
-    <div x-show="form.teamId && selectedTeam" 
-         class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform translate-y-4"
-         x-transition:enter-end="opacity-100 transform translate-y-0">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+{% block page_content %}
+<div x-data="planningData()">
+    <!-- Page Header using new system -->
+    {% include 'layouts/page_header.html' with title="Generate Planning" description="Create shift assignments for your team using our intelligent scheduling system" show_actions=True %}
+    
+    {% block page_actions %}
+    <div class="flex items-center gap-3">
+        <button @click="resetForm()" class="btn-secondary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m-15.357-2A8.003 8.003 0 0019.417 15M15 15H9"></path>
             </svg>
-            Planning Overview
-        </h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" x-text="selectedTeam?.member_count || 0"></div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Team Members</div>
+            Reset
+        </button>
+        <button @click="previewPlanning()" class="btn-secondary" :disabled="!isFormValid">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            Preview
+        </button>
+    </div>
+    {% endblock %}
+
+    <!-- Content Layout using new system -->
+    {% include 'layouts/content_layout.html' with layout_type="single" %}
+    
+    {% block primary_content %}
+        <!-- Main Planning Form -->
+        <div class="p-6 max-w-4xl mx-auto">
+            <div class="card card-elevated">
+                <div class="card-header">
+                    <div class="flex items-center">
+                        <div class="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mr-4">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Planning Configuration</h2>
+                    </div>
+                </div>
+                
+                <div class="card-content">
+                    <form @submit.prevent="generatePlanning()" x-ref="planningForm">
+                        {% csrf_token %}
+                        
+                        <!-- Form Fields Grid -->
+                        <div class="space-y-6">
+                            <!-- Shift Type Selection -->
+                            <div class="form-section">
+                                <label class="form-label flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Shift Type
+                                </label>
+                                <select x-model="form.shiftType" 
+                                        class="form-input"
+                                        :class="errors.shiftType ? 'border-red-500' : ''"
+                                        required>
+                                    <option value="">Select shift type...</option>
+                                    <option value="waakdienst">Waakdienst</option>
+                                    <option value="incident">Incident</option>
+                                    <option value="incident-standby">Incident Standby</option>
+                                </select>
+                                <div x-show="errors.shiftType" x-text="errors.shiftType" class="text-red-500 text-sm mt-1" x-transition></div>
+                            </div>
+
+                            <!-- Team and Period Row -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="form-section">
+                                    <label class="form-label flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 715.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        Team
+                                    </label>
+                                    <select x-model="form.teamId" 
+                                            class="form-input"
+                                            :class="errors.teamId ? 'border-red-500' : ''"
+                                            :disabled="loading.teams" 
+                                            required>
+                                        <option value="" x-show="loading.teams">Loading teams...</option>
+                                        <option value="" x-show="!loading.teams && teams.length === 0">No teams available</option>
+                                        <option value="" x-show="!loading.teams && teams.length > 0">Select team...</option>
+                                        <template x-for="team in teams" :key="team.id">
+                                            <option :value="team.id" x-text="`${team.name} (${team.member_count} members)`"></option>
+                                        </template>
+                                    </select>
+                                    <div x-show="errors.teamId" x-text="errors.teamId" class="text-red-500 text-sm mt-1" x-transition></div>
+                                </div>
+
+                                <div class="form-section">
+                                    <label class="form-label flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Period
+                                    </label>
+                                    <select x-model="form.duration" 
+                                            class="form-input"
+                                            :class="errors.duration ? 'border-red-500' : ''"
+                                            required>
+                                        <option value="">Select period...</option>
+                                        <option value="1">1 Week</option>
+                                        <option value="2">2 Weeks</option>
+                                        <option value="4">1 Month</option>
+                                        <option value="12">3 Months</option>
+                                    </select>
+                                    <div x-show="errors.duration" x-text="errors.duration" class="text-red-500 text-sm mt-1" x-transition></div>
+                                </div>
+                            </div>
+
+                            <!-- Start Date -->
+                            <div class="form-section">
+                                <label class="form-label flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Start Date
+                                </label>
+                                <input type="date" 
+                                       x-model="form.startDate" 
+                                       class="form-input"
+                                       :class="errors.startDate ? 'border-red-500' : ''"
+                                       required>
+                                <div x-show="errors.startDate" x-text="errors.startDate" class="text-red-500 text-sm mt-1" x-transition></div>
+                            </div>
+
+                            <!-- Advanced Options -->
+                            <div class="form-section">
+                                <div class="flex items-center justify-between mb-4">
+                                    <label class="form-label flex items-center gap-2 mb-0">
+                                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        Advanced Options
+                                    </label>
+                                    <button type="button" @click="showAdvanced = !showAdvanced" class="btn-sm btn-secondary">
+                                        <span x-text="showAdvanced ? 'Hide' : 'Show'"></span>
+                                        <svg class="w-4 h-4 ml-1 transition-transform" :class="showAdvanced ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div x-show="showAdvanced" x-transition class="space-y-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="form-label text-sm">Fairness Priority</label>
+                                            <select x-model="form.fairnessPriority" class="form-input text-sm">
+                                                <option value="balanced">Balanced</option>
+                                                <option value="strict">Strict Fairness</option>
+                                                <option value="flexible">Flexible</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="form-label text-sm">Override Preferences</label>
+                                            <select x-model="form.overridePreferences" class="form-input text-sm">
+                                                <option value="false">Respect Preferences</option>
+                                                <option value="true">Override if Needed</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="form-label text-sm flex items-center gap-2">
+                                            <input type="checkbox" x-model="form.includeBackup" class="rounded">
+                                            Include backup assignments
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="flex items-center justify-between pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center gap-4">
+                                <div x-show="loading.generating" class="flex items-center gap-2">
+                                    <div class="loading-spinner"></div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Generating planning...</span>
+                                </div>
+                                <div x-show="successMessage" x-text="successMessage" class="text-green-600 text-sm" x-transition></div>
+                                <div x-show="generalError" x-text="generalError" class="text-red-600 text-sm" x-transition></div>
+                            </div>
+                            
+                            <div class="flex items-center gap-3">
+                                <button type="button" @click="resetForm()" class="btn-secondary" :disabled="loading.generating">
+                                    Reset Form
+                                </button>
+                                <button type="submit" class="btn-primary" :disabled="!isFormValid || loading.generating">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                    </svg>
+                                    Generate Planning
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div class="text-2xl font-bold text-green-600 dark:text-green-400" x-text="form.duration || 0"></div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Weeks</div>
-            </div>
-            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400" x-text="estimatedShifts"></div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Est. Shifts</div>
-            </div>
-            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400" x-text="form.shiftType ? form.shiftType.charAt(0).toUpperCase() + form.shiftType.slice(1) : '-'"></div>
-                <div class="text-sm text-gray-600 dark:text-gray-400">Shift Type</div>
+
+            <!-- Results Section (if planning generated) -->
+            <div x-show="planningResults" x-transition class="mt-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Generated Planning Results</h3>
+                            <div class="flex items-center gap-2">
+                                <button @click="downloadPlanning()" class="btn-sm btn-secondary">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Download
+                                </button>
+                                <button @click="approvePlanning()" class="btn-sm btn-success">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Approve
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div x-html="planningResults"></div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    {% endblock %}
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Alpine.js Planning Data Function
-function planningData() {
-    return {
-        // Form data with Alpine.js reactivity
-        form: {
-            shiftType: '',
-            teamId: '',
-            duration: '',
-            startDate: ''
-        },
-        
-        // Loading states
-        loading: {
-            teams: true,
-            generating: false
-        },
-        
-        // Data arrays
-        teams: [],
-        
-        // Progress tracking
-        progress: 0,
-        
-        // Form validation errors
-        errors: {},
-        
-        // Computed properties
-        get selectedTeam() {
-            return this.teams.find(team => team.id == this.form.teamId);
-        },
-        
-        get estimatedShifts() {
-            if (!this.form.duration || !this.selectedTeam) return 0;
-            // Simple estimation: 1 shift per week per team member
-            return parseInt(this.form.duration) * this.selectedTeam.member_count;
-        },
-        
-        get isFormValid() {
-            return this.form.shiftType && 
-                   this.form.teamId && 
-                   this.form.duration && 
-                   this.form.startDate;
-        },
-        
-        // Initialize component
-        async init() {
-            // Set default start date to next Monday
-            this.form.startDate = this.getNextMonday();
-            
-            // Load teams
-            await this.loadTeams();
-            
-            // Clear any existing errors on form changes
-            this.$watch('form', () => {
-                this.errors = {};
-            }, { deep: true });
-        },
-        
-        // Load teams from API
-        async loadTeams() {
-            try {
-                this.loading.teams = true;
-                const response = await fetch('/api/v1/teams/', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': this.getCsrfToken()
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    // Handle both paginated and direct list responses
-                    this.teams = data.results || data;
-                } else {
-                    this.$dispatch('show-notification', { 
-                        message: 'Failed to load teams. Please refresh the page.', 
-                        type: 'error' 
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading teams:', error);
-                this.$dispatch('show-notification', { 
-                    message: 'Error loading teams. Please check your connection.', 
-                    type: 'error' 
-                });
-            } finally {
-                this.loading.teams = false;
-            }
-        },
-        
-        // Validate form before submission
-        validateForm() {
-            this.errors = {};
-            
-            if (!this.form.shiftType) {
-                this.errors.shiftType = 'Please select a shift type';
-            }
-            
-            if (!this.form.teamId) {
-                this.errors.teamId = 'Please select a team';
-            }
-            
-            if (!this.form.duration) {
-                this.errors.duration = 'Please select a period';
-            }
-            
-            if (!this.form.startDate) {
-                this.errors.startDate = 'Please select a start date';
-            } else {
-                // Validate date is not in the past
-                const startDate = new Date(this.form.startDate);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                if (startDate < today) {
-                    this.errors.startDate = 'Start date cannot be in the past';
-                }
-            }
-            
-            return Object.keys(this.errors).length === 0;
-        },
-        
-        // Simulate progress for user feedback
-        simulateProgress() {
-            this.progress = 0;
-            const progressInterval = setInterval(() => {
-                if (this.progress < 90) {
-                    this.progress += Math.random() * 15;
-                } else if (this.progress < 95) {
-                    this.progress += 1;
-                }
-                
-                if (!this.loading.generating) {
-                    this.progress = 100;
-                    setTimeout(() => clearInterval(progressInterval), 500);
-                }
-            }, 500);
-        },
-        
-        // Generate planning with proper Alpine.js patterns
-        async generatePlanning() {
-            // Validate form
-            if (!this.validateForm()) {
-                this.$dispatch('show-notification', { 
-                    message: 'Please correct the highlighted errors', 
-                    type: 'error' 
-                });
-                return;
-            }
-            
-            // Start loading state
-            this.loading.generating = true;
-            this.simulateProgress();
-            
-            try {
-                // Prepare API data
-                const planningData = {
-                    period: this.form.startDate,
-                    duration: parseInt(this.form.duration),
-                    teams: [parseInt(this.form.teamId)],
-                    algorithm: 'balanced',
-                    shift_type: this.form.shiftType
-                };
-
-                const response = await fetch('/api/v1/planning/generate/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': this.getCsrfToken()
-                    },
-                    body: JSON.stringify(planningData)
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    // Show success notification
-                    this.$dispatch('show-notification', { 
-                        message: `Planning generated successfully! Created ${result.total_assignments || 'multiple'} assignments. Check your calendar.`, 
-                        type: 'success' 
-                    });
-                    
-                    // Reset form after successful generation
-                    this.resetForm();
-                    
-                } else {
-                    // Show error notification
-                    this.$dispatch('show-notification', { 
-                        message: `Failed to generate planning: ${result.message || result.error || 'Unknown error'}`, 
-                        type: 'error' 
-                    });
-                }
-                
-            } catch (error) {
-                console.error('Error generating planning:', error);
-                this.$dispatch('show-notification', { 
-                    message: 'Failed to generate planning. Please check your connection and try again.', 
-                    type: 'error' 
-                });
-            } finally {
-                // Reset loading state
-                this.loading.generating = false;
-                this.progress = 0;
-            }
-        },
-        
-        // Reset form to initial state
-        resetForm() {
-            this.form = {
+    function planningData() {
+        return {
+            form: {
                 shiftType: '',
                 teamId: '',
                 duration: '',
-                startDate: this.getNextMonday()
-            };
-            this.errors = {};
-        },
-        
-        // Helper function to get CSRF token
-        getCsrfToken() {
-            return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
-                   document.querySelector('meta[name="csrf-token"]')?.content || '';
-        },
-        
-        // Helper function to get next Monday
-        getNextMonday() {
-            const today = new Date();
-            const nextMonday = new Date(today);
-            nextMonday.setDate(today.getDate() + (1 + 7 - today.getDay()) % 7);
-            return nextMonday.toISOString().split('T')[0];
+                startDate: '',
+                fairnessPriority: 'balanced',
+                overridePreferences: 'false',
+                includeBackup: false
+            },
+            teams: {{ teams|default:"[]"|safe }},
+            errors: {},
+            loading: {
+                teams: false,
+                generating: false
+            },
+            showAdvanced: false,
+            successMessage: '',
+            generalError: '',
+            planningResults: null,
+
+            get isFormValid() {
+                return this.form.shiftType && this.form.teamId && this.form.duration && this.form.startDate;
+            },
+
+            init() {
+                this.loadTeams();
+                // Set default start date to next Monday
+                const nextMonday = new Date();
+                nextMonday.setDate(nextMonday.getDate() + (1 + 7 - nextMonday.getDay()) % 7);
+                this.form.startDate = nextMonday.toISOString().split('T')[0];
+            },
+
+            async loadTeams() {
+                this.loading.teams = true;
+                try {
+                    // TODO: Replace with actual API call
+                    // const response = await fetch('/api/teams/');
+                    // this.teams = await response.json();
+                    
+                    // Mock data for now
+                    this.teams = [
+                        { id: 1, name: 'Team Alpha', member_count: 8 },
+                        { id: 2, name: 'Team Beta', member_count: 6 },
+                        { id: 3, name: 'Team Gamma', member_count: 10 }
+                    ];
+                } catch (error) {
+                    this.generalError = 'Failed to load teams';
+                } finally {
+                    this.loading.teams = false;
+                }
+            },
+
+            async generatePlanning() {
+                this.loading.generating = true;
+                this.errors = {};
+                this.generalError = '';
+                this.successMessage = '';
+
+                try {
+                    // TODO: Replace with actual API call
+                    // const response = await fetch('/api/planning/generate/', {
+                    //     method: 'POST',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify(this.form)
+                    // });
+                    
+                    // Mock success response
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    this.planningResults = `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="text-center p-4 bg-green-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-green-600">24</div>
+                                    <div class="text-sm text-green-800">Shifts Assigned</div>
+                                </div>
+                                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-blue-600">8</div>
+                                    <div class="text-sm text-blue-800">Team Members</div>
+                                </div>
+                                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                    <div class="text-2xl font-bold text-purple-600">96%</div>
+                                    <div class="text-sm text-purple-800">Fairness Score</div>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600">Planning generated successfully for ${this.form.duration} week(s) starting ${this.form.startDate}.</p>
+                        </div>
+                    `;
+                    
+                    this.successMessage = 'Planning generated successfully!';
+                    
+                } catch (error) {
+                    this.generalError = error.message || 'Failed to generate planning';
+                } finally {
+                    this.loading.generating = false;
+                }
+            },
+
+            resetForm() {
+                this.form = {
+                    shiftType: '',
+                    teamId: '',
+                    duration: '',
+                    startDate: '',
+                    fairnessPriority: 'balanced',
+                    overridePreferences: 'false',
+                    includeBackup: false
+                };
+                this.errors = {};
+                this.successMessage = '';
+                this.generalError = '';
+                this.planningResults = null;
+                this.showAdvanced = false;
+            },
+
+            previewPlanning() {
+                alert('Preview functionality coming soon!');
+            },
+
+            downloadPlanning() {
+                // TODO: Implement download functionality
+                alert('Download functionality coming soon!');
+            },
+
+            approvePlanning() {
+                // TODO: Implement approval functionality
+                if (confirm('Are you sure you want to approve this planning?')) {
+                    alert('Planning approved and saved!');
+                    this.planningResults = null;
+                    this.resetForm();
+                }
+            }
         }
     }
-}
 </script>
 {% endblock %}

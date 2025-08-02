@@ -1,706 +1,361 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="space-y-6">
-    <!-- Page Header -->
-    <div class="flex flex-row sm:items-center sm:justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Analytics Dashboard</h1>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Fairness metrics, workload analysis, and planning insights</p>
-        </div>
-        
-        <div class="mt-4 sm:mt-0 flex space-x-3">
-            <!-- Date Range Selector -->
-            <select class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md py-2 pl-3 pr-10 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <option value="week">This Week</option>
-                <option value="month" selected>This Month</option>
-                <option value="quarter">This Quarter</option>
-                <option value="year">This Year</option>
-            </select>
-            
-            <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <i class="fas fa-download mr-2"></i>
-                Export Report
-            </button>
-        </div>
-    </div>
+<!-- Using new layout system -->
+{% include 'layouts/page_wrapper.html' with wrapper_type="standard" %}
 
-    <!-- Key Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Overall Fairness Score -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-md flex items-center justify-center">
-                        <i class="fas fa-balance-scale text-green-600 dark:text-green-400"></i>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Overall Fairness</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-gray-100" id="fairness-score">Loading...</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Average Workload -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-md flex items-center justify-center">
-                        <i class="fas fa-chart-bar text-blue-600 dark:text-blue-400"></i>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Average Workload</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-gray-100" id="average-workload">Loading...</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Coverage Rate -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-md flex items-center justify-center">
-                        <i class="fas fa-shield-alt text-purple-600 dark:text-purple-400"></i>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Coverage Rate</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-gray-100" id="coverage-rate">Loading...</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Planning Efficiency -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900 rounded-md flex items-center justify-center">
-                        <i class="fas fa-cogs text-yellow-600 dark:text-yellow-400"></i>
-                    </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                    <dl>
-                        <dt class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate">Planning Efficiency</dt>
-                        <dd class="text-lg font-medium text-gray-900 dark:text-gray-100" id="planning-efficiency">Loading...</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Fairness Distribution Chart -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Fairness Distribution</h3>
-                <select class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md py-1 pl-3 pr-8 text-sm text-gray-900 dark:text-gray-100" id="fairness-period">
-                    <option value="month">This Month</option>
-                    <option value="quarter">This Quarter</option>
-                    <option value="year">This Year</option>
-                </select>
-            </div>
-            
-            <!-- Chart Area -->
-            <div class="h-64 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600" id="fairness-chart">
-                <div class="text-center">
-                    <i class="fas fa-chart-pie text-2xl text-gray-400 dark:text-gray-500 mb-2"></i>
-                    <div class="text-gray-600 dark:text-gray-400">Loading fairness data...</div>
-                </div>
-            </div>
-            
-            <!-- Chart Legend -->
-            <div class="mt-4 flex justify-center space-x-6">
-                <div class="flex items-center">
-                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                    <span class="text-sm text-gray-600 dark:text-gray-400">Balanced</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                    <span class="text-sm text-gray-600 dark:text-gray-400">Above Average</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                    <span class="text-sm text-gray-600 dark:text-gray-400">Overloaded</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Workload Trends -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Workload Trends</h3>
-                <div class="flex space-x-2">
-                    <button class="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full" onclick="updateWorkloadChart(7)">7D</button>
-                    <button class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full" onclick="updateWorkloadChart(30)">30D</button>
-                    <button class="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full" onclick="updateWorkloadChart(90)">90D</button>
-                </div>
-            </div>
-            
-            <!-- Chart Area -->
-            <div class="h-64 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600" id="workload-chart">
-                <div class="text-center">
-                    <i class="fas fa-chart-line text-2xl text-gray-400 dark:text-gray-500 mb-2"></i>
-                    <div class="text-gray-500 dark:text-gray-400">Loading workload trends...</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Detailed Analytics -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- Team Performance -->
-                <!-- Team Performance -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Team Performance</h3>
-            
-            <div class="space-y-4" id="team-performance-list">
-                <!-- Data will be loaded dynamically -->
-                <div class="text-center text-gray-500 dark:text-gray-400 py-4">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <div>Loading team performance...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Top Performers -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Top Performers</h3>
-            
-            <div class="space-y-4" id="top-performers-list">
-                <!-- Data will be loaded dynamically -->
-                <div class="text-center text-gray-500 dark:text-gray-400 py-4">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <div>Loading top performers...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alerts & Insights -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Alerts & Insights</h3>
-            
-            <div class="space-y-3" id="alerts-insights-list">
-                <!-- Data will be loaded dynamically -->
-                <div class="text-center text-gray-500 dark:text-gray-400 py-4">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
-                    <div>Loading insights...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Top Performers -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Top Performers</h3>
-            
-            <div class="space-y-4">
-                <div class="flex items-center">
-                    <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=Sarah+Miller&background=10b981&color=fff" alt="">
-                    <div class="ml-3 flex-1">
-                        <div class="text-sm font-medium text-gray-900">Sarah Miller</div>
-                        <div class="text-sm text-gray-500">Engineering Team B</div>
-                    </div>
-                    <div class="text-sm font-medium text-green-600">9.8</div>
-                </div>
-                
-                <div class="flex items-center">
-                    <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=Mike+Rodriguez&background=f59e0b&color=fff" alt="">
-                    <div class="ml-3 flex-1">
-                        <div class="text-sm font-medium text-gray-900">Mike Rodriguez</div>
-                        <div class="text-sm text-gray-500">Night Shift Team</div>
-                    </div>
-                    <div class="text-sm font-medium text-green-600">9.5</div>
-                </div>
-                
-                <div class="flex items-center">
-                    <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name=John+Doe&background=3b82f6&color=fff" alt="">
-                    <div class="ml-3 flex-1">
-                        <div class="text-sm font-medium text-gray-900">John Doe</div>
-                        <div class="text-sm text-gray-500">Engineering Team A</div>
-                    </div>
-                    <div class="text-sm font-medium text-green-600">9.2</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alerts & Insights -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Alerts & Insights</h3>
-            
-            <div class="space-y-3">
-                <!-- Alert 1 -->
-                <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-800">
-                                Alex Johnson has worked 15% more hours than average this month
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Alert 2 -->
-                <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-green-600"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-green-800">
-                                Night Shift Team achieved 100% coverage this week
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Alert 3 -->
-                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-info-circle text-blue-600"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-blue-800">
-                                Planning efficiency improved by 5% since last month
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-// Analytics Page JavaScript
-document.addEventListener('DOMContentLoaded', function() {
-    loadAnalyticsData();
+{% block page_content %}
+    <!-- Page Header using new system -->
+    {% include 'layouts/page_header.html' with title="Analytics Dashboard" description="Fairness metrics, workload analysis, and planning insights" show_actions=True %}
     
-    // Set up period change listeners
-    const periodSelectors = document.querySelectorAll('select[class*="form-input"]');
-    periodSelectors.forEach(selector => {
-        selector.addEventListener('change', loadAnalyticsData);
-    });
-});
+    {% block page_actions %}
+    <div class="flex items-center gap-3">
+        <select class="form-input" id="date-range-selector">
+            <option value="week">This Week</option>
+            <option value="month" selected>This Month</option>
+            <option value="quarter">This Quarter</option>
+            <option value="year">This Year</option>
+        </select>
+        <button type="button" class="btn-secondary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Export Report
+        </button>
+        <button type="button" class="btn-primary" onclick="refreshAnalytics()">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m-15.357-2A8.003 8.003 0 0019.417 15M15 15H9"></path>
+            </svg>
+            Refresh
+        </button>
+    </div>
+    {% endblock %}
 
-async function loadAnalyticsData() {
-    const period = document.querySelector('select[class*="form-input"]')?.value || 'month';
+    <!-- Key Metrics using Stats Grid -->
+    {% include 'layouts/stats_grid.html' with stats=analytics_stats columns="4" %}
+
+    <!-- Content Layout using new system -->
+    {% include 'layouts/content_layout.html' with layout_type="sidebar-right" sidebar_width="standard" %}
     
-    try {
-        // Load overview metrics
-        await loadOverviewMetrics(period);
-        
-        // Load fairness distribution
-        await loadFairnessDistribution(period);
-        
-        // Load workload trends
-        await loadWorkloadTrends(30); // Default 30 days
-        
-        // Load team performance
-        await loadTeamPerformance();
-        
-        // Load top performers
-        await loadTopPerformers();
-        
-        // Load alerts and insights
-        await loadAlertsInsights();
-        
-    } catch (error) {
-        console.error('Error loading analytics data:', error);
-        showError('Failed to load analytics data');
-    }
-}
-
-async function loadOverviewMetrics(period = 'month') {
-    try {
-        const response = await fetch(`/api/v1/analytics/overview/?period=${period}`);
-        const data = await response.json();
-        
-        if (response.ok && data.key_metrics) {
-            document.getElementById('fairness-score').textContent = (data.key_metrics.fairness_score || '--') + '%';
-            document.getElementById('average-workload').textContent = data.key_metrics.average_workload || '--';
-            document.getElementById('coverage-rate').textContent = (data.key_metrics.coverage_rate || '--') + '%';
-            document.getElementById('planning-efficiency').textContent = (data.key_metrics.planning_efficiency || '--') + '%';
-        } else {
-            // Show fallback data
-            document.getElementById('fairness-score').textContent = '--';
-            document.getElementById('average-workload').textContent = '--';
-            document.getElementById('coverage-rate').textContent = '--';
-            document.getElementById('planning-efficiency').textContent = '--';
-        }
-    } catch (error) {
-        console.error('Error loading overview metrics:', error);
-        // Show fallback data on error
-        document.getElementById('fairness-score').textContent = '--';
-        document.getElementById('average-workload').textContent = '--';
-        document.getElementById('coverage-rate').textContent = '--';
-        document.getElementById('planning-efficiency').textContent = '--';
-    }
-}
-
-async function loadFairnessDistribution(period = 'month') {
-    try {
-        const response = await fetch(`/api/v1/analytics/fairness/?period=${period}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (parseError) {
-            console.error('Failed to parse fairness data as JSON:', text);
-            throw new Error('Invalid JSON response');
-        }
-        
-        if (data.success && data.fairness_distribution) {
-            const container = document.getElementById('fairness-chart');
-            
-            if (data.fairness_distribution.length > 0) {
-                // Create a simple bar chart representation
-                container.innerHTML = `
-                    <div class="w-full">
-                        <div class="text-sm text-gray-600 mb-2">Assignment Distribution</div>
-                        ${data.fairness_distribution.slice(0, 10).map((item, index) => `
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs text-gray-700 truncate w-24">${item.user_name}</span>
-                                <div class="flex-1 mx-2 bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-500 h-2 rounded-full" style="width: ${Math.min(item.assignment_count * 10, 100)}%"></div>
-                                </div>
-                                <span class="text-xs text-gray-600 w-8">${item.assignment_count}</span>
+    {% block primary_content %}
+        <!-- Main Analytics Content -->
+        <div class="p-6 space-y-6">
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Fairness Trend Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Fairness Trend</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="text-center">
+                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                <p class="text-gray-500">Fairness trend chart will be displayed here</p>
                             </div>
-                        `).join('')}
+                        </div>
                     </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="text-center">
-                        <i class="fas fa-chart-pie text-2xl text-gray-400 mb-2"></i>
-                        <div class="text-gray-500">No fairness data available</div>
-                    </div>
-                `;
-            }
-        }
-    } catch (error) {
-        console.error('Error loading fairness distribution:', error);
-        // Show fallback content on error
-        const container = document.getElementById('fairness-chart');
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center">
-                    <i class="fas fa-chart-pie text-2xl text-gray-400 mb-2"></i>
-                    <div class="text-gray-500">Unable to load fairness data</div>
                 </div>
-            `;
-        }
-    }
-}
 
-async function loadWorkloadTrends(days = 30) {
-    try {
-        const response = await fetch(`/api/v1/analytics/workload/?days=${days}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (parseError) {
-            console.error('Failed to parse workload data as JSON:', text);
-            throw new Error('Invalid JSON response');
-        }
-        
-        if (data.success && data.workload_trends) {
-            const container = document.getElementById('workload-chart');
-            
-            if (data.workload_trends.length > 0) {
-                // Create a simple line chart representation
-                const maxAssignments = Math.max(...data.workload_trends.map(d => d.assignments));
-                
-                container.innerHTML = `
-                    <div class="w-full">
-                        <div class="text-sm text-gray-600 mb-2">Daily Assignments (Last ${days} days)</div>
-                        <div class="flex items-end justify-between h-32 border-b border-gray-300 dark:border-gray-600">
-                            ${data.workload_trends.slice(-14).map(day => {
-                                const height = maxAssignments > 0 ? (day.assignments / maxAssignments) * 100 : 0;
-                                return `
-                                    <div class="flex flex-col items-center">
-                                        <div class="bg-blue-500 rounded-t" style="height: ${height}%; width: 8px; min-height: 2px;"></div>
-                                        <span class="text-xs text-gray-500 mt-1 transform rotate-45">${new Date(day.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</span>
+                <!-- Workload Distribution -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Workload Distribution</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="h-64 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="text-center">
+                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                                </svg>
+                                <p class="text-gray-500">Workload distribution chart will be displayed here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Performance Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Team Performance Overview</h3>
+                </div>
+                <div class="card-content">
+                    {% include 'layouts/table_layout.html' with table_id="team-performance-table" show_search=True show_filters=True %}
+                    
+                    {% block table_filters %}
+                        <select class="form-input">
+                            <option>All Teams</option>
+                            <option>Team Alpha</option>
+                            <option>Team Beta</option>
+                            <option>Team Gamma</option>
+                        </select>
+                        <select class="form-input">
+                            <option>All Metrics</option>
+                            <option>High Performers</option>
+                            <option>Needs Attention</option>
+                        </select>
+                    {% endblock %}
+                    
+                    {% block table_head %}
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fairness Score</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coverage Rate</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Workload</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    {% endblock %}
+                    
+                    {% block table_body %}
+                        {% for team in team_performance|default:"" %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-sm font-medium text-blue-600">{{ team.name|first|upper }}</span>
                                     </div>
-                                `;
-                            }).join('')}
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ team.name }}</div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ team.members_count }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="text-sm text-gray-900 dark:text-white">{{ team.fairness_score }}%</div>
+                                    <div class="ml-2 w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                        <div class="bg-green-600 h-2 rounded-full" style="width: {{ team.fairness_score }}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ team.coverage_rate }}%</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ team.avg_workload }}h</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="badge {% if team.status == 'excellent' %}badge-success{% elif team.status == 'good' %}badge-info{% elif team.status == 'fair' %}badge-warning{% else %}badge-error{% endif %}">
+                                    {{ team.get_status_display|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="text-gray-500">
+                                    <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    <p>No team performance data available</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endblock %}
+                </div>
+            </div>
+
+            <!-- Individual Performance Insights -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top Performers & Areas for Improvement</h3>
+                </div>
+                <div class="card-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Top Performers -->
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-4">Top Performers This Month</h4>
+                            <div class="space-y-3">
+                                {% for performer in top_performers|slice:":5"|default:"" %}
+                                <div class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-3">
+                                            <span class="text-xs font-medium text-green-600 dark:text-green-400">{{ performer.name|first|upper }}</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ performer.name }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ performer.team }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm font-medium text-green-600 dark:text-green-400">{{ performer.score }}%</div>
+                                </div>
+                                {% empty %}
+                                <div class="text-center py-4 text-gray-500">No performance data available</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Areas for Improvement -->
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-4">Areas for Improvement</h4>
+                            <div class="space-y-3">
+                                {% for area in improvement_areas|slice:":5"|default:"" %}
+                                <div class="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-amber-100 dark:bg-amber-900 rounded-full flex items-center justify-center mr-3">
+                                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.958-.833-2.728 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ area.description }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ area.team }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm font-medium text-amber-600 dark:text-amber-400">{{ area.impact }}</div>
+                                </div>
+                                {% empty %}
+                                <div class="text-center py-4 text-gray-500">No improvement areas identified</div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="text-center">
-                        <i class="fas fa-chart-line text-2xl text-gray-400 mb-2"></i>
-                        <div class="text-gray-500">No workload data available</div>
-                    </div>
-                `;
-            }
-        }
-    } catch (error) {
-        console.error('Error loading workload trends:', error);
-        // Show fallback content on error
-        const container = document.getElementById('workload-chart');
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center">
-                    <i class="fas fa-chart-line text-2xl text-gray-400 mb-2"></i>
-                    <div class="text-gray-500">Unable to load workload data</div>
                 </div>
-            `;
-        }
-    }
-}
-
-async function loadTeamPerformance() {
-    try {
-        const response = await fetch('/api/v1/analytics/teams/');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (parseError) {
-            console.error('Failed to parse team performance data as JSON:', text);
-            throw new Error('Invalid JSON response');
-        }
-        
-        if (response.ok && data.team_performance) {
-            const container = document.getElementById('team-performance-list');
-            
-            if (data.team_performance.length > 0) {
-                container.innerHTML = data.team_performance.map(team => {
-                    const colors = ['blue', 'green', 'purple', 'yellow', 'red'];
-                    const color = colors[team.team_id % colors.length];
-                    
-                    return `
-                        <div class="flex items-center justify-between">
+            </div>
+        </div>
+    {% endblock %}
+    
+    {% block right_sidebar %}
+        <!-- Analytics Sidebar -->
+        <div class="space-y-6">
+            <!-- Quick Insights -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Quick Insights</h3>
+                </div>
+                <div class="card-content">
+                    <div class="space-y-4">
+                        <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                             <div class="flex items-center">
-                                <div class="w-2 h-2 bg-${color}-500 rounded-full mr-3"></div>
-                                <span class="text-sm text-gray-900">${team.team_name}</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-16 bg-gray-200 rounded-full h-2">
-                                    <div class="bg-${color}-500 h-2 rounded-full" style="width: ${Math.min(team.completion_rate, 100)}%"></div>
-                                </div>
-                                <span class="text-sm text-gray-600">${team.completion_rate}%</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } else {
-                container.innerHTML = `
-                    <div class="text-center text-gray-500 py-4">
-                        <i class="fas fa-users text-2xl mb-2"></i>
-                        <div>No team performance data</div>
-                    </div>
-                `;
-            }
-        }
-    } catch (error) {
-        console.error('Error loading team performance:', error);
-        // Show fallback content on error
-        const container = document.getElementById('team-performance-list');
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center">
-                    <i class="fas fa-users text-2xl text-gray-400 mb-2"></i>
-                    <div class="text-gray-500">Unable to load team data</div>
-                </div>
-            `;
-        }
-    }
-}
-
-async function loadTopPerformers() {
-    try {
-        const response = await fetch('/api/v1/analytics/performers/?limit=5');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (parseError) {
-            console.error('Failed to parse top performers data as JSON:', text);
-            throw new Error('Invalid JSON response');
-        }
-        
-        if (response.ok && data.top_performers) {
-            const container = document.getElementById('top-performers-list');
-            
-            if (data.top_performers.length > 0) {
-                container.innerHTML = data.top_performers.map(performer => `
-                    <div class="flex items-center">
-                        <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=${encodeURIComponent(performer.user_name)}&background=3b82f6&color=fff" alt="${performer.user_name}">
-                        <div class="ml-4 flex-1">
-                            <p class="text-sm font-medium text-gray-900">${performer.user_name}</p>
-                            <p class="text-sm text-gray-500">${performer.assignment_count} assignments this month</p>
-                        </div>
-                        <div class="text-sm text-green-600 font-medium">${performer.completion_rate}% completion</div>
-                    </div>
-                `).join('');
-            } else {
-                container.innerHTML = `
-                    <div class="text-center text-gray-500 py-4">
-                        <i class="fas fa-trophy text-2xl mb-2"></i>
-                        <div>No performance data available</div>
-                    </div>
-                `;
-            }
-        }
-    } catch (error) {
-        console.error('Error loading top performers:', error);
-        // Show fallback content on error
-        const container = document.getElementById('top-performers-list');
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center text-gray-500 py-4">
-                    <i class="fas fa-trophy text-2xl mb-2"></i>
-                    <div>Unable to load performance data</div>
-                </div>
-            `;
-        }
-    }
-}
-
-async function loadAlertsInsights() {
-    try {
-        const response = await fetch('/api/v1/analytics/alerts/');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (parseError) {
-            console.error('Failed to parse alerts data as JSON:', text);
-            throw new Error('Invalid JSON response');
-        }
-        
-        if (response.ok && data.alerts) {
-            const container = document.getElementById('alerts-insights-list');
-            
-            if (data.alerts.length > 0) {
-                container.innerHTML = data.alerts.map(alert => {
-                    const bgColors = {
-                        warning: 'bg-yellow-50 border-yellow-200',
-                        success: 'bg-green-50 border-green-200',
-                        error: 'bg-red-50 border-red-200',
-                        info: 'bg-blue-50 border-blue-200'
-                    };
-                    
-                    const textColors = {
-                        warning: 'text-yellow-800',
-                        success: 'text-green-800', 
-                        error: 'text-red-800',
-                        info: 'text-blue-800'
-                    };
-                    
-                    const iconColors = {
-                        warning: 'text-yellow-400',
-                        success: 'text-green-400',
-                        error: 'text-red-400', 
-                        info: 'text-blue-400'
-                    };
-                    
-                    const icons = {
-                        warning: 'fas fa-exclamation-triangle',
-                        success: 'fas fa-check-circle',
-                        error: 'fas fa-times-circle',
-                        info: 'fas fa-info-circle'
-                    };
-                    
-                    return `
-                        <div class="p-3 ${bgColors[alert.type] || bgColors.info} border rounded-lg">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <i class="${icons[alert.type] || icons.info} ${iconColors[alert.type] || iconColors.info}"></i>
-                                </div>
-                                <div class="ml-3">
-                                    <h4 class="text-sm font-medium ${textColors[alert.type] || textColors.info}">${alert.title}</h4>
-                                    <p class="text-sm ${textColors[alert.type] || textColors.info}">${alert.message}</p>
-                                    ${alert.action ? `<p class="text-xs ${textColors[alert.type] || textColors.info} mt-1"><strong>Action:</strong> ${alert.action}</p>` : ''}
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Fairness improving</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Up 5% from last month</div>
                                 </div>
                             </div>
                         </div>
-                    `;
-                }).join('');
-            } else {
-                container.innerHTML = `
-                    <div class="text-center text-gray-500 py-4">
-                        <i class="fas fa-lightbulb text-2xl mb-2"></i>
-                        <div>No insights available</div>
+
+                        <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-600 dark:text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Coverage on target</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">98% coverage rate</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.958-.833-2.728 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">Team Beta attention</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Below average fairness</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                `;
-            }
-        }
-    } catch (error) {
-        console.error('Error loading alerts and insights:', error);
-        // Show fallback content on error
-        const container = document.getElementById('alerts-insights-list');
-        if (container) {
-            container.innerHTML = `
-                <div class="text-center text-gray-500 py-4">
-                    <i class="fas fa-lightbulb text-2xl mb-2"></i>
-                    <div>Unable to load insights</div>
                 </div>
-            `;
-        }
+            </div>
+
+            <!-- Analytics Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Analytics Actions</h3>
+                </div>
+                <div class="card-content">
+                    <div class="space-y-3">
+                        <button class="w-full flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
+                            <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 mr-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-medium">Generate Report</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Detailed analytics report</div>
+                            </div>
+                        </button>
+
+                        <button class="w-full flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
+                            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 mr-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-medium">Analytics Settings</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Configure metrics</div>
+                            </div>
+                        </button>
+
+                        <button class="w-full flex items-center p-3 text-sm text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring">
+                            <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400 mr-3">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-medium">Mobile App</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">View on mobile</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function refreshAnalytics() {
+        // TODO: Implement analytics refresh
+        alert('Refreshing analytics data...');
     }
-}
 
-function updateWorkloadChart(days) {
-    // Update button states
-    document.querySelectorAll('[onclick*="updateWorkloadChart"]').forEach(btn => {
-        btn.className = 'px-3 py-1 text-xs bg-gray-100 text-gray-800 rounded-full';
-    });
-    event.target.className = 'px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full';
-    
-    // Load new data
-    loadWorkloadTrends(days);
-}
-
-function showError(message) {
-    // Create a simple error notification
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
+    // Stats data for the new layout system
+    window.analytics_stats = [
+        {
+            'title': 'Overall Fairness',
+            'value': '{{ overall_fairness|default:92 }}%',
+            'icon': 'check',
+            'color': 'green',
+            'link': '#',
+            'description': 'Fairness score across all teams'
+        },
+        {
+            'title': 'Average Workload',
+            'value': '{{ average_workload|default:42 }}h',
+            'icon': 'clock',
+            'color': 'blue',
+            'link': '#',
+            'description': 'Weekly average per person'
+        },
+        {
+            'title': 'Coverage Rate',
+            'value': '{{ coverage_rate|default:98 }}%',
+            'icon': 'chart',
+            'color': 'purple',
+            'link': '#',
+            'description': 'Shift coverage percentage'
+        },
+        {
+            'title': 'Active Teams',
+            'value': '{{ active_teams|default:8 }}',
+            'icon': 'users',
+            'color': 'amber',
+            'link': '#',
+            'description': 'Teams in the system'
+        }
+    ];
 </script>
 {% endblock %}

@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPS Monthly Timeline Shift Scheduler</title>
+    <style>
+        /* Critical CSS for perfect pixel alignment - MUST USE */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f8fafc;
+        }
+
+        /* Perfect grid layout - CRITICAL ALIGNMENT */
+        .schedule-container {
+            height: 100vh;
+            width: 100vw;
+            display: grid;
+            grid-template-rows: 60px 1fr;
+            grid-template-columns: 200px 1fr;
+            grid-template-areas: 
+                "header-corner header-days"
+                "sidebar-users schedule-grid";
+            overflow: hidden;
+        }
+
+        .header-corner {
+            grid-area: header-corner;
+            background: #1f2937;
+            border-right: 1px solid #374151;
+            border-bottom: 1px solid #374151;
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .header-days {
+            grid-area: header-days;
+            background: #1f2937;
+            border-bottom: 1px solid #374151;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            display: grid;
+            overflow-x: auto;
+            /* Exact 31 columns for days, 120px each */
+            grid-template-columns: repeat(31, 120px);
+        }
+
+        .day-header {
+            height: 60px;
+            border-right: 1px solid #374151;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            min-width: 120px;
+            max-width: 120px;
+        }
+
+        .day-header.today {
+            background: #3b82f6;
+        }
+
+        .day-header.weekend {
+            background: #374151;
+        }
+
+        .sidebar-users {
+            grid-area: sidebar-users;
+            background: #f9fafb;
+            border-right: 1px solid #e5e7eb;
+            position: sticky;
+            left: 0;
+            z-index: 30;
+            overflow-y: auto;
+            width: 200px;
+            min-width: 200px;
+            max-width: 200px;
+        }
+
+        .user-row {
+            height: 60px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            background: white;
+            position: relative;
+        }
+
+        .user-row:hover {
+            background: #f3f4f6;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #d1d5db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #374151;
+            margin-right: 12px;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #111827;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-department {
+            font-size: 12px;
+            color: #6b7280;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .schedule-grid {
+            grid-area: schedule-grid;
+            background: white;
+            overflow: auto;
+            display: grid;
+            position: relative;
+            /* Grid: 31 days × users, each cell 120px × 60px */
+            grid-template-columns: repeat(31, 120px);
+            grid-auto-rows: 60px;
+        }
+
+        .schedule-cell {
+            border-right: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+            position: relative;
+            width: 120px;
+            height: 60px;
+            min-width: 120px;
+            max-width: 120px;
+            min-height: 60px;
+            max-height: 60px;
+            cursor: pointer;
+            transition: background-color 0.1s ease;
+        }
+
+        .schedule-cell:hover {
+            background: #f3f4f6;
+        }
+
+        .schedule-cell.weekend {
+            background: #f8fafc;
+        }
+
+        .schedule-cell.today {
+            background: #eff6ff;
+        }
+
+        /* Shift blocks - positioned absolutely within cells */
+        .shift-block {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            height: 56px;
+            border-radius: 6px;
+            border: 1px solid;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 6px;
+            cursor: move;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            user-select: none;
+            z-index: 10;
+        }
+
+        .shift-block:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 20;
+        }
+
+        .shift-block.dragging {
+            z-index: 30;
+            transform: rotate(3deg);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        /* Shift type colors */
+        .shift-morning {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-color: #d97706;
+        }
+
+        .shift-afternoon {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-color: #1d4ed8;
+        }
+
+        .shift-evening {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border-color: #6d28d9;
+        }
+
+        .shift-night {
+            background: linear-gradient(135deg, #374151, #1f2937);
+            border-color: #111827;
+        }
+
+        .shift-overtime {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #b91c1c;
+        }
+
+        .shift-maintenance {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            border-color: #c2410c;
+        }
+
+        .shift-oncall {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #b91c1c;
+        }
+
+        .shift-training {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            border-color: #374151;
+        }
+
+        .shift-meeting {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            border-color: #be185d;
+        }
+
+        /* Today marker */
+        .today-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #3b82f6;
+            z-index: 25;
+            pointer-events: none;
+        }
+
+        /* Context menu */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 180px;
+            display: none;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .context-menu-item:hover {
+            background: #f3f4f6;
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-menu-item.danger {
+            color: #dc2626;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            width: 400px;
+            max-width: calc(100vw - 32px);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            border-color: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: white;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 30;
+        }
+
+        .toolbar-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .toolbar-btn.primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .toolbar-btn.primary:hover {
+            background: #2563eb;
+        }
+
+        .nav-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .nav-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .current-month {
+            font-size: 14px;
+            font-weight: 500;
+            color: #111827;
+            margin: 0 8px;
+        }
+
+        /* Loading state */
+        .loading {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.success {
+            background: #10b981;
+            color: white;
+        }
+
+        .notification.error {
+            background: #ef4444;
+            color: white;
+        }
+
+        .notification.info {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .schedule-container {
+                grid-template-columns: 150px 1fr;
+            }
+            
+            .sidebar-users {
+                width: 150px;
+                min-width: 150px;
+                max-width: 150px;
+            }
+            
+            .header-days,
+            .schedule-grid {
+                grid-template-columns: repeat(31, 100px);
+            }
+            
+            .day-header,
+            .schedule-cell {
+                width: 100px;
+                min-width: 100px;
+                max-width: 100px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .schedule-container {
+                height: auto;
+                overflow: visible;
+            }
+            
+            .schedule-grid,
+            .sidebar-users {
+                overflow: visible;
+            }
+            
+            .shift-block {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .toolbar,
+            .context-menu,
+            .modal {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Schedule Container -->
+    <div class="schedule-container">
+        <!-- Header Corner -->
+        <div class="header-corner">
+            <span id="currentMonthYear">Loading...</span>
+        </div>
+
+        <!-- Days Header -->
+        <div class="header-days" id="daysHeader"></div>
+
+        <!-- Users Sidebar -->
+        <div class="sidebar-users" id="usersSidebar"></div>
+
+        <!-- Schedule Grid -->
+        <div class="schedule-grid" id="scheduleGrid">
+            <!-- Today Marker -->
+            <div class="today-marker" id="todayMarker" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="createShift()">Create Shift</div>
+        <div class="context-menu-item" onclick="editShift()" id="editShiftItem" style="display: none;">Edit Shift</div>
+        <div class="context-menu-item" onclick="duplicateShift()" id="duplicateShiftItem" style="display: none;">Duplicate Shift</div>
+        <div class="context-menu-item danger" onclick="deleteShift()" id="deleteShiftItem" style="display: none;">Delete Shift</div>
+        <div class="context-menu-item" onclick="bulkOperations()">Bulk Operations</div>
+    </div>
+
+    <!-- Shift Creation/Edit Modal -->
+    <div class="modal" id="shiftModal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalTitle">Create Shift</h3>
+            
+            <form id="shiftForm">
+                <div class="form-group">
+                    <label class="form-label">Shift Type</label>
+                    <select id="shiftTypeSelect" class="form-select" required>
+                        <option value="">Select shift type...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" id="shiftDate" class="form-input" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Start Time</label>
+                        <input type="time" id="startTime" class="form-input" value="09:00" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Time</label>
+                        <input type="time" id="endTime" class="form-input" value="17:00" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea id="shiftNotes" class="form-textarea" rows="3"></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <span>Loading...</span>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <!-- Month Navigation -->
+        <button class="nav-btn" onclick="previousMonth()" title="Previous Month">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </button>
+        
+        <span class="current-month" id="toolbarMonth">August 2024</span>
+        
+        <button class="nav-btn" onclick="nextMonth()" title="Next Month">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </button>
+        
+        <!-- Divider -->
+        <div style="width: 1px; height: 24px; background: #e5e7eb; margin: 0 8px;"></div>
+        
+        <!-- Actions -->
+        <button class="toolbar-btn primary" onclick="exportSchedule()">Export</button>
+        
+        <button class="toolbar-btn" onclick="undoLastAction()" title="Undo (Ctrl+Z)" id="undoBtn" disabled>
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15l4-4 4 4M13 6h6a2 2 0 012 2v8a2 2 0 01-2 2h-6"></path>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Global application state
+        let appState = {
+            loading: false,
+            users: [],
+            shifts: [],
+            shiftTypes: [],
+            currentDate: new Date(),
+            currentYear: new Date().getFullYear(),
+            currentMonth: new Date().getMonth(),
+            daysInMonth: [],
+            contextMenu: {
+                show: false,
+                userId: null,
+                date: null,
+                shiftId: null
+            },
+            modal: {
+                show: false,
+                isEdit: false,
+                currentShift: null
+            },
+            history: [],
+            historyIndex: -1,
+            saveTimeout: null
+        };
+
+        // Initialize application
+        async function init() {
+            try {
+                await loadInitialData();
+                generateCalendar();
+                renderSchedule();
+                setupEventListeners();
+                setupKeyboardShortcuts();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showNotification('Failed to initialize application', 'error');
+            }
+        }
+
+        // Data loading functions
+        async function loadInitialData() {
+            setLoading(true);
+            try {
+                const [usersRes, shiftsRes, typesRes] = await Promise.all([
+                    fetch('http://localhost:8000/api/users'),
+                    fetch(`http://localhost:8000/api/schedule/${appState.currentYear}/${appState.currentMonth + 1}`),
+                    fetch('http://localhost:8000/api/shift-types')
+                ]);
+                
+                if (!usersRes.ok || !shiftsRes.ok || !typesRes.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                
+                appState.users = await usersRes.json();
+                const scheduleData = await shiftsRes.json();
+                appState.shifts = scheduleData.shifts || [];
+                appState.shiftTypes = await typesRes.json();
+                
+                populateShiftTypeSelect();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showNotification('Error loading data. Please refresh the page.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function loadScheduleData() {
+            try {
+                const response = await fetch(`http://localhost:8000/api/schedule/${appState.currentYear}/${appState.currentMonth + 1}`);
+                if (response.ok) {
+                    const scheduleData = await response.json();
+                    appState.shifts = scheduleData.shifts || [];
+                    renderShifts();
+                }
+            } catch (error) {
+                console.error('Error loading schedule data:', error);
+                showNotification('Error loading schedule data', 'error');
+            }
+        }
+
+        // Calendar generation
+        function generateCalendar() {
+            const year = appState.currentYear;
+            const month = appState.currentMonth;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            
+            appState.daysInMonth = [];
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                const isToday = date.toDateString() === today.toDateString();
+                
+                appState.daysInMonth.push({
+                    dayNumber: day,
+                    dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                    date: date.toISOString().split('T')[0],
+                    isWeekend,
+                    isToday
+                });
+            }
+            
+            updateMonthDisplay();
+        }
+
+        function updateMonthDisplay() {
+            const monthName = new Date(appState.currentYear, appState.currentMonth).toLocaleString('default', { month: 'long' });
+            const monthYear = `${monthName} ${appState.currentYear}`;
+            
+            document.getElementById('currentMonthYear').textContent = monthYear;
+            document.getElementById('toolbarMonth').textContent = monthYear;
+        }
+
+        // Rendering functions
+        function renderSchedule() {
+            renderDaysHeader();
+            renderUsersSidebar();
+            renderScheduleGrid();
+            renderShifts();
+            updateTodayMarker();
+        }
+
+        function renderDaysHeader() {
+            const header = document.getElementById('daysHeader');
+            header.innerHTML = '';
+            
+            appState.daysInMonth.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = `day-header ${day.isToday ? 'today' : ''} ${day.isWeekend ? 'weekend' : ''}`;
+                dayEl.innerHTML = `
+                    <div style="font-weight: bold;">${day.dayName}</div>
+                    <div>${day.dayNumber}</div>
+                `;
+                header.appendChild(dayEl);
+            });
+        }
+
+        function renderUsersSidebar() {
+            const sidebar = document.getElementById('usersSidebar');
+            sidebar.innerHTML = '';
+            
+            appState.users.forEach(user => {
+                const userEl = document.createElement('div');
+                userEl.className = 'user-row';
+                userEl.innerHTML = `
+                    <div class="user-avatar">
+                        ${user.first_name.charAt(0)}${user.last_name.charAt(0)}
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">${user.first_name} ${user.last_name}</div>
+                        <div class="user-department">${user.department}</div>
+                    </div>
+                `;
+                sidebar.appendChild(userEl);
+            });
+        }
+
+        function renderScheduleGrid() {
+            const grid = document.getElementById('scheduleGrid');
+            // Clear existing cells (but keep today marker)
+            const cells = grid.querySelectorAll('.schedule-cell');
+            cells.forEach(cell => cell.remove());
+            
+            appState.users.forEach((user, userIndex) => {
+                appState.daysInMonth.forEach((day, dayIndex) => {
+                    const cell = document.createElement('div');
+                    cell.className = `schedule-cell ${day.isWeekend ? 'weekend' : ''} ${day.isToday ? 'today' : ''}`;
+                    cell.dataset.userId = user.id;
+                    cell.dataset.date = day.date;
+                    cell.dataset.userIndex = userIndex;
+                    cell.dataset.dayIndex = dayIndex;
+                    
+                    grid.appendChild(cell);
+                });
+            });
+        }
+
+        function renderShifts() {
+            // Clear existing shift blocks
+            document.querySelectorAll('.shift-block').forEach(el => el.remove());
+            
+            appState.shifts.forEach(shift => {
+                const cell = document.querySelector(`[data-user-id="${shift.user_id}"][data-date="${shift.date}"]`);
+                if (cell) {
+                    const shiftEl = document.createElement('div');
+                    shiftEl.className = `shift-block shift-${shift.shift_type.name.toLowerCase()}`;
+                    shiftEl.dataset.shiftId = shift.id;
+                    shiftEl.textContent = shift.shift_type.display_name;
+                    shiftEl.title = getShiftTooltip(shift);
+                    
+                    cell.appendChild(shiftEl);
+                }
+            });
+        }
+
+        function updateTodayMarker() {
+            const today = new Date();
+            const marker = document.getElementById('todayMarker');
+            
+            if (today.getFullYear() === appState.currentYear && 
+                today.getMonth() === appState.currentMonth) {
+                const dayIndex = today.getDate() - 1;
+                const position = (dayIndex * 120) + 60; // 120px per day, center of day
+                marker.style.left = `${position}px`;
+                marker.style.display = 'block';
+            } else {
+                marker.style.display = 'none';
+            }
+        }
+
+        // Event handlers
+        function setupEventListeners() {
+            // Click outside to close context menu
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.context-menu')) {
+                    hideContextMenu();
+                }
+            });
+            
+            // Right-click context menu
+            document.addEventListener('contextmenu', (e) => {
+                const cell = e.target.closest('.schedule-cell');
+                const shift = e.target.closest('.shift-block');
+                
+                if (cell) {
+                    e.preventDefault();
+                    showContextMenu(e, cell, shift);
+                }
+            });
+            
+            // Cell click for creating shifts
+            document.addEventListener('click', (e) => {
+                const cell = e.target.closest('.schedule-cell');
+                if (cell && !e.target.closest('.shift-block')) {
+                    const userId = parseInt(cell.dataset.userId);
+                    const date = cell.dataset.date;
+                    openCreateShiftModal(userId, date);
+                }
+            });
+            
+            // Shift double-click for editing
+            document.addEventListener('dblclick', (e) => {
+                const shift = e.target.closest('.shift-block');
+                if (shift) {
+                    const shiftId = parseInt(shift.dataset.shiftId);
+                    const shiftData = appState.shifts.find(s => s.id === shiftId);
+                    if (shiftData) {
+                        openEditShiftModal(shiftData);
+                    }
+                }
+            });
+            
+            // Form submission
+            document.getElementById('shiftForm').addEventListener('submit', handleShiftFormSubmit);
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case 'z':
+                            e.preventDefault();
+                            undoLastAction();
+                            break;
+                        case 's':
+                            e.preventDefault();
+                            // Auto-save is handled automatically
+                            break;
+                        case 'e':
+                            e.preventDefault();
+                            exportSchedule();
+                            break;
+                    }
+                }
+                
+                if (e.key === 'Escape') {
+                    closeModal();
+                    hideContextMenu();
+                }
+            });
+        }
+
+        // Context menu functions
+        function showContextMenu(event, cell, shift) {
+            const menu = document.getElementById('contextMenu');
+            const userId = parseInt(cell.dataset.userId);
+            const date = cell.dataset.date;
+            const shiftId = shift ? parseInt(shift.dataset.shiftId) : null;
+            
+            appState.contextMenu = {
+                show: true,
+                userId,
+                date,
+                shiftId
+            };
+            
+            // Show/hide shift-specific items
+            document.getElementById('editShiftItem').style.display = shiftId ? 'block' : 'none';
+            document.getElementById('duplicateShiftItem').style.display = shiftId ? 'block' : 'none';
+            document.getElementById('deleteShiftItem').style.display = shiftId ? 'block' : 'none';
+            
+            menu.style.left = `${event.pageX}px`;
+            menu.style.top = `${event.pageY}px`;
+            menu.classList.add('show');
+        }
+
+        function hideContextMenu() {
+            const menu = document.getElementById('contextMenu');
+            menu.classList.remove('show');
+            appState.contextMenu.show = false;
+        }
+
+        // Modal functions
+        function openCreateShiftModal(userId, date) {
+            appState.modal.isEdit = false;
+            appState.modal.currentShift = null;
+            
+            document.getElementById('modalTitle').textContent = 'Create Shift';
+            document.getElementById('saveBtn').textContent = 'Create';
+            document.getElementById('shiftDate').value = date;
+            document.getElementById('shiftForm').dataset.userId = userId;
+            
+            // Reset form
+            document.getElementById('shiftForm').reset();
+            document.getElementById('shiftDate').value = date;
+            document.getElementById('startTime').value = '09:00';
+            document.getElementById('endTime').value = '17:00';
+            
+            showModal();
+        }
+
+        function openEditShiftModal(shift) {
+            appState.modal.isEdit = true;
+            appState.modal.currentShift = shift;
+            
+            document.getElementById('modalTitle').textContent = 'Edit Shift';
+            document.getElementById('saveBtn').textContent = 'Update';
+            
+            // Populate form
+            document.getElementById('shiftTypeSelect').value = shift.shift_type_id;
+            document.getElementById('shiftDate').value = shift.date;
+            document.getElementById('startTime').value = shift.start_time.substring(0, 5);
+            document.getElementById('endTime').value = shift.end_time.substring(0, 5);
+            document.getElementById('shiftNotes').value = shift.notes || '';
+            
+            showModal();
+            hideContextMenu();
+        }
+
+        function showModal() {
+            document.getElementById('shiftModal').classList.add('show');
+            appState.modal.show = true;
+        }
+
+        function closeModal() {
+            document.getElementById('shiftModal').classList.remove('show');
+            appState.modal.show = false;
+        }
+
+        // CRUD operations
+        async function handleShiftFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const shiftData = {
+                user_id: appState.modal.isEdit ? appState.modal.currentShift.user_id : parseInt(e.target.dataset.userId),
+                shift_type_id: parseInt(document.getElementById('shiftTypeSelect').value),
+                date: document.getElementById('shiftDate').value,
+                start_time: document.getElementById('startTime').value,
+                end_time: document.getElementById('endTime').value,
+                notes: document.getElementById('shiftNotes').value
+            };
+            
+            // Calculate duration
+            shiftData.duration_hours = calculateDuration(shiftData.start_time, shiftData.end_time);
+            
+            try {
+                setLoading(true);
+                
+                let response;
+                if (appState.modal.isEdit) {
+                    response = await fetch(`http://localhost:8000/api/shifts/${appState.modal.currentShift.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(shiftData)
+                    });
+                } else {
+                    response = await fetch('http://localhost:8000/api/shifts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(shiftData)
+                    });
+                }
+                
+                if (response.ok) {
+                    const savedShift = await response.json();
+                    
+                    if (appState.modal.isEdit) {
+                        const index = appState.shifts.findIndex(s => s.id === savedShift.id);
+                        if (index !== -1) {
+                            appState.shifts[index] = savedShift;
+                        }
+                    } else {
+                        // Add shift type data for rendering
+                        savedShift.shift_type = appState.shiftTypes.find(t => t.id === savedShift.shift_type_id);
+                        appState.shifts.push(savedShift);
+                    }
+                    
+                    renderShifts();
+                    closeModal();
+                    saveToHistory();
+                    showNotification('Shift saved successfully', 'success');
+                }
+            } catch (error) {
+                console.error('Error saving shift:', error);
+                showNotification('Error saving shift', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Navigation functions
+        async function previousMonth() {
+            appState.currentMonth--;
+            if (appState.currentMonth < 0) {
+                appState.currentMonth = 11;
+                appState.currentYear--;
+            }
+            
+            generateCalendar();
+            await loadScheduleData();
+            renderSchedule();
+        }
+
+        async function nextMonth() {
+            appState.currentMonth++;
+            if (appState.currentMonth > 11) {
+                appState.currentMonth = 0;
+                appState.currentYear++;
+            }
+            
+            generateCalendar();
+            await loadScheduleData();
+            renderSchedule();
+        }
+
+        // Context menu actions
+        function createShift() {
+            openCreateShiftModal(appState.contextMenu.userId, appState.contextMenu.date);
+            hideContextMenu();
+        }
+
+        function editShift() {
+            const shift = appState.shifts.find(s => s.id === appState.contextMenu.shiftId);
+            if (shift) {
+                openEditShiftModal(shift);
+            }
+        }
+
+        async function deleteShift() {
+            if (!confirm('Are you sure you want to delete this shift?')) return;
+            
+            try {
+                const response = await fetch(`http://localhost:8000/api/shifts/${appState.contextMenu.shiftId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    appState.shifts = appState.shifts.filter(s => s.id !== appState.contextMenu.shiftId);
+                    renderShifts();
+                    saveToHistory();
+                    showNotification('Shift deleted successfully', 'success');
+                }
+            } catch (error) {
+                console.error('Error deleting shift:', error);
+                showNotification('Error deleting shift', 'error');
+            }
+            
+            hideContextMenu();
+        }
+
+        async function duplicateShift() {
+            const shift = appState.shifts.find(s => s.id === appState.contextMenu.shiftId);
+            if (!shift) return;
+            
+            const newDate = prompt('Enter date for duplicated shift (YYYY-MM-DD):', shift.date);
+            if (!newDate) return;
+            
+            const newShift = {
+                user_id: shift.user_id,
+                shift_type_id: shift.shift_type_id,
+                date: newDate,
+                start_time: shift.start_time,
+                end_time: shift.end_time,
+                duration_hours: shift.duration_hours,
+                notes: shift.notes
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/shifts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newShift)
+                });
+                
+                if (response.ok) {
+                    const savedShift = await response.json();
+                    savedShift.shift_type = appState.shiftTypes.find(t => t.id === savedShift.shift_type_id);
+                    appState.shifts.push(savedShift);
+                    renderShifts();
+                    showNotification('Shift duplicated successfully', 'success');
+                }
+            } catch (error) {
+                console.error('Error duplicating shift:', error);
+                showNotification('Error duplicating shift', 'error');
+            }
+            
+            hideContextMenu();
+        }
+
+        function bulkOperations() {
+            alert('Bulk operations coming soon!');
+            hideContextMenu();
+        }
+
+        // Utility functions
+        function calculateDuration(startTime, endTime) {
+            const start = new Date(`2000-01-01T${startTime}:00`);
+            const end = new Date(`2000-01-01T${endTime}:00`);
+            return (end - start) / (1000 * 60 * 60);
+        }
+
+        function getShiftTooltip(shift) {
+            const user = appState.users.find(u => u.id === shift.user_id);
+            return `${user?.first_name} ${user?.last_name}\n${shift.shift_type.display_name}\n${shift.start_time} - ${shift.end_time}${shift.notes ? '\n' + shift.notes : ''}`;
+        }
+
+        function populateShiftTypeSelect() {
+            const select = document.getElementById('shiftTypeSelect');
+            select.innerHTML = '<option value="">Select shift type...</option>';
+            
+            appState.shiftTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.id;
+                option.textContent = type.display_name;
+                select.appendChild(option);
+            });
+        }
+
+        // Export functionality
+        function exportSchedule() {
+            const data = {
+                users: appState.users,
+                shifts: appState.shifts,
+                month: appState.currentMonth + 1,
+                year: appState.currentYear,
+                monthName: new Date(appState.currentYear, appState.currentMonth).toLocaleString('default', { month: 'long' })
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `schedule_${appState.currentYear}_${String(appState.currentMonth + 1).padStart(2, '0')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // History management
+        function saveToHistory() {
+            const state = JSON.stringify({
+                shifts: appState.shifts,
+                timestamp: Date.now()
+            });
+            
+            appState.history = appState.history.slice(0, appState.historyIndex + 1);
+            appState.history.push(state);
+            appState.historyIndex = appState.history.length - 1;
+            
+            // Limit history size
+            if (appState.history.length > 50) {
+                appState.history.shift();
+                appState.historyIndex--;
+            }
+            
+            updateUndoButton();
+        }
+
+        function undoLastAction() {
+            if (appState.historyIndex > 0) {
+                appState.historyIndex--;
+                const state = JSON.parse(appState.history[appState.historyIndex]);
+                appState.shifts = state.shifts;
+                renderShifts();
+                updateUndoButton();
+                showNotification('Action undone', 'info');
+            }
+        }
+
+        function updateUndoButton() {
+            const btn = document.getElementById('undoBtn');
+            btn.disabled = appState.historyIndex <= 0;
+        }
+
+        // UI helpers
+        function setLoading(loading) {
+            appState.loading = loading;
+            const overlay = document.getElementById('loadingOverlay');
+            if (loading) {
+                overlay.classList.add('show');
+            } else {
+                overlay.classList.remove('show');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize application when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

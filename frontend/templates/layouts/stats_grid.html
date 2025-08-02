@@ -1,0 +1,301 @@
+{% comment %}
+Stats Grid Component - Responsive statistics display for dashboards
+
+Usage:
+  {% include 'layouts/stats_grid.html' with stats=stats_data columns="4" %}
+  {% include 'layouts/stats_grid.html' with stats=stats_data columns="6" variant="compact" %}
+
+Parameters:
+  - stats: List of stat objects with title, value, icon, color, link
+  - columns: "2", "3", "4", "6" (default: "4")
+  - variant: "standard" (default), "compact", "large"
+  - extra_classes: Additional CSS classes
+
+Expected stats format:
+  stats = [
+    {
+      'title': 'My Shifts',
+      'value': '5',
+      'icon': 'clock',  # or SVG HTML
+      'color': 'blue',  # blue, green, amber, red, purple
+      'link': '/schedule/',
+      'description': 'Upcoming shifts'
+    }
+  ]
+{% endcomment %}
+
+{% load static %}
+
+<section class="stats-grid stats-grid-{{ columns|default:'4' }} {% if variant == 'compact' %}stats-grid-compact{% elif variant == 'large' %}stats-grid-large{% else %}stats-grid-standard{% endif %} {{ extra_classes|default:'' }}" 
+         aria-labelledby="stats-heading">
+    <h2 id="stats-heading" class="sr-only">Dashboard Statistics</h2>
+    
+    {% for stat in stats %}
+    <article class="stat-card stat-card-{{ stat.color|default:'blue' }} {% if stat.link %}stat-card-clickable{% endif %}"
+             {% if stat.link %}
+             role="button"
+             tabindex="0"
+             aria-label="{{ stat.title }}: {{ stat.value }}{% if stat.description %} - {{ stat.description }}{% endif %}"
+             onclick="window.location.href='{{ stat.link }}'"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='{{ stat.link }}'}"
+             {% endif %}>
+        
+        <!-- Icon -->
+        <div class="stat-icon" aria-hidden="true">
+            {% if stat.icon == 'clock' %}
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            {% elif stat.icon == 'users' %}
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                </svg>
+            {% elif stat.icon == 'calendar' %}
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            {% elif stat.icon == 'warning' %}
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.958-.833-2.728 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            {% elif stat.icon == 'check' %}
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            {% elif stat.icon == 'chart' %}
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            {% else %}
+                {{ stat.icon|safe }}
+            {% endif %}
+        </div>
+        
+        <!-- Value -->
+        <div class="stat-value">{{ stat.value }}</div>
+        
+        <!-- Title -->
+        <div class="stat-title">{{ stat.title }}</div>
+        
+        <!-- Description (optional) -->
+        {% if stat.description %}
+        <div class="stat-description">{{ stat.description }}</div>
+        {% endif %}
+    </article>
+    {% empty %}
+    <div class="stats-empty">
+        <p>No statistics available</p>
+    </div>
+    {% endfor %}
+</section>
+
+<style>
+/* Stats Grid Base Styles */
+.stats-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Grid columns */
+.stats-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.stats-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.stats-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.stats-grid-6 {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 48rem) { /* < 768px - Mobile */
+    .stats-grid-2,
+    .stats-grid-3,
+    .stats-grid-4,
+    .stats-grid-6 {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+}
+
+@media (min-width: 48rem) and (max-width: 64rem) { /* 768px - 1024px - Tablet */
+    .stats-grid-3,
+    .stats-grid-4,
+    .stats-grid-6 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 64rem) and (max-width: 90rem) { /* 1024px - 1440px - Desktop */
+    .stats-grid-6 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .stats-grid {
+        gap: 1.25rem;
+    }
+}
+
+@media (min-width: 90rem) { /* 1440px+ - Wide */
+    .stats-grid {
+        gap: 1.5rem;
+    }
+}
+
+/* Stat Card Base Styles */
+.stat-card {
+    background: linear-gradient(135deg, var(--card-bg-from), var(--card-bg-to));
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem; /* 12px */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px var(--card-shadow);
+}
+
+/* Card variants */
+.stats-grid-compact .stat-card {
+    padding: 1rem;
+}
+
+.stats-grid-large .stat-card {
+    padding: 2rem;
+}
+
+/* Clickable cards */
+.stat-card-clickable {
+    cursor: pointer;
+}
+
+.stat-card-clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px var(--card-shadow-hover);
+}
+
+.stat-card-clickable:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+.stat-card-clickable:active {
+    transform: translateY(-1px);
+}
+
+/* Color variants */
+.stat-card-blue {
+    --card-bg-from: rgb(59 130 246); /* blue-500 */
+    --card-bg-to: rgb(37 99 235); /* blue-600 */
+    --card-shadow: rgba(59, 130, 246, 0.3);
+    --card-shadow-hover: rgba(59, 130, 246, 0.4);
+}
+
+.stat-card-green {
+    --card-bg-from: rgb(16 185 129); /* emerald-500 */
+    --card-bg-to: rgb(5 150 105); /* emerald-600 */
+    --card-shadow: rgba(16, 185, 129, 0.3);
+    --card-shadow-hover: rgba(16, 185, 129, 0.4);
+}
+
+.stat-card-amber {
+    --card-bg-from: rgb(245 158 11); /* amber-500 */
+    --card-bg-to: rgb(217 119 6); /* amber-600 */
+    --card-shadow: rgba(245, 158, 11, 0.3);
+    --card-shadow-hover: rgba(245, 158, 11, 0.4);
+}
+
+.stat-card-red {
+    --card-bg-from: rgb(239 68 68); /* red-500 */
+    --card-bg-to: rgb(220 38 38); /* red-600 */
+    --card-shadow: rgba(239, 68, 68, 0.3);
+    --card-shadow-hover: rgba(239, 68, 68, 0.4);
+}
+
+.stat-card-purple {
+    --card-bg-from: rgb(168 85 247); /* purple-500 */
+    --card-bg-to: rgb(147 51 234); /* purple-600 */
+    --card-shadow: rgba(168, 85, 247, 0.3);
+    --card-shadow-hover: rgba(168, 85, 247, 0.4);
+}
+
+/* Card content */
+.stat-icon {
+    opacity: 0.9;
+    margin-bottom: 0.75rem;
+}
+
+.stats-grid-compact .stat-icon {
+    margin-bottom: 0.5rem;
+}
+
+.stats-grid-large .stat-icon {
+    margin-bottom: 1rem;
+}
+
+.stat-value {
+    font-size: 2.25rem; /* 36px */
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stats-grid-compact .stat-value {
+    font-size: 1.875rem; /* 30px */
+}
+
+.stats-grid-large .stat-value {
+    font-size: 3rem; /* 48px */
+}
+
+.stat-title {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    opacity: 0.9;
+    line-height: 1.2;
+}
+
+.stats-grid-large .stat-title {
+    font-size: 1rem; /* 16px */
+}
+
+.stat-description {
+    font-size: 0.75rem; /* 12px */
+    opacity: 0.8;
+    margin-top: 0.25rem;
+    line-height: 1.2;
+}
+
+/* Empty state */
+.stats-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: rgb(107 114 128); /* gray-500 */
+    font-style: italic;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+</style>

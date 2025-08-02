@@ -1,0 +1,245 @@
+{% comment %}
+Content Layout Component - Flexible content area with optional sidebars
+
+Usage:
+  {% include 'layouts/content_layout.html' with layout_type="single" %}
+  {% include 'layouts/content_layout.html' with layout_type="sidebar-right" %}
+  {% include 'layouts/content_layout.html' with layout_type="sidebar-left" %}
+  {% include 'layouts/content_layout.html' with layout_type="two-sidebar" %}
+
+Parameters:
+  - layout_type: "single" (default), "sidebar-right", "sidebar-left", "two-sidebar"
+  - sidebar_width: "narrow", "standard", "wide" (default: "standard")
+  - extra_classes: Additional CSS classes
+{% endcomment %}
+
+{% load static %}
+
+<div class="content-layout {% if layout_type == 'sidebar-right' %}content-layout-sidebar-right{% elif layout_type == 'sidebar-left' %}content-layout-sidebar-left{% elif layout_type == 'two-sidebar' %}content-layout-two-sidebar{% else %}content-layout-single{% endif %} {{ extra_classes|default:'' }}">
+    
+    {% if layout_type == 'sidebar-left' or layout_type == 'two-sidebar' %}
+    <!-- Left sidebar -->
+    <aside class="content-sidebar content-sidebar-left {% if sidebar_width == 'narrow' %}sidebar-narrow{% elif sidebar_width == 'wide' %}sidebar-wide{% else %}sidebar-standard{% endif %}">
+        {% block left_sidebar %}
+            <!-- Left sidebar content will be provided by the including template -->
+        {% endblock %}
+    </aside>
+    {% endif %}
+
+    <!-- Primary content area -->
+    <main class="content-primary" role="main">
+        {% block primary_content %}
+            <!-- Primary content will be provided by the including template -->
+        {% endblock %}
+    </main>
+
+    {% if layout_type == 'sidebar-right' or layout_type == 'two-sidebar' %}
+    <!-- Right sidebar -->
+    <aside class="content-sidebar content-sidebar-right {% if sidebar_width == 'narrow' %}sidebar-narrow{% elif sidebar_width == 'wide' %}sidebar-wide{% else %}sidebar-standard{% endif %}">
+        {% block right_sidebar %}
+            <!-- Right sidebar content will be provided by the including template -->
+        {% endblock %}
+    </aside>
+    {% endif %}
+</div>
+
+<style>
+/* Content Layout Base Styles */
+.content-layout {
+    display: grid;
+    gap: 1.5rem;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+/* Single column layout */
+.content-layout-single {
+    grid-template-columns: 1fr;
+}
+
+/* Sidebar layouts */
+.content-layout-sidebar-right {
+    grid-template-columns: 1fr auto;
+}
+
+.content-layout-sidebar-left {
+    grid-template-columns: auto 1fr;
+}
+
+.content-layout-two-sidebar {
+    grid-template-columns: auto 1fr auto;
+}
+
+/* Primary content area */
+.content-primary {
+    min-width: 0; /* Prevent grid overflow */
+    background-color: white;
+    border-radius: 0.5rem; /* 8px */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    overflow: hidden;
+}
+
+.content-layout.dark .content-primary {
+    background-color: rgb(31 41 55); /* gray-800 */
+}
+
+/* Sidebar styles */
+.content-sidebar {
+    background-color: white;
+    border-radius: 0.5rem; /* 8px */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.content-layout.dark .content-sidebar {
+    background-color: rgb(31 41 55); /* gray-800 */
+}
+
+/* Sidebar width variants */
+.sidebar-narrow {
+    width: 16rem; /* 256px */
+}
+
+.sidebar-standard {
+    width: 20rem; /* 320px */
+}
+
+.sidebar-wide {
+    width: 24rem; /* 384px */
+}
+
+/* Responsive behavior */
+@media (max-width: 48rem) { /* < 768px - Mobile */
+    .content-layout {
+        gap: 1rem;
+    }
+    
+    /* Stack all layouts vertically on mobile */
+    .content-layout-sidebar-right,
+    .content-layout-sidebar-left,
+    .content-layout-two-sidebar {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    /* Reorder for better mobile UX */
+    .content-layout-sidebar-right .content-primary {
+        order: 1;
+    }
+    
+    .content-layout-sidebar-right .content-sidebar-right {
+        order: 2;
+    }
+    
+    .content-layout-sidebar-left .content-sidebar-left {
+        order: 1;
+    }
+    
+    .content-layout-sidebar-left .content-primary {
+        order: 2;
+    }
+    
+    /* Two sidebar layout on mobile */
+    .content-layout-two-sidebar .content-sidebar-left {
+        order: 1;
+    }
+    
+    .content-layout-two-sidebar .content-primary {
+        order: 2;
+    }
+    
+    .content-layout-two-sidebar .content-sidebar-right {
+        order: 3;
+    }
+    
+    /* Full width sidebars on mobile */
+    .content-sidebar {
+        width: 100%;
+        padding: 1rem;
+    }
+}
+
+@media (min-width: 48rem) and (max-width: 64rem) { /* 768px - 1024px - Tablet */
+    .content-layout {
+        gap: 1.25rem;
+    }
+    
+    /* Adjust sidebar widths for tablet */
+    .sidebar-narrow {
+        width: 14rem; /* 224px */
+    }
+    
+    .sidebar-standard {
+        width: 18rem; /* 288px */
+    }
+    
+    .sidebar-wide {
+        width: 22rem; /* 352px */
+    }
+    
+    /* Two sidebar becomes single sidebar on tablet */
+    .content-layout-two-sidebar {
+        grid-template-columns: 1fr auto;
+    }
+    
+    .content-layout-two-sidebar .content-sidebar-left {
+        display: none;
+    }
+}
+
+@media (min-width: 64rem) { /* 1024px+ - Desktop */
+    .content-layout {
+        gap: 2rem;
+    }
+}
+
+@media (min-width: 90rem) { /* 1440px+ - Wide desktop */
+    .content-layout {
+        gap: 2.5rem;
+    }
+    
+    /* Larger sidebars on wide screens */
+    .sidebar-narrow {
+        width: 18rem; /* 288px */
+    }
+    
+    .sidebar-standard {
+        width: 22rem; /* 352px */
+    }
+    
+    .sidebar-wide {
+        width: 26rem; /* 416px */
+    }
+}
+
+/* Content area overflow handling */
+.content-primary {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-primary > * {
+    flex-shrink: 0;
+}
+
+.content-primary .scrollable-content {
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* Sidebar scrolling */
+.content-sidebar {
+    max-height: calc(100vh - 8rem); /* Account for header and padding */
+}
+
+@media (min-width: 64rem) {
+    .content-sidebar {
+        max-height: calc(100vh - 6rem);
+    }
+}
+</style>

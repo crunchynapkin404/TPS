@@ -70,57 +70,7 @@ router.register(r'swap-requests', SwapRequestViewSet)
 # Define URL patterns
 urlpatterns = [
 
-    # Teams API fallback endpoints (MUST come before router)
-    path('v1/teams/overview/', lambda request: JsonResponse({
-        'success': True,
-        'teams': [
-            {
-                'id': 1,
-                'name': 'Engineering Team A',
-                'description': 'Primary engineering operations',
-                'status': 'Active',
-                'member_count': 12,
-                'ytd_hours': 2450,
-                'coverage_percentage': 85,
-                'fairness_score': 7.8,
-                'workload_percentage': 78,
-                'performance_trend': [75, 82, 78, 85, 88, 84, 87]
-            },
-            {
-                'id': 2,
-                'name': 'Operations Team B',
-                'description': 'Operations and maintenance',
-                'status': 'Active',
-                'member_count': 8,
-                'ytd_hours': 1980,
-                'coverage_percentage': 92,
-                'fairness_score': 8.2,
-                'workload_percentage': 65,
-                'performance_trend': [80, 85, 88, 90, 87, 89, 91]
-            }
-        ],
-        'total_teams': 2,
-        'total_active_members': 20,
-        'active_teams': 2,
-        'avg_efficiency_rate': 88
-    }), name='teams-overview-fallback'),
-    path('v1/teams/statistics/', lambda request: JsonResponse({
-        'success': True,
-        'statistics': {
-            'total_teams': 2,
-            'total_members': 20,
-            'active_members': 18,
-            'avg_coverage': 88,
-            'avg_fairness': 8.0,
-            'avg_hours': 32.5,
-            'trends': {
-                'members_trend': '+5%',
-                'coverage_trend': '+2%',
-                'fairness_trend': '+1%',
-                'hours_trend': '-1%'
-            }
-        }
-    }), name='teams-statistics-fallback'),
+    # Teams API roles endpoint (keep this simple endpoint)
     path('v1/teams/roles/', lambda request: JsonResponse({
         'success': True,
         'roles': [
@@ -232,60 +182,6 @@ urlpatterns = [
     path('v1/analytics/teams/', lambda request: JsonResponse({'success': True, 'team_performance': []}), name='analytics-teams'),
     path('v1/analytics/performers/', lambda request: JsonResponse({'success': True, 'top_performers': []}), name='analytics-performers'),
     path('v1/analytics/alerts/', lambda request: JsonResponse({'success': True, 'alerts': []}), name='analytics-alerts'),
-    
-    # Teams API endpoints - Use ViewSet actions instead of separate functions
-    # Add fallback endpoints for when authentication fails
-    path('v1/teams/overview/', lambda request: JsonResponse({
-        'success': True,
-        'teams': [
-            {
-                'id': 1,
-                'name': 'Engineering Team A',
-                'description': 'Primary engineering operations',
-                'status': 'Active',
-                'member_count': 12,
-                'ytd_hours': 2450,
-                'coverage_percentage': 85,
-                'fairness_score': 7.8,
-                'workload_percentage': 78,
-                'performance_trend': [75, 82, 78, 85, 88, 84, 87]
-            },
-            {
-                'id': 2,
-                'name': 'Operations Team B',
-                'description': 'Operations and maintenance',
-                'status': 'Active',
-                'member_count': 8,
-                'ytd_hours': 1980,
-                'coverage_percentage': 92,
-                'fairness_score': 8.2,
-                'workload_percentage': 65,
-                'performance_trend': [80, 85, 88, 90, 87, 89, 91]
-            }
-        ],
-        'total_teams': 2,
-        'total_active_members': 20,
-        'active_teams': 2,
-        'avg_efficiency_rate': 88
-    }), name='teams-overview-fallback'),
-    path('v1/teams/statistics/', lambda request: JsonResponse({
-        'success': True,
-        'statistics': {
-            'total_teams': 2,
-            'total_members': 20,
-            'active_members': 18,
-            'avg_coverage': 88,
-            'avg_fairness': 8.0,
-            'avg_hours': 32.5,
-            'trends': {
-                'members_trend': '+5%',
-                'coverage_trend': '+2%',
-                'fairness_trend': '+1%',
-                'hours_trend': '-1%'
-            }
-        }
-    }), name='teams-statistics-fallback'),
-    path('v1/teams/<int:team_id>/members/', team_members, name='team-members'),
     
     # Skills API endpoints
     path('v1/skills/categories/', skill_categories, name='skill-categories'),

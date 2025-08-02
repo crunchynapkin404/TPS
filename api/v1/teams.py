@@ -61,6 +61,9 @@ class TeamViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAuthenticated, TacticalPermission]
         elif self.action in ['get_planning_data', 'get_workload_analysis']:
             permission_classes = [permissions.IsAuthenticated, TeamMemberPermission]
+        elif self.action in ['get_members', 'get_schedule']:
+            # Allow all authenticated users to view team members and schedules
+            permission_classes = [permissions.IsAuthenticated]
         else:
             permission_classes = [permissions.IsAuthenticated, TPSPermission]
         
@@ -106,7 +109,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         
         return queryset
     
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get'], url_path='members')
     def get_members(self, request, pk=None):
         """
         Get team members with their roles and information
@@ -121,6 +124,7 @@ class TeamViewSet(viewsets.ModelViewSet):
         
         serializer = TeamMembershipSerializer(memberships, many=True)
         return Response({
+            'success': True,
             'team_id': team.id,
             'team_name': team.name,
             'members': serializer.data
@@ -421,10 +425,14 @@ class TeamViewSet(viewsets.ModelViewSet):
         try:
             user = request.user
             
-            # Get teams user has access to (member or leader)
-            teams = Team.objects.filter(
-                Q(memberships__user=user) | Q(team_leader=user)
-            ).distinct()
+            # Get teams user has access to
+            # Admin users can see all teams, others see only teams they're member/leader of
+            if user.is_superuser or user.is_staff:
+                teams = Team.objects.all()
+            else:
+                teams = Team.objects.filter(
+                    Q(memberships__user=user) | Q(team_leader=user)
+                ).distinct()
             
             teams_data = []
             for team in teams:
@@ -577,10 +585,14 @@ class TeamViewSet(viewsets.ModelViewSet):
         try:
             user = request.user
             
-            # Get teams user has access to (member or leader)
-            teams = Team.objects.filter(
-                Q(memberships__user=user) | Q(team_leader=user)
-            ).distinct()
+            # Get teams user has access to
+            # Admin users can see all teams, others see only teams they're member/leader of
+            if user.is_superuser or user.is_staff:
+                teams = Team.objects.all()
+            else:
+                teams = Team.objects.filter(
+                    Q(memberships__user=user) | Q(team_leader=user)
+                ).distinct()
             
             # Calculate statistics
             total_teams = teams.count()

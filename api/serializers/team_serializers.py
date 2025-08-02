@@ -15,7 +15,7 @@ class TeamRoleSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = TeamRole
-        fields = ['id', 'name', 'description', 'can_assign_shifts', 'can_approve_leave', 'is_leadership']
+        fields = ['id', 'name', 'description', 'can_assign_shifts', 'can_approve_swaps', 'can_manage_team']
 
 
 class TeamMembershipSerializer(serializers.ModelSerializer):
@@ -26,17 +26,32 @@ class TeamMembershipSerializer(serializers.ModelSerializer):
     role = TeamRoleSerializer(read_only=True)
     role_id = serializers.IntegerField(write_only=True)
     user_full_name = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
     
     class Meta:
         model = TeamMembership
         fields = [
-            'id', 'user', 'user_id', 'user_full_name', 'role', 'role_id',
-            'joined_date', 'is_active', 'notes'
+            'id', 'user', 'user_id', 'user_full_name', 'first_name', 'last_name', 
+            'email', 'role', 'role_id', 'join_date', 'is_active'
         ]
     
     def get_user_full_name(self, obj):
         """Return full name of team member"""
         return f"{obj.user.first_name} {obj.user.last_name}".strip()
+    
+    def get_first_name(self, obj):
+        """Return first name of team member"""
+        return obj.user.first_name or ""
+    
+    def get_last_name(self, obj):
+        """Return last name of team member"""
+        return obj.user.last_name or ""
+    
+    def get_email(self, obj):
+        """Return email of team member"""
+        return obj.user.email or ""
 
 
 class TeamScheduleTemplateSerializer(serializers.ModelSerializer):

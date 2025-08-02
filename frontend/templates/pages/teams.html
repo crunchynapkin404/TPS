@@ -20,6 +20,12 @@
     overflow: hidden;
 }
 
+.dark .team-card {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
 .team-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -57,10 +63,18 @@
     margin: 0 0 4px 0;
 }
 
+.dark .team-info h3 {
+    color: #f9fafb;
+}
+
 .team-description {
     font-size: 14px;
     color: #6B7280;
     margin: 0;
+}
+
+.dark .team-description {
+    color: #9ca3af;
 }
 
 .team-status {
@@ -102,6 +116,29 @@
     font-size: 24px;
     font-weight: 700;
     color: #111827;
+    margin-bottom: 4px;
+}
+
+.dark .team-stat-value {
+    color: #f9fafb;
+}
+
+.team-stat-label {
+    font-size: 12px;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.dark .team-stat-label {
+    color: #9ca3af;
+}
+
+.team-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
     line-height: 1;
 }
 
@@ -119,6 +156,10 @@
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 8px;
+}
+
+.dark .workload-indicator {
+    background-color: #374151;
 }
 
 .workload-fill {
@@ -228,10 +269,22 @@
     border: 1px solid #D1D5DB;
 }
 
+.dark .btn-outline {
+    background: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+}
+
 .btn-outline:hover {
     background: #F9FAFB;
     color: #374151;
     border-color: #9CA3AF;
+}
+
+.dark .btn-outline:hover {
+    background: #4b5563;
+    color: #f3f4f6;
+    border-color: #6b7280;
 }
 
 .add-team-card {
@@ -247,10 +300,20 @@
     min-height: 300px;
 }
 
+.dark .add-team-card {
+    background: linear-gradient(135deg, #1f2937, #374151);
+    border-color: #4b5563;
+}
+
 .add-team-card:hover {
     border-color: #3B82F6;
     background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
     transform: translateY(-2px);
+}
+
+.dark .add-team-card:hover {
+    border-color: #60a5fa;
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
 }
 
 /* Filter tabs */
@@ -267,6 +330,11 @@
     align-items: center;
 }
 
+.dark .filter-tab {
+    background: #374151;
+    color: #9ca3af;
+}
+
 .filter-tab.active {
     background: #3B82F6;
     color: white;
@@ -275,6 +343,11 @@
 .filter-tab:hover:not(.active) {
     background: #E5E7EB;
     color: #374151;
+}
+
+.dark .filter-tab:hover:not(.active) {
+    background: #4b5563;
+    color: #f3f4f6;
 }
 
 /* Loading spinner */
@@ -295,9 +368,20 @@
     margin-bottom: 16px;
 }
 
+.dark .form-section {
+    background: #374151;
+}
+
 .form-section h4 {
     margin: 0 0 12px 0;
     font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.dark .form-section h4 {
+    color: #f9fafb;
+}
     font-weight: 600;
     color: #111827;
 }
@@ -393,31 +477,31 @@
 
     <!-- Quick Stats Overview -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-        <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
             <i class="fas fa-chart-bar text-blue-600 mr-3"></i>
             Team Performance Overview
         </h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="team-stats-overview">
-            <div class="text-center p-6 bg-blue-50 rounded-lg">
-                <div class="text-3xl font-bold text-blue-600" id="total-members">--</div>
-                <div class="text-sm text-blue-800 mt-1">Total Members</div>
-                <div class="text-xs text-blue-600 mt-2" id="members-trend">Loading...</div>
+            <div class="text-center p-6 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="total-members">--</div>
+                <div class="text-sm text-blue-800 dark:text-blue-300 mt-1">Total Members</div>
+                <div class="text-xs text-blue-600 dark:text-blue-400 mt-2" id="members-trend">Loading...</div>
             </div>
-            <div class="text-center p-6 bg-green-50 rounded-lg">
-                <div class="text-3xl font-bold text-green-600" id="avg-coverage">--%</div>
-                <div class="text-sm text-green-800 mt-1">Avg Coverage</div>
-                <div class="text-xs text-green-600 mt-2" id="coverage-trend">Loading...</div>
+            <div class="text-center p-6 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                <div class="text-3xl font-bold text-green-600 dark:text-green-400" id="avg-coverage">--%</div>
+                <div class="text-sm text-green-800 dark:text-green-300 mt-1">Avg Coverage</div>
+                <div class="text-xs text-green-600 dark:text-green-400 mt-2" id="coverage-trend">Loading...</div>
             </div>
-            <div class="text-center p-6 bg-purple-50 rounded-lg">
-                <div class="text-3xl font-bold text-purple-600" id="fairness-score">--</div>
-                <div class="text-sm text-purple-800 mt-1">Fairness Score</div>
-                <div class="text-xs text-purple-600 mt-2" id="fairness-trend">Loading...</div>
+            <div class="text-center p-6 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400" id="fairness-score">--</div>
+                <div class="text-sm text-purple-800 dark:text-purple-300 mt-1">Fairness Score</div>
+                <div class="text-xs text-purple-600 dark:text-purple-400 mt-2" id="fairness-trend">Loading...</div>
             </div>
-            <div class="text-center p-6 bg-orange-50 rounded-lg">
-                <div class="text-3xl font-bold text-orange-600" id="avg-hours">--</div>
-                <div class="text-sm text-orange-800 mt-1">Avg YTD Hours</div>
-                <div class="text-xs text-orange-600 mt-2" id="hours-trend">Loading...</div>
+            <div class="text-center p-6 bg-orange-50 dark:bg-orange-900/30 rounded-lg">
+                <div class="text-3xl font-bold text-orange-600 dark:text-orange-400" id="avg-hours">--</div>
+                <div class="text-sm text-orange-800 dark:text-orange-300 mt-1">Avg YTD Hours</div>
+                <div class="text-xs text-orange-600 dark:text-orange-400 mt-2" id="hours-trend">Loading...</div>
             </div>
         </div>
     </div>
@@ -429,8 +513,8 @@
     <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div class="mt-3">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Add New Team</h3>
-                <button onclick="closeAddTeamModal()" class="text-gray-400 hover:text-gray-600">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Add New Team</h3>
+                <button onclick="closeAddTeamModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -449,7 +533,7 @@
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                    <textarea name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -530,12 +614,12 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Username *</label>
-                            <input type="text" name="username" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username *</label>
+                            <input type="text" name="username" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Email *</label>
-                            <input type="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email *</label>
+                            <input type="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                     </div>
                 </div>
@@ -561,47 +645,47 @@
                 </div>
                 
                 <!-- Contact Information -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="text-md font-medium text-gray-900 mb-3">Contact Information</h4>
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-3">Contact Information</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Phone</label>
-                            <input type="tel" name="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+                            <input type="tel" name="phone" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Location</label>
-                            <input type="text" name="location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+                            <input type="text" name="location" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Emergency Contact</label>
-                            <input type="text" name="emergency_contact" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Contact</label>
+                            <input type="text" name="emergency_contact" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Emergency Phone</label>
-                            <input type="tel" name="emergency_phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Phone</label>
+                            <input type="tel" name="emergency_phone" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                     </div>
                 </div>
                 
                 <!-- Password -->
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="text-md font-medium text-gray-900 mb-3">Account Security</h4>
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <h4 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-3">Account Security</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Password *</label>
-                            <input type="password" name="password" required minlength="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password *</label>
+                            <input type="password" name="password" required minlength="8" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Confirm Password *</label>
-                            <input type="password" name="password_confirm" required minlength="8" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password *</label>
+                            <input type="password" name="password_confirm" required minlength="8" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                     </div>
                 </div>
                 
                 <div class="flex justify-end space-x-3 pt-4">
-                    <button type="button" onclick="closeAddUserModal()" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <button type="button" onclick="closeAddUserModal()" class="bg-white dark:bg-gray-600 py-2 px-4 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Cancel
                     </button>
                     <button type="submit" class="bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -618,18 +702,18 @@
 
 <!-- User Skills Management Modal -->
 <div id="user-skills-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
-    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div class="mt-3">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Manage User Skills</h3>
-                <button onclick="closeUserSkillsModal()" class="text-gray-400 hover:text-gray-600">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Manage User Skills</h3>
+                <button onclick="closeUserSkillsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
             
-            <div id="skills-user-info" class="bg-blue-50 p-4 rounded-lg mb-6">
-                <h4 class="font-medium text-blue-900">User: <span id="skills-user-name">-</span></h4>
-                <p class="text-sm text-blue-700">Employee ID: <span id="skills-user-id">-</span></p>
+            <div id="skills-user-info" class="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-6">
+                <h4 class="font-medium text-blue-900 dark:text-blue-200">User: <span id="skills-user-name">-</span></h4>
+                <p class="text-sm text-blue-700 dark:text-blue-300">Employee ID: <span id="skills-user-id">-</span></p>
             </div>
             
             <!-- Add New Skill -->
@@ -649,8 +733,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Proficiency Level</label>
-                        <select name="proficiency_level" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Proficiency Level</label>
+                        <select name="proficiency_level" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             <option value="learning">Learning</option>
                             <option value="basic">Basic</option>
                             <option value="intermediate">Intermediate</option>
@@ -667,9 +751,9 @@
             </div>
             
             <!-- Current Skills -->
-            <div class="bg-white border rounded-lg">
-                <div class="px-4 py-3 bg-gray-50 border-b">
-                    <h4 class="text-md font-medium text-gray-900">Current Skills</h4>
+            <div class="bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg">
+                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
+                    <h4 class="text-md font-medium text-gray-900 dark:text-white">Current Skills</h4>
                 </div>
                 <div id="current-skills-list" class="p-4">
                     <div class="text-gray-500 text-center py-8">
@@ -689,12 +773,12 @@
 </div>
 
 <!-- Team Member Management Modal -->
-<div id="team-members-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
-    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-5xl shadow-lg rounded-md bg-white">
+<div id="team-members-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50" style="display: none;">
+    <div class="relative top-10 mx-auto p-5 border dark:border-gray-600 w-11/12 max-w-5xl shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div class="mt-3">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Manage Team Members</h3>
-                <button onclick="closeTeamMembersModal()" class="text-gray-400 hover:text-gray-600">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Manage Team Members</h3>
+                <button onclick="closeTeamMembersModal()" class="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -710,13 +794,13 @@
                 <form id="add-member-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">User</label>
-                        <select name="user_id" id="available-users-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <select name="user_id" id="available-users-select" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             <option value="">Select User</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Team Role</label>
-                        <select name="role_id" id="team-roles-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <select name="role_id" id="team-roles-select" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             <option value="">Select Role</option>
                         </select>
                     </div>
@@ -729,9 +813,9 @@
             </div>
             
             <!-- Current Members -->
-            <div class="bg-white border rounded-lg">
-                <div class="px-4 py-3 bg-gray-50 border-b">
-                    <h4 class="text-md font-medium text-gray-900">Current Members</h4>
+            <div class="bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg">
+                <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
+                    <h4 class="text-md font-medium text-gray-900 dark:text-white">Current Members</h4>
                 </div>
                 <div id="team-members-list" class="overflow-x-auto">
                     <div class="text-gray-500 text-center py-8">
@@ -969,7 +1053,7 @@ function createTeamCard(team) {
         <div class="workload-indicator">
             <div class="workload-fill ${workloadClass}" style="width: ${team.workload_percentage}%"></div>
         </div>
-        <div class="text-sm text-gray-600 text-center">Workload: ${workloadText}</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400 text-center">Workload: ${workloadText}</div>
         
         <div class="member-avatars" id="team-${team.id}-members">
             <!-- Members will be loaded here -->
@@ -1163,12 +1247,12 @@ function filterTeamsByCategory(teams, category) {
 }
 
 function showFallbackTeamsData() {
-    // Show basic fallback data when API is unavailable
-    document.getElementById('active-members-count').textContent = 'Data unavailable';
-    document.getElementById('teams-online-count').textContent = 'Data unavailable';
-    document.getElementById('efficiency-rate').textContent = 'Data unavailable';
+    // Show message when API is unavailable 
+    document.getElementById('active-members-count').textContent = '0';
+    document.getElementById('teams-online-count').textContent = '0';
+    document.getElementById('efficiency-rate').textContent = '0%';
     
-    console.log('Showing fallback teams data');
+    console.log('Teams API unavailable - showing empty state');
 }
 
 // Utility function to get CSRF token
@@ -1261,56 +1345,47 @@ function closeAddTeamModal() {
 }
 
 function showFallbackTeamsData() {
-    // Show fallback team data when API is unavailable
-    const fallbackTeams = [
-        {
-            id: 1,
-            name: 'Engineering Team A',
-            description: 'Primary engineering operations',
-            status: 'Active',
-            member_count: 12,
-            ytd_hours: 2450,
-            coverage_percentage: 85,
-            fairness_score: 7.8,
-            workload_percentage: 78,
-            performance_trend: [75, 82, 78, 85, 88, 84, 87]
-        },
-        {
-            id: 2,
-            name: 'Operations Team B',
-            description: 'Operations and maintenance',
-            status: 'Active',
-            member_count: 8,
-            ytd_hours: 1980,
-            coverage_percentage: 92,
-            fairness_score: 8.2,
-            workload_percentage: 65,
-            performance_trend: [80, 85, 88, 90, 87, 89, 91]
-        }
-    ];
-    
-    teamsData = fallbackTeams;
+    // Show message when API is unavailable instead of fake teams
+    teamsData = [];
     updateHeaderStats({
-        total_teams: 2,
-        total_active_members: 20,
-        active_teams: 2,
-        avg_efficiency_rate: 88
+        total_teams: 0,
+        total_active_members: 0,
+        active_teams: 0,
+        avg_efficiency_rate: 0
     });
-    renderTeams();
+    
+    // Show error message instead of fake teams
+    const teamsGrid = document.getElementById('teams-grid');
+    teamsGrid.innerHTML = `
+        <div class="col-span-full">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                    <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-yellow-800 mb-2">Teams data temporarily unavailable</h3>
+                <p class="text-yellow-700 mb-4">Unable to load team information. Please check your connection and try again.</p>
+                <button onclick="loadTeamsData()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                    Retry Loading Teams
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 function showFallbackStatisticsData() {
-    // Show fallback statistics when API is unavailable
+    // Show empty statistics when API is unavailable
     const fallbackStats = {
-        total_teams: 2,
-        total_members: 20,
-        active_members: 18,
-        avg_coverage: 88,
-        efficiency_rate: 85,
+        total_teams: 0,
+        total_members: 0,
+        active_members: 0,
+        avg_coverage: 0,
+        efficiency_rate: 0,
         workload_distribution: {
-            balanced: 70,
-            overloaded: 20,
-            underutilized: 10
+            balanced: 0,
+            overloaded: 0,
+            underutilized: 0
         }
     };
     
@@ -2084,7 +2159,7 @@ function createTeamCard(team) {
         <div class="workload-indicator">
             <div class="workload-fill ${workloadClass}" style="width: ${team.workload_percentage}%"></div>
         </div>
-        <div class="text-sm text-gray-600 text-center">Workload: ${workloadText}</div>
+        <div class="text-sm text-gray-600 dark:text-gray-400 text-center">Workload: ${workloadText}</div>
         
         <div class="member-avatars" id="team-${team.id}-members">
             <!-- Members will be loaded here -->

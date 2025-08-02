@@ -4,11 +4,11 @@
 {% block extra_css %}
 <style>
 .swap-card {
-    @apply bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow duration-300;
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-shadow duration-300;
 }
 
 .assignment-card {
-    @apply bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3;
+    @apply bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-600 rounded-lg p-3;
 }
 
 .urgent-badge {
@@ -51,10 +51,10 @@
     }
 }
 
-.urgent-emergency { @apply bg-red-100 text-red-800; }
-.urgent-high { @apply bg-orange-100 text-orange-800; }
-.urgent-medium { @apply bg-yellow-100 text-yellow-800; }  
-.urgent-low { @apply bg-green-100 text-green-800; }
+.urgent-emergency { @apply bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200; }
+.urgent-high { @apply bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200; }
+.urgent-medium { @apply bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200; }  
+.urgent-low { @apply bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200; }
 </style>
 {% endblock %}
 
@@ -162,7 +162,7 @@
                         
                         <div class="flex items-center space-x-2">
                             <label class="text-sm font-medium text-gray-700">Priority:</label>
-                            <select x-model="filterUrgency" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <select x-model="filterUrgency" @change="filterRequests()" class="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">All</option>
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
@@ -173,7 +173,7 @@
                         
                         <div class="flex items-center space-x-2">
                             <label class="text-sm font-medium text-gray-700">Date:</label>
-                            <select x-model="filterDateRange" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <select x-model="filterDateRange" @change="filterRequests()" class="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">All Time</option>
                                 <option value="today">Today</option>
                                 <option value="week">This Week</option>
@@ -233,7 +233,7 @@
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <template x-for="request in paginatedRequests" :key="request.id">
                                 <tr class="hover:bg-gray-50 transition-colors" :class="getRowClass(request)">
                                     <td class="px-4 py-3 whitespace-nowrap">
@@ -414,7 +414,7 @@
                             </div>
                         </div>
                         
-                        <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-2 py-1.5 rounded-lg hover:bg-blue-50 font-medium text-xs transition-colors">
+                        <button @click="initiateSwap(assignment)" class="w-full bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400 px-2 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 font-medium text-xs transition-colors">
                             Request Swap
                         </button>
                     </div>
@@ -449,7 +449,7 @@
                                 </div>
                             </div>
                             
-                            <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 font-medium text-sm transition-colors">
+                            <button @click="initiateSwap(assignment)" class="w-full bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 font-medium text-sm transition-colors">
                                 Request Swap
                             </button>
                         </div>
@@ -472,10 +472,10 @@
             </div>
 
             <!-- Compact Filters Bar (Desktop) -->
-            <div class="bg-white border-b border-gray-200 px-6 py-3 hidden lg:block">
+            <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 hidden lg:block">
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-xl font-semibold text-gray-900">All Swap Requests</h2>
-                    <div class="text-sm text-gray-600">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">All Swap Requests</h2>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
                         <span x-text="filteredRequests.length"></span> of <span x-text="swapRequests.length"></span> requests
                     </div>
                 </div>
@@ -483,8 +483,8 @@
                 <!-- Desktop Inline Filters -->
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center space-x-2">
-                        <label class="text-sm font-medium text-gray-700">Status:</label>
-                        <select x-model="filterStatus" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Status:</label>
+                        <select x-model="filterStatus" @change="filterRequests()" class="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">All</option>
                             <option value="pending">Pending</option>
                             <option value="approved">Approved</option>
@@ -495,8 +495,8 @@
                     </div>
                     
                     <div class="flex items-center space-x-2">
-                        <label class="text-sm font-medium text-gray-700">Priority:</label>
-                        <select x-model="filterUrgency" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority:</label>
+                        <select x-model="filterUrgency" @change="filterRequests()" class="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">All</option>
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
@@ -506,8 +506,8 @@
                     </div>
                     
                     <div class="flex items-center space-x-2">
-                        <label class="text-sm font-medium text-gray-700">Date:</label>
-                        <select x-model="filterDateRange" @change="filterRequests()" class="border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Date:</label>
+                        <select x-model="filterDateRange" @change="filterRequests()" class="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">All Time</option>
                             <option value="today">Today</option>
                             <option value="week">This Week</option>
@@ -561,7 +561,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     <template x-for="request in paginatedRequests" :key="request.id">
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700" :class="getRowClass(request)">
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -820,7 +820,7 @@
                             </div>
                         </div>
                         
-                        <button @click="initiateSwap(assignment)" class="w-full bg-white border border-blue-300 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50 font-medium text-sm transition-colors">
+                        <button @click="initiateSwap(assignment)" class="w-full bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400 px-4 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-600 font-medium text-sm transition-colors">
                             Request Swap
                         </button>
                     </div>
@@ -834,7 +834,7 @@
                 <div class="flex flex-wrap items-center gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select x-model="filterStatus" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select x-model="filterStatus" @change="filterRequests()" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">All Status</option>
                             <option value="pending">Pending</option>
                             <option value="approved">Approved</option>
@@ -846,7 +846,7 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Urgency</label>
-                        <select x-model="filterUrgency" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select x-model="filterUrgency" @change="filterRequests()" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">All Urgency</option>
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
@@ -857,7 +857,7 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                        <select x-model="filterDateRange" @change="filterRequests()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select x-model="filterDateRange" @change="filterRequests()" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">All Time</option>
                             <option value="today">Today</option>
                             <option value="week">This Week</option>
@@ -969,17 +969,17 @@
                     </div>
                     
                     <div class="flex items-center space-x-2">
-                        <button @click="previousPage()" :disabled="currentPage === 1" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                        <button @click="previousPage()" :disabled="currentPage === 1" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                             Previous
                         </button>
                         
                         <template x-for="page in pageNumbers" :key="page">
-                            <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                            <button @click="goToPage(page)" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm">
                                 <span x-text="page"></span>
                             </button>
                         </template>
                         
-                        <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                        <button @click="nextPage()" :disabled="currentPage === totalPages" class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                             Next
                         </button>
                     </div>
@@ -1010,7 +1010,7 @@
                 <!-- Assignment Selection -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Assignment to Give Up *</label>
-                    <select x-model="newRequest.requesting_assignment_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select x-model="newRequest.requesting_assignment_id" required class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Select assignment to give up</option>
                         <template x-for="assignment in myAssignments" :key="assignment.id">
                             <option :value="assignment.id" x-text="`${assignment.shift_name} - ${formatDate(assignment.shift_date)} (${assignment.start_time} - ${assignment.end_time})`"></option>
@@ -1101,11 +1101,11 @@
             <form @submit.prevent="submitDecline()">
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Reason for rejecting:</label>
-                    <textarea x-model="declineReason" required rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please provide a reason for rejecting this request..."></textarea>
+                    <textarea x-model="declineReason" required rows="4" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please provide a reason for rejecting this request..."></textarea>
                 </div>
                 
                 <div class="flex justify-end space-x-3">
-                    <button type="button" @click="closeDeclineModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    <button type="button" @click="closeDeclineModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600">
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" :disabled="isSubmitting">

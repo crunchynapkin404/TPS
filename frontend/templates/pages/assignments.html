@@ -112,7 +112,7 @@
                                     <input type="checkbox" 
                                            @change="toggleSelectAll()"
                                            :checked="selectedAssignments.length === filteredAssignments.length && filteredAssignments.length > 0"
-                                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                           class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Member</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Team</th>
@@ -129,7 +129,7 @@
                                         <input type="checkbox" 
                                                :value="assignment.id"
                                                x-model="selectedAssignments"
-                                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                               class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500">
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">

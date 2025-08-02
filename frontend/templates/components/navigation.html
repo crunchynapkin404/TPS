@@ -15,7 +15,7 @@
         <div class="relative sidebar-text">
             <button class="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700">
                 <i class="fas fa-bell text-lg"></i>
-                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
             </button>
         </div>
     </div>
@@ -73,9 +73,9 @@
                     <!-- Dashboard -->
                     <li>
                         <a href="{% url 'frontend:dashboard' %}" 
-                           class="{% if active_nav == 'dashboard' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'dashboard' %}bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-2 rounded-lg p-2 text-sm leading-6 font-semibold transition-all duration-200"
                            title="Dashboard">
-                            <i class="fas fa-tachometer-alt {% if active_nav == 'dashboard' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <i class="fas fa-tachometer-alt {% if active_nav == 'dashboard' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-3 text-center"></i>
                             <span class="sidebar-text">Dashboard</span>
                             {% if active_nav == 'dashboard' %}
                             <div class="ml-auto sidebar-text">
@@ -88,9 +88,9 @@
                     <!-- Schedule -->
                     <li>
                         <a href="{% url 'frontend:schedule' %}" 
-                           class="{% if active_nav == 'schedule' %}bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'schedule' %}bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-2 rounded-lg p-2 text-sm leading-6 font-semibold transition-all duration-200"
                            title="Schedule">
-                            <i class="fas fa-calendar {% if active_nav == 'schedule' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <i class="fas fa-calendar {% if active_nav == 'schedule' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-3 text-center"></i>
                             <span class="sidebar-text">Schedule</span>
                         </a>
                     </li>
@@ -98,9 +98,9 @@
                     <!-- Planning -->
                     <li>
                         <a href="{% url 'frontend:planning' %}" 
-                           class="{% if active_nav == 'planning' %}bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'planning' %}bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-2 rounded-lg p-2 text-sm leading-6 font-semibold transition-all duration-200"
                            title="Planning">
-                            <i class="fas fa-project-diagram {% if active_nav == 'planning' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <i class="fas fa-project-diagram {% if active_nav == 'planning' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-3 text-center"></i>
                             <span class="sidebar-text">Planning</span>
                         </a>
                     </li>
@@ -108,9 +108,9 @@
                     <!-- Analytics -->
                     <li>
                         <a href="{% url 'frontend:analytics' %}" 
-                           class="{% if active_nav == 'analytics' %}bg-gradient-to-r from-pink-600 to-pink-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'analytics' %}bg-gradient-to-r from-pink-600 to-pink-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-2 rounded-lg p-2 text-sm leading-6 font-semibold transition-all duration-200"
                            title="Analytics">
-                            <i class="fas fa-chart-bar {% if active_nav == 'analytics' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <i class="fas fa-chart-bar {% if active_nav == 'analytics' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-3 text-center"></i>
                             <span class="sidebar-text">Analytics</span>
                         </a>
                     </li>
@@ -118,9 +118,9 @@
                     <!-- Assignments -->
                     <li>
                         <a href="{% url 'frontend:assignments' %}" 
-                           class="{% if active_nav == 'assignments' %}bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'assignments' %}bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-2 rounded-lg p-2 text-sm leading-6 font-semibold transition-all duration-200"
                            title="Assignments">
-                            <i class="fas fa-tasks {% if active_nav == 'assignments' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <i class="fas fa-tasks {% if active_nav == 'assignments' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-3 text-center"></i>
                             <span class="sidebar-text">Assignments</span>
                         </a>
                     </li>
@@ -136,9 +136,9 @@
                     <!-- Teams -->
                     <li>
                         <a href="{% url 'frontend:teams' %}" 
-                           class="{% if active_nav == 'teams' %}bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'teams' %}bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-2 rounded-lg p-2 text-sm leading-6 font-semibold transition-all duration-200"
                            title="Teams">
-                            <i class="fas fa-users {% if active_nav == 'teams' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <i class="fas fa-users {% if active_nav == 'teams' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-3 text-center"></i>
                             <span class="sidebar-text">Teams</span>
                         </a>
                     </li>
@@ -154,9 +154,9 @@
                     <!-- Profile -->
                     <li>
                         <a href="{% url 'frontend:profile' %}" 
-                           class="{% if active_nav == 'profile' %}bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                           class="{% if active_nav == 'profile' %}bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg{% else %}text-gray-300 hover:text-white hover:bg-gray-700{% endif %} group flex gap-x-2 rounded-lg p-2 text-sm leading-6 font-semibold transition-all duration-200"
                            title="Profile">
-                            <i class="fas fa-user-circle {% if active_nav == 'profile' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-5 text-center"></i>
+                            <i class="fas fa-user-circle {% if active_nav == 'profile' %}text-white{% else %}text-gray-400 group-hover:text-white{% endif %} w-3 text-center"></i>
                             <span class="sidebar-text">Profile</span>
                         </a>
                     </li>
@@ -165,9 +165,9 @@
                     <li>
                         <form method="post" action="{% url 'frontend:logout' %}" class="inline">
                             {% csrf_token %}
-                            <button type="submit" class="w-full text-left text-gray-300 hover:text-white hover:bg-red-600 group flex gap-x-3 rounded-lg p-3 text-sm leading-6 font-semibold transition-all duration-200"
+                            <button type="submit" class="w-full text-left text-gray-300 hover:text-white hover:bg-red-600 group flex gap-x-2 rounded-lg p-2 text-sm leading-6 font-semibold transition-all duration-200"
                                     title="Logout">
-                                <i class="fas fa-sign-out-alt text-gray-400 group-hover:text-white w-5 text-center"></i>
+                                <i class="fas fa-sign-out-alt text-gray-400 group-hover:text-white w-3 text-center"></i>
                                 <span class="sidebar-text">Logout</span>
                             </button>
                         </form>

@@ -1,0 +1,414 @@
+{% comment %}
+Table Layout Component - Desktop-optimized table display with filters and actions
+
+Usage:
+  {% include 'layouts/table_layout.html' with table_id="assignments-table" %}
+  {% include 'layouts/table_layout.html' with table_id="users-table" show_filters=True %}
+
+Parameters:
+  - table_id: Unique identifier for the table (required)
+  - title: Table title (optional)
+  - show_filters: Boolean to show filter panel (default: False)
+  - show_actions: Boolean to show action panel (default: False)  
+  - show_search: Boolean to show search input (default: False)
+  - sticky_header: Boolean for sticky table headers (default: True)
+  - extra_classes: Additional CSS classes
+{% endcomment %}
+
+{% load static %}
+
+<div class="table-layout {{ extra_classes|default:'' }}" id="{{ table_id }}-layout">
+    
+    <!-- Table Header with Title, Filters, and Actions -->
+    <div class="table-header">
+        {% if title %}
+        <div class="table-title-section">
+            <h3 class="table-title">{{ title }}</h3>
+        </div>
+        {% endif %}
+        
+        <div class="table-controls">
+            <!-- Search input -->
+            {% if show_search %}
+            <div class="table-search">
+                <div class="search-input-group">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" 
+                           class="search-input" 
+                           placeholder="Search..."
+                           aria-label="Search table content">
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Filter controls -->
+            {% if show_filters %}
+            <div class="table-filters">
+                {% block table_filters %}
+                    <!-- Filters will be provided by the including template -->
+                {% endblock %}
+            </div>
+            {% endif %}
+            
+            <!-- Action buttons -->
+            {% if show_actions %}
+            <div class="table-actions">
+                {% block table_actions %}
+                    <!-- Actions will be provided by the including template -->
+                {% endblock %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Table Container with responsive wrapper -->
+    <div class="table-container {% if sticky_header|default:True %}table-sticky-header{% endif %}">
+        <div class="table-wrapper">
+            {% block table_content %}
+                <!-- Table content will be provided by the including template -->
+                <table class="data-table" id="{{ table_id }}">
+                    <thead>
+                        {% block table_head %}
+                            <!-- Table head will be provided by the including template -->
+                        {% endblock %}
+                    </thead>
+                    <tbody>
+                        {% block table_body %}
+                            <!-- Table body will be provided by the including template -->
+                        {% endblock %}
+                    </tbody>
+                </table>
+            {% endblock %}
+        </div>
+    </div>
+    
+    <!-- Table Footer with pagination -->
+    <div class="table-footer">
+        {% block table_footer %}
+            <!-- Footer content (pagination, etc.) will be provided by the including template -->
+        {% endblock %}
+    </div>
+</div>
+
+<style>
+/* Table Layout Base Styles */
+.table-layout {
+    background-color: white;
+    border-radius: 0.75rem; /* 12px */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.table-layout.dark {
+    background-color: rgb(31 41 55); /* gray-800 */
+}
+
+/* Table Header */
+.table-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgb(229 231 235); /* gray-200 */
+    background-color: rgb(249 250 251); /* gray-50 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.table-layout.dark .table-header {
+    background-color: rgb(17 24 39); /* gray-900 */
+    border-bottom-color: rgb(75 85 99); /* gray-600 */
+}
+
+.table-title-section {
+    flex-shrink: 0;
+}
+
+.table-title {
+    font-size: 1.125rem; /* 18px */
+    font-weight: 600;
+    color: rgb(17 24 39); /* gray-900 */
+    margin: 0;
+}
+
+.table-layout.dark .table-title {
+    color: white;
+}
+
+.table-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    justify-content: flex-end;
+}
+
+/* Search Input */
+.table-search {
+    position: relative;
+}
+
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    width: 1rem;
+    height: 1rem;
+    color: rgb(107 114 128); /* gray-500 */
+    pointer-events: none;
+}
+
+.search-input {
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    border: 1px solid rgb(209 213 219); /* gray-300 */
+    border-radius: 0.375rem; /* 6px */
+    font-size: 0.875rem;
+    background-color: white;
+    color: rgb(17 24 39); /* gray-900 */
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    min-width: 12rem; /* 192px */
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: rgb(59 130 246); /* blue-500 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.table-layout.dark .search-input {
+    background-color: rgb(17 24 39); /* gray-900 */
+    border-color: rgb(75 85 99); /* gray-600 */
+    color: white;
+}
+
+/* Filters */
+.table-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Actions */
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Table Container */
+.table-container {
+    flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.table-wrapper {
+    overflow: auto;
+    flex-grow: 1;
+    max-height: 100%;
+}
+
+/* Sticky header variant */
+.table-sticky-header .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(249 250 251); /* gray-50 */
+    border-bottom: 2px solid rgb(229 231 235); /* gray-200 */
+}
+
+.table-layout.dark .table-sticky-header .data-table thead th {
+    background-color: rgb(17 24 39); /* gray-900 */
+    border-bottom-color: rgb(75 85 99); /* gray-600 */
+}
+
+/* Data Table Styles */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem; /* 14px */
+}
+
+.data-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: rgb(55 65 81); /* gray-700 */
+    background-color: rgb(249 250 251); /* gray-50 */
+    border-bottom: 1px solid rgb(229 231 235); /* gray-200 */
+    white-space: nowrap;
+}
+
+.table-layout.dark .data-table th {
+    color: rgb(209 213 219); /* gray-300 */
+    background-color: rgb(17 24 39); /* gray-900 */
+    border-bottom-color: rgb(75 85 99); /* gray-600 */
+}
+
+.data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgb(229 231 235); /* gray-200 */
+    color: rgb(17 24 39); /* gray-900 */
+    vertical-align: top;
+}
+
+.table-layout.dark .data-table td {
+    color: rgb(209 213 219); /* gray-300 */
+    border-bottom-color: rgb(75 85 99); /* gray-600 */
+}
+
+.data-table tbody tr:hover {
+    background-color: rgb(249 250 251); /* gray-50 */
+}
+
+.table-layout.dark .data-table tbody tr:hover {
+    background-color: rgb(55 65 81); /* gray-700 */
+}
+
+/* Compact table variant */
+.table-layout-compact .data-table th,
+.table-layout-compact .data-table td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem; /* 13px */
+}
+
+/* Table Footer */
+.table-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgb(229 231 235); /* gray-200 */
+    background-color: rgb(249 250 251); /* gray-50 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.table-layout.dark .table-footer {
+    background-color: rgb(17 24 39); /* gray-900 */
+    border-top-color: rgb(75 85 99); /* gray-600 */
+}
+
+/* Responsive adjustments */
+@media (max-width: 48rem) { /* < 768px - Mobile */
+    .table-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .table-controls {
+        justify-content: flex-start;
+        margin-top: 0.75rem;
+    }
+    
+    .search-input {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .table-filters,
+    .table-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .table-footer {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    /* Horizontal scroll for tables on mobile */
+    .table-wrapper {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .data-table {
+        min-width: 32rem; /* 512px - ensure table doesn't get too cramped */
+    }
+}
+
+@media (min-width: 48rem) and (max-width: 64rem) { /* 768px - 1024px - Tablet */
+    .table-header {
+        padding: 1.25rem;
+    }
+}
+
+@media (min-width: 64rem) { /* 1024px+ - Desktop */
+    .table-header {
+        flex-wrap: nowrap;
+    }
+    
+    .table-controls {
+        flex-wrap: nowrap;
+    }
+}
+
+/* Loading state */
+.table-loading {
+    padding: 3rem;
+    text-align: center;
+    color: rgb(107 114 128); /* gray-500 */
+}
+
+.table-loading .loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 2px solid rgb(229 231 235); /* gray-200 */
+    border-top-color: rgb(59 130 246); /* blue-500 */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Empty state */
+.table-empty {
+    padding: 3rem;
+    text-align: center;
+    color: rgb(107 114 128); /* gray-500 */
+}
+
+.table-empty-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 1rem;
+    color: rgb(156 163 175); /* gray-400 */
+}
+
+.table-empty-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: rgb(17 24 39); /* gray-900 */
+    margin-bottom: 0.5rem;
+}
+
+.table-layout.dark .table-empty-title {
+    color: white;
+}
+
+.table-empty-description {
+    margin-bottom: 1.5rem;
+}
+</style>
